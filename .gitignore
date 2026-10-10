@@ -10,7 +10,24 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+build
+coverage
 *.local
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+
+# Nested copy of the remote repository; keep its .git directory untouched
+/arti/
 
 # Editor directories and files
 .vscode/*
