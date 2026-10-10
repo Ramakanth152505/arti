@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 import { Sparkles, ArrowUp } from 'lucide-react';
+import { useWorkspace } from '../../context/WorkspaceContext';
 
 export const PromptBox: React.FC = () => {
   const [prompt, setPrompt] = useState('');
+  const { navigate, setInitialChatPrompt } = useWorkspace();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!prompt.trim()) return;
-    // Step 1: Real input state handling without fake backend inference
-    console.log('Submitted prompt:', prompt);
-    // Keep prompt text or handle state cleanly
+    const trimmed = prompt.trim();
+    if (!trimmed) return;
+
+    // Real transition to Chats workspace with the submitted prompt
+    setInitialChatPrompt(trimmed);
+    navigate('chats', { prompt: encodeURIComponent(trimmed) });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -26,7 +30,7 @@ export const PromptBox: React.FC = () => {
         <input
           type="text"
           className="prompt-input"
-          placeholder="Type your message here..."
+          placeholder="Ask ARTI anything, create a project, or synthesize ideas..."
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -35,8 +39,10 @@ export const PromptBox: React.FC = () => {
         <button
           type="submit"
           className="prompt-send-btn"
-          title="Send Prompt"
+          title="Send to Intelligent Workspace (Enter)"
           aria-label="Send prompt"
+          disabled={!prompt.trim()}
+          style={{ opacity: prompt.trim() ? 1 : 0.6 }}
         >
           <ArrowUp size={18} strokeWidth={2.4} />
         </button>

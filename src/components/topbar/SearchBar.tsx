@@ -1,23 +1,26 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Search } from 'lucide-react';
+import { useWorkspace } from '../../context/WorkspaceContext';
 
 export const SearchBar: React.FC = () => {
-  const [searchValue, setSearchValue] = useState('');
+  const { setIsSearchOpen } = useWorkspace();
 
   return (
-    <div className="search-bar" role="search">
+    <button
+      type="button"
+      className="search-bar"
+      onClick={() => setIsSearchOpen(true)}
+      role="search"
+      aria-label="Open global search and command palette"
+      title="Search anything... (Ctrl + K)"
+    >
       <Search className="search-icon" size={15} />
-      <input
-        type="text"
-        className="search-input"
-        placeholder="Search anything... (chats, projects, files, tools, knowledge...)"
-        value={searchValue}
-        onChange={(e) => setSearchValue(e.target.value)}
-        aria-label="Search anything"
-      />
+      <span className="search-placeholder">
+        Search anything... (chats, projects, files, tools, knowledge...)
+      </span>
       <div className="search-shortcut" title="Press Ctrl + K to focus search">
         Ctrl + K
       </div>
-    </div>
+    </button>
   );
 };

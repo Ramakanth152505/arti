@@ -1,14 +1,10 @@
-import React from 'react';
+import type { NavItemDef, RouteId } from '../../types/navigation';
 
-export interface NavItemDef {
-  id: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string; size?: number }>;
-}
+export type { NavItemDef, RouteId };
 
 export interface SidebarProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  activeItemId: string;
-  onSelectItem: (id: string) => void;
+  activeItemId: RouteId;
+  onSelectItem: (id: RouteId) => void;
 }
