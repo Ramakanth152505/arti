@@ -37,6 +37,8 @@ export interface ChatConversation {
   updatedAt: string;
   model: string;
   messages: ChatMessage[];
+  /** Owning project id when this conversation belongs to a project workspace. */
+  projectId?: string;
 }
 
 const STORAGE_KEY = 'arti_ws_chats';
@@ -199,7 +201,7 @@ class ChatStore {
     this.setState({ activeId: id });
   }
 
-  createConversation(): ChatConversation {
+  createConversation(projectId?: string): ChatConversation {
     const conv: ChatConversation = {
       id: 'conv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
       title: 'New Conversation',
@@ -208,6 +210,7 @@ class ChatStore {
       updatedAt: 'Just now',
       model: 'ARTI Engine',
       messages: [],
+      projectId,
     };
     this.setState({
       conversations: [conv, ...this.state.conversations],
@@ -215,6 +218,11 @@ class ChatStore {
       isDemo: false,
     });
     return conv;
+  }
+
+  /** Conversations that belong to a given project, newest first. */
+  getProjectConversations(projectId: string): ChatConversation[] {
+    return this.state.conversations.filter((c) => c.projectId === projectId);
   }
 
   /** Drop demonstration content and start from an empty real collection. */
@@ -388,6 +396,34 @@ class ChatStore {
     const remaining = this.state.conversations.filter((c) => c.id !== id);
     const activeId = this.state.activeId === id ? remaining[0]?.id ?? '' : this.state.activeId;
     this.setState({ conversations: remaining, activeId });
+  }
+
+  /**
+   * Permanently delete a single conversation. Targets exactly one id, so it can
+   * never remove a sibling chat or the parent project. Aborts an in-flight
+   * request for that conversation first.
+   */
+  deleteConversation(id: string): void {
+    if (!this.state.conversations.some((c) => c.id === id)) return;
+    this.pendingControllers.get(id)?.abort();
+    this.pendingControllers.delete(id);
+    const remaining = this.state.conversations.filter((c) => c.id !== id);
+    const activeId = this.state.activeId === id ? remaining[0]?.id ?? '' : this.state.activeId;
+    this.setState({
+      conversations: remaining,
+      activeId,
+      pendingIds: [...this.pendingControllers.keys()],
+    });
+  }
+
+  /** Delete every conversation belonging to a project (used when a project is removed). */
+  deleteProjectConversations(projectId: string): void {
+    const remaining = this.state.conversations.filter((c) => c.projectId !== projectId);
+    const activeStillExists = remaining.some((c) => c.id === this.state.activeId);
+    this.setState({
+      conversations: remaining,
+      activeId: activeStillExists ? this.state.activeId : remaining[0]?.id ?? '',
+    });
   }
 }
 

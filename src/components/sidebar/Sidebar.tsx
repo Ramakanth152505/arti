@@ -4,7 +4,6 @@ import type { SidebarProps } from './types';
 import { SidebarItem } from './SidebarItem';
 import {
   PRIMARY_NAV_ITEMS,
-  SECONDARY_NAV_ITEMS,
   UTILITY_NAV_ITEMS,
 } from '../../types/navigation';
 
@@ -123,24 +122,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Visual Divider */}
         <div className="sidebar-divider" />
 
-        {/* Secondary System Navigation Items 17 to 19 */}
-        <div className="sidebar-section-group" role="group" aria-label="System Operations">
-          {!renderCollapsed && <span className="sidebar-group-heading">System Operations</span>}
-          {SECONDARY_NAV_ITEMS.map((item) => (
-            <SidebarItem
-              key={item.id}
-              item={item}
-              isActive={activeItemId === item.id}
-              isCollapsed={renderCollapsed}
-              onClick={() => handleSelect(item.id)}
-            />
-          ))}
-        </div>
-
-        {/* Visual Divider */}
-        <div className="sidebar-divider" />
-
-        {/* Utility Items 20 to 21 */}
+        {/* Utility Items — preferences only. Knowledge Base, Marketplace and the
+            former System Operations entries are intentionally not in the
+            primary sidebar for this milestone; their routes and implementations
+            remain available in the app. */}
         <div className="sidebar-section-group" role="group" aria-label="System Utilities">
           {!renderCollapsed && <span className="sidebar-group-heading">Preferences</span>}
           {UTILITY_NAV_ITEMS.map((item) => (

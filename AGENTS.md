@@ -52,6 +52,39 @@ the owner's explicit approval.
 
 - `npm run build` — `tsc -b && vite build` must pass.
 - `npm run lint` — `oxlint` + typography policy check must pass.
+- `npm run test:responsive [baseUrl]` — headless-Chromium (CDP, no extra
+  deps) overflow scan of every route × the required viewport set. The bar is
+  zero horizontal overflow.
+
+## Projects & Create Software (project-linked conversations)
+
+- Projects are the parent record. `src/services/projectStore.ts` is the single
+  observable store (`useSyncExternalStore`, localStorage `arti_saved_projects`),
+  replacing the old in-component project state. Stable ids are `proj_*`.
+- Conversations live in `src/services/chatStore.ts`; a project conversation
+  carries `projectId`. Every project chat must store the correct `projectId` so
+  chats never appear under an unrelated project. Create/switch/delete all target
+  a single conversation id and never touch the parent project.
+- The Projects route (`projects`) renders the overview; `projects?id=<id>`
+  renders that project's workspace (`ProjectWorkspaceView`) with its own
+  conversation panel, `New Chat`, and per-chat delete. No artificial chat-count
+  limit is imposed.
+- `create-software` is the software-creation entry point
+  (`CreateSoftwareWorkspace`): it captures a brief + project type and creates a
+  real project (`projectStore.createProject`) seeded with a first planning
+  conversation, then opens the project workspace. It must never claim to
+  generate, compile, sign, or deploy software — that engine is not connected.
+- Project delete removes the project **and** its conversations
+  (`chatStore.deleteProjectConversations`) behind an explicit confirm.
+
+## Sidebar navigation
+
+- Primary items run Home → Tools, then `Create Software` (route `create-software`),
+  then the Preferences group. Knowledge Base, Marketplace and the former System
+  Operations entries are intentionally **not** in the primary sidebar; their
+  routes/workspaces remain registered in `AppShell` and reachable (e.g. via
+  Ctrl+K search) so nothing was deleted.
+
 
 ## Honesty rules
 

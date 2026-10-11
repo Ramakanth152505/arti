@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "check:typography": "node scripts/check-typography.mjs",
     "lint": "oxlint && node scripts/check-typography.mjs",
+    "test:responsive": "node scripts/overflow-scan.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
