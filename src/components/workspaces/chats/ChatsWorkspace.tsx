@@ -42,7 +42,12 @@ export const ChatsWorkspace: React.FC = () => {
     setIsSidebarOpen(!isMobileNav);
   }
 
-  const conversations = state.conversations;
+  // Chats lists general conversations only. Project/game chats live in their
+  // own workspaces, and Images chats are owned by the Images workspace — they
+  // are filtered out here so the three never mix.
+  const conversations = state.conversations.filter(
+    (c) => !c.projectId && (c.workspace ?? 'general') === 'general'
+  );
   const activeConv = conversations.find((c) => c.id === state.activeId);
   const isPending = activeConv ? state.pendingIds.includes(activeConv.id) : false;
   const connected = isAiConfigured();

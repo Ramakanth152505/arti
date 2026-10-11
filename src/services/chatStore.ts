@@ -29,6 +29,75 @@ export interface ChatMessage {
 
 export type DateGroup = 'today' | 'yesterday' | 'previous7' | 'older';
 
+/**
+ * Which workspace owns a conversation. `general` is the default (Chats,
+ * dedicated conversation workspace and Home prompts); `images` marks a
+ * conversation created by the Images workspace. Projects and Games keep using
+ * `projectId`, which is orthogonal to this flag.
+ */
+export type WorkspaceKind = 'general' | 'images';
+
+/** A single image returned by a real provider. The URL is the provider's own
+ * temporary output URL (or a data URL); ARTI never copies it to its own
+ * storage. */
+export interface GeneratedImage {
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+  format: string;
+  /** The provider's rewritten prompt, when it exposes one. */
+  revisedPrompt?: string;
+}
+
+/** The provider-facing generation settings captured for one request. */
+export interface ImageGenerationSettings {
+  providerId: string;
+  model: string;
+  /** UI aspect-ratio value (e.g. `16:9`). */
+  aspectRatio: string;
+  /** Provider size token actually sent (e.g. `1024x1024`). */
+  size: string;
+  quality: string;
+  count: number;
+  seed: string;
+  negativePrompt: string;
+  transparentBackground: boolean;
+  /** 0–100. Only applied when the provider/model supports it. */
+  styleStrength: number;
+}
+
+/** One completed (or failed) generation, kept in the conversation history. */
+export interface ImageResultRecord {
+  id: string;
+  createdAt: string;
+  /** The final prepared prompt actually sent to the provider. */
+  preparedPrompt: string;
+  /** The user's original prompt, preserved verbatim. */
+  originalPrompt: string;
+  styleId?: string;
+  styleName?: string;
+  /** Answers the user gave in the clarification step. */
+  clarifications: Record<string, string>;
+  settings: ImageGenerationSettings;
+  images: GeneratedImage[];
+  status: 'complete' | 'failed';
+  error?: string;
+  /** Native resolution the provider returned. */
+  nativeResolution?: string;
+  /** Set only when a real, separate upscale step produced a larger asset. */
+  upscaledTo?: string;
+}
+
+/** Images-workspace metadata carried on a conversation (`workspace: 'images'`). */
+export interface ImageConversationMeta {
+  styleId?: string;
+  settings: Partial<ImageGenerationSettings>;
+  results: ImageResultRecord[];
+  /** True while a real provider request is in flight for this conversation. */
+  pendingGeneration: boolean;
+}
+
 export interface ChatConversation {
   id: string;
   title: string;
@@ -39,6 +108,10 @@ export interface ChatConversation {
   messages: ChatMessage[];
   /** Owning project id when this conversation belongs to a project workspace. */
   projectId?: string;
+  /** Owning workspace kind; absent means `general`. */
+  workspace?: WorkspaceKind;
+  /** Images-only metadata (style, settings, results). */
+  imageMeta?: ImageConversationMeta;
 }
 
 const STORAGE_KEY = 'arti_ws_chats';
@@ -225,6 +298,85 @@ class ChatStore {
     return this.state.conversations.filter((c) => c.projectId === projectId);
   }
 
+  /**
+   * Conversations owned by a non-project workspace kind (e.g. `images`).
+   * Project- and game-scoped conversations are excluded so the Images list can
+   * never surface a project/game chat.
+   */
+  getWorkspaceConversations(kind: WorkspaceKind): ChatConversation[] {
+    return this.state.conversations.filter((c) => !c.projectId && (c.workspace ?? 'general') === kind);
+  }
+
+  /**
+   * Create a real conversation owned by a workspace kind. Used by Images so its
+   * chats are tagged and never mixed with general Chats or project/game chats.
+   */
+  createWorkspaceConversation(
+    kind: WorkspaceKind,
+    title = 'New Image Conversation',
+    imageMeta?: ImageConversationMeta
+  ): ChatConversation {
+    const conv: ChatConversation = {
+      id: 'conv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+      title,
+      isPinned: false,
+      dateGroup: 'today',
+      updatedAt: 'Just now',
+      model: 'ARTI Image Studio',
+      messages: [],
+      workspace: kind,
+      imageMeta,
+    };
+    this.setState({
+      conversations: [conv, ...this.state.conversations],
+      activeId: conv.id,
+      isDemo: false,
+    });
+    return conv;
+  }
+
+  /** Patch the Images metadata for one conversation, creating it if absent. */
+  patchImageMeta(id: string, patch: Partial<ImageConversationMeta>) {
+    this.replaceConversation(id, (c) => {
+      const base: ImageConversationMeta = c.imageMeta ?? {
+        settings: {},
+        results: [],
+        pendingGeneration: false,
+      };
+      return { ...c, imageMeta: { ...base, ...patch }, updatedAt: 'Just now' };
+    });
+  }
+
+  /** Append a completed/failed image result to a conversation's history. */
+  addImageResult(id: string, result: ImageResultRecord) {
+    this.replaceConversation(id, (c) => {
+      const base: ImageConversationMeta = c.imageMeta ?? {
+        settings: {},
+        results: [],
+        pendingGeneration: false,
+      };
+      return {
+        ...c,
+        imageMeta: { ...base, results: [result, ...base.results] },
+        updatedAt: 'Just now',
+      };
+    });
+  }
+
+  /** Remove one image result from a conversation (does not touch the parent). */
+  removeImageResult(id: string, resultId: string) {
+    this.replaceConversation(id, (c) => {
+      if (!c.imageMeta) return c;
+      return {
+        ...c,
+        imageMeta: {
+          ...c.imageMeta,
+          results: c.imageMeta.results.filter((r) => r.id !== resultId),
+        },
+      };
+    });
+  }
+
   /** Drop demonstration content and start from an empty real collection. */
   clearDemo() {
     this.setState({ conversations: [], activeId: '', isDemo: false });
@@ -263,6 +415,57 @@ class ChatStore {
 
   private now(): string {
     return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  /**
+   * Append a user turn without requesting a language-model reply. Used by the
+   * Images workspace, where the "reply" is a real image generation rather than
+   * a text completion. The title is set from the first turn.
+   */
+  appendUserMessage(conversationId: string, rawText: string, fallbackTitle?: string) {
+    const text = rawText.trim();
+    if (!text) return;
+    const existing = this.getConversation(conversationId);
+    if (!existing) return;
+    this.replaceConversation(conversationId, (c) => ({
+      ...c,
+      title:
+        c.title === 'New Conversation' || c.title === 'New Image Conversation'
+          ? (fallbackTitle ?? text).slice(0, 40)
+          : c.title,
+      updatedAt: 'Just now',
+      messages: [
+        ...c.messages,
+        {
+          id: 'msg_' + Date.now() + '_u',
+          sender: 'user',
+          content: text,
+          timestamp: this.now(),
+          status: 'complete',
+        },
+      ],
+    }));
+  }
+
+  /** Append a plain assistant turn (no provider call). */
+  appendAssistantMessage(conversationId: string, content: string) {
+    if (!content.trim()) return;
+    const existing = this.getConversation(conversationId);
+    if (!existing) return;
+    this.replaceConversation(conversationId, (c) => ({
+      ...c,
+      updatedAt: 'Just now',
+      messages: [
+        ...c.messages,
+        {
+          id: 'msg_' + Date.now() + '_a',
+          sender: 'assistant',
+          content,
+          timestamp: this.now(),
+          status: 'complete',
+        },
+      ],
+    }));
   }
 
   /**
