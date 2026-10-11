@@ -33,3 +33,26 @@ the owner's explicit approval.
 - Never present fabricated data as real. Demo/sample content must be labelled
   (see `DemoDataNotice`) or persisted locally via `useWorkspaceData`
   (localStorage, local-first).
+
+## Responsive architecture
+
+- Stylesheet entry is `src/index.css`; import order is fixed and must stay:
+  `typography.css` → `base.css` → `workspaces.css` → `responsive.css`.
+  `base.css` holds the original base component rules; `responsive.css` is the
+  responsive layer. Base rules must never be re-inlined after the `@import`s or
+  they win the equal-specificity cascade and silently break responsive overrides.
+- Responsive tokens (`--page-pad-x`, `--content-max-w`, `--mobile-drawer-w`,
+  `--touch-target`, fluid `--fs-*` clamps, …) live at the top of
+  `responsive.css`. Prefer them over new hardcoded breakpoints.
+- Breakpoints: `<=767.98px` phone, `<=1023.98px` overlay-drawer navigation,
+  `>=1600px` / `>=1920px` wide-screen content caps.
+- JS-only responsive behaviour (drawer, chat sidebar) uses
+  `src/hooks/useMediaQuery.ts` (`useIsMobileNav`), which is backed by
+  `useSyncExternalStore`. Layout must not depend on resize listeners.
+- Every interactive control needs a comfortable target on small screens; the
+  `max-width: 767.98px` block guarantees `--touch-target` (44px) regardless of
+  the reported pointer type.
+- Verify with an emulated cross-device overflow scan (headless Chromium via CDP)
+  across the viewport set 320/360/375/390/430/768/820/1024/1280/1366/1440/1920/2560
+  for every route; the acceptance bar is zero horizontal overflow.
+
