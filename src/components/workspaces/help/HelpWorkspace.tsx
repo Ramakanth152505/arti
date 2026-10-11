@@ -117,7 +117,7 @@ export const HelpWorkspace: React.FC = () => {
             <Search size={15} className="help-search-icon" />
             <input
               type="text"
-              className="help-search-input"
+              className="help-search-input field-integrated"
               placeholder="Search help articles, troubleshooting guides, or commands..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}

@@ -21,6 +21,21 @@ export interface WorkspaceContextValue {
   cycleTheme: () => void;
   isPrivateMode: boolean;
   togglePrivateMode: () => void;
+  /**
+   * Global distraction-free conversation mode. Set by the shared
+   * `useConversationFocus` hook while a conversation workspace with content is
+   * active; `AppShell` uses it to temporarily de-emphasise the navigation rail.
+   * It is a temporary focus state, never destructive navigation.
+   */
+  isFocusMode: boolean;
+  setFocusMode: (value: boolean) => void;
+  /**
+   * Whether the temporarily-hidden chrome has been revealed again (mouse
+   * movement, keyboard focus, or an explicit toggle). Only meaningful while
+   * `isFocusMode` is true.
+   */
+  isFocusChromeRevealed: boolean;
+  setFocusChromeRevealed: (value: boolean) => void;
 }
 
 export const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);

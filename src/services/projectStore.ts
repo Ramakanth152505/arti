@@ -284,6 +284,53 @@ export interface TestRun {
 }
 
 
+/**
+ * Game-specific metadata carried by a record with `isGame`. Populated by the
+ * Games workspace only; it is never set on general or software projects.
+ */
+export interface GameMetadata {
+  /** Gameplay mechanic values, grouped by the 13 required categories. */
+  mechanics: string[];
+  /** World-theme values (subset of the 15 required themes). */
+  themes: string[];
+  /** Free-text detail when the `Custom World` theme is selected. */
+  customTheme?: string;
+  /** Game-mode values (subset of the 11 required modes). */
+  modes: string[];
+  /** Free-text detail when `Custom Game Mode` is selected. */
+  customMode?: string;
+  /** Multiplayer requirement values (topology, player count, networking). */
+  multiplayerRequirements?: string[];
+  /** Preferred engine value (may be `not-decided`). */
+  engine?: string;
+  /** Free-text detail when a custom engine is selected. */
+  customEngine?: string;
+  /** Requested target-platform values (game platform catalogue). */
+  platforms?: string[];
+  platformMode?: PlatformMode;
+  customPlatform?: string;
+  /** Optional visual style. */
+  visualStyle?: string;
+  /** Optional additional instructions. */
+  instructions?: string;
+  /** Optional advanced technical requirements. */
+  languages?: string[];
+  dimensions?: string[];
+  rendering?: string[];
+  physics?: string[];
+  ai?: string[];
+  procedural?: string[];
+  audio?: string[];
+  animation?: string[];
+  input?: string[];
+  accessibility?: string[];
+  saveLoad?: string[];
+  performance?: string[];
+  targetHardware?: string;
+  assetRequirements?: string;
+  buildPackaging?: string[];
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -300,6 +347,10 @@ export interface Project {
 
   /** True when this record is a software project (created via Create Software / Apps). */
   isSoftware?: boolean;
+  /** True when this record is a game project (created via Games). */
+  isGame?: boolean;
+  /** Game-specific metadata; present only on records with `isGame`. */
+  game?: GameMetadata;
   /** 1. Core functional classification value. */
   coreClassification?: string;
   /** Details when the core classification is `Custom / Other Software`. */
@@ -365,6 +416,7 @@ function readStored(): Project[] | null {
       notes: p.notes ?? '',
       isStarred: Boolean(p.isStarred),
       isSoftware: Boolean(p.isSoftware),
+      isGame: Boolean(p.isGame),
       domains: Array.isArray(p.domains) ? p.domains : [],
       platforms: Array.isArray(p.platforms) ? p.platforms : [],
     }));
@@ -431,6 +483,8 @@ class ProjectStore {
     techStack?: string;
     notes?: string;
     isSoftware?: boolean;
+    isGame?: boolean;
+    game?: GameMetadata;
     coreClassification?: string;
     coreCustom?: string;
     domains?: string[];
@@ -454,6 +508,8 @@ class ProjectStore {
       createdAt: nowIso,
       updatedAt: nowIso,
       isSoftware: input.isSoftware ?? false,
+      isGame: input.isGame ?? false,
+      game: input.game,
       coreClassification: input.coreClassification,
       coreCustom: input.coreCustom?.trim() || undefined,
       domains: input.domains ?? [],
@@ -468,6 +524,33 @@ class ProjectStore {
     const base = this.state.isDemo ? [] : this.state.projects;
     this.setState({ projects: [project, ...base], isDemo: false });
     return project;
+  }
+
+  /**
+   * Create a real, persisted game project. Game records are typed `game`,
+   * flagged `isGame`, and carry their game metadata. They are NOT inserted into
+   * the general Projects list (which excludes `isGame` and `isSoftware`).
+   */
+  createGame(input: {
+    name: string;
+    description: string;
+    goal?: string;
+    game: GameMetadata;
+  }): Project {
+    return this.createProject({
+      name: input.name,
+      type: 'game',
+      customType: 'Game project',
+      isGame: true,
+      description: input.description,
+      goal: input.goal,
+      game: input.game,
+    });
+  }
+
+  /** Games only — never software or general projects. */
+  getGames(): Project[] {
+    return this.state.projects.filter((p) => p.isGame);
   }
 
   /** Persist the most recent test run for a project (kept in project history). */

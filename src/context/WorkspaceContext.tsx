@@ -38,10 +38,23 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   });
 
+  // Distraction-free conversation mode is transient UI state — never persisted,
+  // and always reset when the route changes so it can never strand the shell.
+  const [isFocusMode, setFocusModeState] = useState(false);
+  const [isFocusChromeRevealed, setFocusChromeRevealedState] = useState(false);
+  const setFocusMode = useCallback((value: boolean) => setFocusModeState(value), []);
+  const setFocusChromeRevealed = useCallback(
+    (value: boolean) => setFocusChromeRevealedState(value),
+    []
+  );
+
 
   useEffect(() => {
     const unsubscribe = router.subscribe((newRouteState) => {
       setRouteState(newRouteState);
+      // Leaving a conversation surface must never leave the shell in focus mode.
+      setFocusModeState(false);
+      setFocusChromeRevealedState(false);
     });
     return unsubscribe;
   }, []);
@@ -136,6 +149,10 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         cycleTheme,
         isPrivateMode,
         togglePrivateMode,
+        isFocusMode,
+        setFocusMode,
+        isFocusChromeRevealed,
+        setFocusChromeRevealed,
       }}
     >
       {children}

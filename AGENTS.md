@@ -151,3 +151,46 @@ ring, at the container level — never a nested second rectangle from the inner
   across the viewport set 320/360/375/390/430/768/820/1024/1280/1366/1440/1920/2560
   for every route; the acceptance bar is zero horizontal overflow.
 
+## Games workspace (game-linked projects)
+
+- Games is its own record type, **not** a general project. `projectStore.createGame`
+  writes `isGame: true`, `type: 'game'` and a `game: GameMetadata` blob.
+- Isolation is by flag, not by a second store: the general Projects list filters
+  `!isGame && !isSoftware`, Apps filters `isSoftware`, Games filters `isGame`.
+  A game must never appear in Projects, and a software/general project must never
+  appear in Games.
+- `src/services/gameTaxonomy.ts` is the single source for the game catalogue:
+  13 `MECHANIC_GROUPS`, 15 `WORLD_THEMES`, 11 `GAME_MODES`, `GAME_ENGINES`
+  (each with an honest `capability` note), `GAME_PLATFORMS` (each with a real
+  `status`/`statusNote`) and `MULTIPLAYER_REQUIREMENTS`. `resolveGameTargets`
+  enumerates `single` / `cross-platform` / `all-platforms`; consoles and VR stay
+  `not-supported` / `dependencies-required` — never marked verified.
+- `src/components/games/GameCreationForm.tsx` (creation), `GameWorkspaceView.tsx`
+  (workspace) and `GameSettingsPanel.tsx` (settings/status) reuse the shared
+  `Composer`/`MessageList`, the project chat panel pattern, and
+  `useConversationFocus`. Game chats live in the shared `chatStore` keyed by
+  `projectId`; opening a game re-selects one of **its own** conversations.
+- No engine, SDK, compiler or asset pipeline is connected here: never claim a
+  generated/compiled/playable build. Statuses come from real capability data only.
+
+## Distraction-free conversation mode (shared)
+
+- `src/hooks/useConversationFocus.ts` is the one interaction model (Games,
+  Projects/Apps workspaces, and other conversation surfaces). It publishes
+  `isFocusMode` / `isFocusChromeRevealed` to `WorkspaceContext`; `AppShell`
+  derives `focusActive` and applies `.focus-mode` to temporarily de-emphasise the
+  navigation rail.
+- Reveal is never mouse-only: mouse move, keyboard `focusin`, key presses and an
+  explicit toggle (`focus-reveal-pill`) all work. Chrome is never hidden while
+  typing, while a `[role="dialog"][aria-modal="true"]` is open, or while the
+  pointer is inside the workspace. Route changes always reset focus state so the
+  shell can never be stranded collapsed.
+
+## Verification
+
+- `npm run test:games [baseUrl]` — headless-Chromium (CDP, no extra deps)
+  functional suite: Games/Projects/Apps isolation, focus mode, multi-chat
+  binding, per-chat delete, taxonomy counts, platform honesty, font loading and
+  the integrated-input policy. Currently 31 checks.
+
+

@@ -33,6 +33,8 @@ export const CreateSoftwareWorkspace: React.FC = () => {
   const { navigate } = useWorkspace();
   const { showToast } = useToast();
   const { projects } = useProjectStore();
+  // Games are excluded — they belong to the Games workspace, not Projects.
+  const generalProjects = projects.filter((p) => !p.isGame);
 
   const [state, setState] = useState<SoftwareClassifyState>(initialClassifyState);
   const [error, setError] = useState('');
@@ -130,13 +132,13 @@ export const CreateSoftwareWorkspace: React.FC = () => {
         <div className="software-side-column">
           <div className="software-existing-card">
             <h2 className="software-section-title">Continue an existing project</h2>
-            {projects.length === 0 ? (
+            {generalProjects.length === 0 ? (
               <p className="software-types-note">
                 No projects yet. Create one from the brief to get started.
               </p>
             ) : (
               <ul className="software-existing-list">
-                {projects.slice(0, 8).map((p) => (
+                {generalProjects.slice(0, 8).map((p) => (
                   <li key={p.id}>
                     <button
                       type="button"
