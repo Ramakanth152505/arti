@@ -62,8 +62,7 @@ export const PRIMARY_NAV_ITEMS: NavItemDef[] = [
   { id: 'home', label: 'Home', icon: Home, category: 'primary', description: 'Central command canvas & quick composer' },
   { id: 'chats', label: 'Chats', icon: MessageSquare, category: 'primary', description: 'Intelligent multi-model conversation workspace' },
   { id: 'projects', label: 'Projects', icon: Folder, category: 'primary', description: 'Universal project management and artifact hub' },
-  { id: 'websites', label: 'Websites', icon: Globe, category: 'primary', description: 'Website brief and responsive preview foundation' },
-  { id: 'apps', label: 'Apps', icon: LayoutGrid, category: 'primary', description: 'Application architecture workspace' },
+  { id: 'apps', label: 'Apps', icon: LayoutGrid, category: 'primary', description: 'Software-creation and software-project management workspace' },
   { id: 'games', label: 'Games', icon: Gamepad2, category: 'primary', description: 'Game concept and level planning studio' },
   { id: 'images', label: 'Images', icon: Image, category: 'primary', description: 'Image prompt studio (no provider connected)' },
   { id: 'videos', label: 'Videos', icon: Video, category: 'primary', description: 'Storyboard and shot planning (no renderer connected)' },
@@ -87,6 +86,16 @@ export const UTILITY_NAV_ITEMS: NavItemDef[] = [
   { id: 'help-support', label: 'Help & Support', icon: HelpCircle, category: 'utility', description: 'Interactive guide, roadmap and troubleshooting' },
 ];
 
+/**
+ * Routes that remain fully implemented and reachable (e.g. via Ctrl+K search)
+ * but are intentionally not rendered in the visible primary sidebar.
+ * `websites` was removed from the primary sidebar by the current milestone; its
+ * route, workspace, stored data and features are untouched.
+ */
+export const HIDDEN_NAV_ITEMS: NavItemDef[] = [
+  { id: 'websites', label: 'Websites', icon: Globe, category: 'secondary', description: 'Website brief and responsive preview foundation' },
+];
+
 export const SIGNATURE_NAV_ITEM: NavItemDef = {
   id: 'magic-mode',
   label: 'Magic Mode',
@@ -99,6 +108,7 @@ export const ALL_NAV_ITEMS: NavItemDef[] = [
   ...PRIMARY_NAV_ITEMS,
   ...SECONDARY_NAV_ITEMS,
   ...UTILITY_NAV_ITEMS,
+  ...HIDDEN_NAV_ITEMS,
   SIGNATURE_NAV_ITEM,
 ];
 

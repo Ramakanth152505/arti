@@ -2,10 +2,9 @@
 /**
  * ARTI AI — typography policy check.
  *
- * RONALDSON GOTHIC IS THE PERMANENT DEFAULT TYPEFACE FOR ALL ARTI AI UI.
- *
- * This check fails when ordinary UI styling declares a font family other than
- * the approved project tokens. Only two exceptions are allowed:
+ * The approved type system is Orbitron (brand), Inter (interface) and
+ * JetBrains Mono (code/technical). This check fails when ordinary UI styling
+ * declares a font family other than the approved project tokens. Exceptions:
  *   1. Genuine code / mono contexts (declared via the --font-mono token).
  *   2. The single centralized @font-face block in src/styles/typography.css.
  *
@@ -18,11 +17,12 @@ const ROOT = new URL('..', import.meta.url).pathname;
 const SCAN_DIRS = ['src'];
 const EXT = /\.(css|tsx|ts|jsx|js|html)$/;
 
-// Font stacks that must never appear (previous / unrelated families).
-const FORBIDDEN = /\b(Cinzel|Plus Jakarta Sans|Playfair Display|Inter|Poppins|Montserrat|Roboto|Open Sans|Lato)\b/;
+// Previous / unrelated families that must never (re)appear.
+const FORBIDDEN = /\b(Ronaldson Gothic|Cinzel|Plus Jakarta Sans|Playfair Display|Poppins|Montserrat|Roboto|Open Sans|Lato)\b/;
 
-// Allowed absolute font-family targets. Tokens resolve to the single typeface.
-const ALLOWED_FAMILY = /^\s*(var\(--font-(primary|sans|serif|mono)\)|inherit|unset|initial|'?Ronaldson Gothic'?|none)\s*$/i;
+// Allowed absolute font-family targets: the approved tokens (which resolve to
+// Orbitron/Inter/JetBrains Mono) plus reset keywords and the @font-face names.
+const ALLOWED_FAMILY = /^\s*(var\(--font-(brand|primary|sans|serif|mono)\)|inherit|unset|initial|'?(Orbitron|Inter|JetBrains Mono)'?|none)\s*$/i;
 
 function walk(dir) {
   const out = [];
@@ -50,8 +50,8 @@ for (const dir of SCAN_DIRS) {
       const m = line.match(/font-family\s*:\s*([^;]+);?/i);
       if (m) {
         const value = m[1].trim();
-        // The @font-face src in the central file is the one legitimate exception.
-        if (isTypographySource && /Ronaldson Gothic/.test(value)) return;
+        // The @font-face declarations in the central file are the exceptions.
+        if (isTypographySource && /^(Orbitron|Inter|JetBrains Mono)/.test(value)) return;
         if (!ALLOWED_FAMILY.test(value)) {
           problems.push(`${rel}:${i + 1}  font-family: ${value}`);
         }
@@ -73,10 +73,10 @@ for (const dir of SCAN_DIRS) {
 }
 
 if (problems.length) {
-  console.error('Typography policy violated — Ronaldson Gothic must remain the only UI typeface.\n');
+  console.error('Typography policy violated — only Orbitron, Inter and JetBrains Mono are approved UI typefaces.\n');
   for (const p of problems) console.error('  ' + p);
   console.error(`\n${problems.length} issue(s). See README "Typography Standard".`);
   process.exit(1);
 }
 
-console.log('Typography policy OK — Ronaldson Gothic is the single UI typeface.');
+console.log('Typography policy OK — Orbitron / Inter / JetBrains Mono are the approved UI typefaces.');

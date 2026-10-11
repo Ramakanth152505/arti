@@ -1,53 +1,103 @@
 /* ============================================================================
    ARTI AI — CENTRAL TYPOGRAPHY SYSTEM
-   RONALDSON GOTHIC IS THE PERMANENT DEFAULT TYPEFACE FOR ALL ARTI AI UI.
-   Every new or modified page and component must use the established global
-   typography tokens. No alternative ordinary UI font may be introduced
-   without the owner's explicit approval.
+   Single source of truth for every typeface used anywhere in the product.
 
-   Font source: Ronaldson Gothic (Peter Wiegel / CAT-Fonts, 2014 revival of
-   the 1889 William W. Jackson "Ronaldson Gothic").
-   License: SIL Open Font License 1.1 (public/fonts/RonaldsonGothic-OFL.txt).
-   Verified weights: Regular (400) and Light (300) only.
+   Approved families (self-hosted WOFF2, variable, SIL Open Font License 1.1):
+     - Orbitron        → brand identity only (wordmark, major brand titles)
+     - Inter           → the interface: body, navigation, chat, controls, forms
+     - JetBrains Mono  → code, terminal output, logs, structured technical data
+
+   The three families are the only permitted UI typefaces. Components must
+   reference the tokens below (or the semantic `.t-*` utilities) and never
+   hardcode a `font-family`. Enforced by `npm run check:typography`.
+
+   Licence texts: public/fonts/{Orbitron,Inter,JetBrainsMono}-OFL.txt
    ========================================================================== */
 
-/* ---- Font faces (self-hosted, WOFF2) ------------------------------------ */
+/* ---- Font faces (self-hosted, variable WOFF2) ---------------------------- */
+/* Each family ships two subset files — latin and latin-ext — so the browser
+   downloads only the glyph ranges a page actually needs. */
 
 @font-face {
-  font-family: 'Ronaldson Gothic';
+  font-family: 'Orbitron';
   font-style: normal;
-  font-weight: 400;
+  font-weight: 400 900;
   font-display: swap;
-  src: url('/fonts/RonaldsonGothic-Regular.woff2') format('woff2');
+  src: url('/fonts/Orbitron-Latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 @font-face {
-  font-family: 'Ronaldson Gothic';
+  font-family: 'Inter';
   font-style: normal;
-  font-weight: 300;
+  font-weight: 100 900;
   font-display: swap;
-  src: url('/fonts/RonaldsonGothic-Light.woff2') format('woff2');
+  src: url('/fonts/Inter-Latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/Inter-LatinExt.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url('/fonts/JetBrainsMono-Latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url('/fonts/JetBrainsMono-LatinExt.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
 /* ---- Typography tokens --------------------------------------------------- */
-/* Fallbacks only apply for missing glyphs or load failure (e.g. Telugu /
-   Devanagari script, which Ronaldson Gothic does not cover). They must never
-   become an alternative default for ordinary UI text. */
 
 :root {
-  --font-primary: 'Ronaldson Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Fallback stacks only apply for missing glyphs or a load failure. The
+     trailing script families keep Telugu / Devanagari readable — Inter does not
+     cover those scripts — but they must never become the default for ordinary
+     Latin interface text. */
+  --font-brand: 'Orbitron', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Noto Sans Telugu', 'Noto Sans Devanagari', sans-serif;
 
-  /* Legacy aliases — kept so existing component rules keep resolving to the
-     single project typeface instead of an unrelated family. */
-  --font-sans: var(--font-primary);
-  --font-serif: var(--font-primary);
+  /* `--font-primary` remains the canonical interface family (Inter); the legacy
+     `--font-serif` alias is kept so older component rules keep resolving here. */
+  --font-primary: var(--font-sans);
+  --font-serif: var(--font-sans);
 
-  /* Verified weights only (Regular 400, Light 300). */
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono',
+    Menlo, monospace;
+
+  /* Variable-font weight scale (Inter 100–900, JetBrains Mono 100–800). */
   --fw-light: 300;
   --fw-regular: 400;
-  --fw-medium: 400;
-  --fw-semibold: 400;
-  --fw-bold: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
 
   /* Type scale */
   --fs-hero: clamp(2.75rem, 1.8rem + 3.2vw, 4rem);        /* 44 -> 64px */
@@ -64,25 +114,41 @@
   --fs-caption: 0.75rem;     /* 12px */
   --fs-button: 0.875rem;     /* 14px */
 
+  /* Semantic size aliases (requested token names). */
+  --text-heading: var(--fs-h2);
+  --text-subheading: var(--fs-subheading);
+  --text-body: var(--fs-body);
+  --text-small: var(--fs-body-sm);
+  --text-label: var(--fs-sidebar);
+
   --lh-tight: 1.15;
   --lh-heading: 1.25;
   --lh-body: 1.6;
   --lh-relaxed: 1.7;
 
+  /* Semantic line-height alias. */
+  --line-height-body: var(--lh-body);
+
   --ls-hero: -0.01em;
   --ls-heading: 0em;
   --ls-label: 0.01em;
   --ls-caption: 0.02em;
-
-  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 }
 
 /* ---- Semantic utility classes ------------------------------------------- */
 
+/* Brand identity — Orbitron. Reserved for the wordmark and major brand titles;
+   never applied to long-form headings where a display face hurts readability. */
+.t-brand {
+  font-family: var(--font-brand);
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.06em;
+}
+
 .t-hero {
   font-family: var(--font-primary);
   font-size: var(--fs-hero);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-light);
   line-height: var(--lh-tight);
   letter-spacing: var(--ls-hero);
 }
@@ -90,20 +156,20 @@
 .t-page-title {
   font-family: var(--font-primary);
   font-size: var(--fs-page-title);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-medium);
   line-height: var(--lh-heading);
   letter-spacing: var(--ls-heading);
 }
 
-.t-h2 { font-family: var(--font-primary); font-size: var(--fs-h2); font-weight: var(--fw-regular); line-height: var(--lh-heading); }
-.t-h3 { font-family: var(--font-primary); font-size: var(--fs-h3); font-weight: var(--fw-regular); line-height: var(--lh-heading); }
-.t-h4 { font-family: var(--font-primary); font-size: var(--fs-h4); font-weight: var(--fw-regular); line-height: var(--lh-heading); }
-.t-h5 { font-family: var(--font-primary); font-size: var(--fs-h5); font-weight: var(--fw-regular); line-height: var(--lh-heading); }
+.t-h2 { font-family: var(--font-primary); font-size: var(--fs-h2); font-weight: var(--fw-medium); line-height: var(--lh-heading); }
+.t-h3 { font-family: var(--font-primary); font-size: var(--fs-h3); font-weight: var(--fw-medium); line-height: var(--lh-heading); }
+.t-h4 { font-family: var(--font-primary); font-size: var(--fs-h4); font-weight: var(--fw-semibold); line-height: var(--lh-heading); }
+.t-h5 { font-family: var(--font-primary); font-size: var(--fs-h5); font-weight: var(--fw-semibold); line-height: var(--lh-heading); }
 
-.t-subheading { font-family: var(--font-primary); font-size: var(--fs-subheading); font-weight: var(--fw-regular); line-height: var(--lh-heading); }
+.t-subheading { font-family: var(--font-primary); font-size: var(--fs-subheading); font-weight: var(--fw-medium); line-height: var(--lh-heading); }
 .t-body       { font-family: var(--font-primary); font-size: var(--fs-body-lg); font-weight: var(--fw-regular); line-height: var(--lh-body); }
 .t-body-sm    { font-family: var(--font-primary); font-size: var(--fs-body-sm); font-weight: var(--fw-regular); line-height: var(--lh-body); }
-.t-label      { font-family: var(--font-primary); font-size: var(--fs-sidebar); font-weight: var(--fw-regular); letter-spacing: var(--ls-label); }
+.t-label      { font-family: var(--font-primary); font-size: var(--fs-sidebar); font-weight: var(--fw-medium); letter-spacing: var(--ls-label); }
 .t-caption    { font-family: var(--font-primary); font-size: var(--fs-caption); font-weight: var(--fw-regular); letter-spacing: var(--ls-caption); }
 
 /* Monospace — only for genuine code / technical output, never ordinary UI. */

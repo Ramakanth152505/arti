@@ -1,7 +1,7 @@
 /* ==========================================================================
    ARTI AI — CROSS-DEVICE RESPONSIVE LAYER
    Loaded last so it can refine the base layout without changing the
-   established visual language, palette, or Ronaldson Gothic typography.
+   established visual language, palette, or Inter interface typography.
 
    Breakpoint targets (fluid, content-aware — not rigid device classes):
      compact mobile   320–374
@@ -109,6 +109,41 @@ svg {
   outline: 2px solid var(--gold-accent);
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   INTEGRATED FIELD CONTRACT (single source of the nested-border fix)
+
+   A text entry that sits inside its own bordered container (a composer pill,
+   a search box, a bar) must not draw a second rectangular outline inside that
+   container. The container's own `:focus-within` treatment is the focus
+   indicator; the inner field only carries text, caret and placeholder.
+
+   Only elements explicitly opted in with `.field-integrated` are affected, so
+   standalone form fields keep their normal single focus ring.
+   -------------------------------------------------------------------------- */
+.field-integrated,
+.field-integrated:focus,
+.field-integrated:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border: none;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Framed fields carry their own border and already turn that border gold on
+   focus, so the generic outline would draw a second, concentric ring. The
+   border colour change is the single focus treatment for these controls; it
+   remains clearly visible against the dark surfaces. */
+.form-input:focus-visible,
+.form-textarea:focus-visible,
+.form-select:focus-visible,
+.toolbar-select:focus-visible,
+.scene-title-input:focus-visible,
+.image-prompt-textarea:focus-visible {
+  outline: none;
 }
 
 /* Respect reduced-motion preferences. */
@@ -1236,6 +1271,59 @@ pre,
 
   .project-chat-panel {
     max-height: 34vh;
+  }
+}
+
+/* ==========================================================================
+   Software classification, Apps workspace & Project Settings — responsive
+   ========================================================================== */
+@media (max-width: 767.98px) {
+  /* Collapsed state must not reserve panel height — the header bar itself
+     stays a compact disclosure strip above the thread. */
+  .project-workspace-body.panel-collapsed .project-chat-panel-content {
+    display: none;
+  }
+
+  .apps-project-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .apps-toolbar {
+    align-items: stretch;
+  }
+
+  .apps-filter-field {
+    flex: 1 1 45%;
+    justify-content: space-between;
+  }
+
+  .apps-filter-select {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .class-picker-list {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-checkbox-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 479.98px) {
+  .resolved-target-name {
+    min-width: 100%;
+  }
+
+  .classify-fieldset {
+    padding: 12px 10px;
+  }
+
+  .domain-chip,
+  .platform-chip {
+    font-size: 11px;
+    padding: 6px 9px;
   }
 }
 

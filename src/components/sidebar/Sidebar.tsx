@@ -122,10 +122,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Visual Divider */}
         <div className="sidebar-divider" />
 
-        {/* Utility Items — preferences only. Knowledge Base, Marketplace and the
-            former System Operations entries are intentionally not in the
-            primary sidebar for this milestone; their routes and implementations
-            remain available in the app. */}
+        {/* Utility Items — preferences only. Websites, Knowledge Base, Marketplace
+            and the former System Operations entries are intentionally not in the
+            visible primary sidebar; their routes and implementations remain
+            registered in AppShell and reachable (e.g. via Ctrl+K search), so
+            nothing was deleted. */}
         <div className="sidebar-section-group" role="group" aria-label="System Utilities">
           {!renderCollapsed && <span className="sidebar-group-heading">Preferences</span>}
           {UTILITY_NAV_ITEMS.map((item) => (

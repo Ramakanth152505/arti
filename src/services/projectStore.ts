@@ -69,6 +69,221 @@ export function getProjectTypeOption(type: ProjectType): ProjectTypeOption {
   return PROJECT_TYPES.find((t) => t.value === type) ?? PROJECT_TYPES[PROJECT_TYPES.length - 1];
 }
 
+/* ==========================================================================
+   Software classifications & platform configuration
+   ------------------------------------------------------------------------
+   A software project carries two independent, non-interchangeable
+   classifications plus an explicit target-platform configuration:
+
+     1. Core functional classification  — what kind of software it is.
+     2. Technology & application domain — where/how it is applied (multi-select).
+
+   These describe intent. Selecting a category never asserts that ARTI AI can
+   build, compile, sign or deploy the target — capability is reported
+   separately and honestly (see the platform support matrix below).
+   ========================================================================== */
+
+export interface ClassOption {
+  value: string;
+  label: string;
+}
+
+/** 1. Core Functional Classification — what kind of software the user wants. */
+export const CORE_CATEGORIES: ClassOption[] = [
+  { value: 'system-software', label: 'System Software' },
+  { value: 'application-software', label: 'Application Software' },
+  { value: 'programming-development', label: 'Programming and Development Software' },
+  { value: 'utility-software', label: 'Utility Software' },
+  { value: 'driver-device', label: 'Driver and Device Software' },
+  { value: 'middleware-integration', label: 'Middleware and Integration Software' },
+  { value: 'database-data-management', label: 'Database and Data-Management Software' },
+  { value: 'security-software', label: 'Security Software' },
+  { value: 'networking-communication', label: 'Networking and Communication Software' },
+  { value: 'automation-software', label: 'Automation Software' },
+  { value: 'enterprise-business', label: 'Enterprise and Business Software' },
+  { value: 'embedded-real-time', label: 'Embedded and Real-Time Software' },
+  { value: 'ai-ml-software', label: 'AI and Machine-Learning Software' },
+  { value: 'scientific-engineering', label: 'Scientific and Engineering Software' },
+  { value: 'multimedia-creative', label: 'Multimedia and Creative Software' },
+  { value: 'gaming-software', label: 'Gaming Software' },
+  { value: 'education-learning', label: 'Education and Learning Software' },
+  { value: 'research-simulation', label: 'Research and Simulation Software' },
+  { value: 'infrastructure-operations', label: 'Infrastructure and Operations Software' },
+  { value: 'custom-other', label: 'Custom / Other Software' },
+];
+
+/** 2. Technology & Application Domain — multi-select; distinct from (1). */
+export const DOMAIN_CATEGORIES: ClassOption[] = [
+  { value: 'web-applications', label: 'Web Applications' },
+  { value: 'mobile-applications', label: 'Mobile Applications' },
+  { value: 'desktop-applications', label: 'Desktop Applications' },
+  { value: 'embedded-software', label: 'Embedded Software' },
+  { value: 'ai-ml', label: 'AI & Machine Learning Software' },
+  { value: 'enterprise-software', label: 'Enterprise Software' },
+  { value: 'cloud-software', label: 'Cloud Software' },
+  { value: 'backend-api', label: 'Backend and API Services' },
+  { value: 'data-science-analytics', label: 'Data Science and Analytics' },
+  { value: 'database-systems', label: 'Database Systems' },
+  { value: 'cybersecurity', label: 'Cybersecurity and Defensive Security' },
+  { value: 'networking-distributed', label: 'Networking and Distributed Systems' },
+  { value: 'iot', label: 'IoT Software' },
+  { value: 'robotics', label: 'Robotics Software' },
+  { value: 'scientific-computing', label: 'Scientific Computing' },
+  { value: 'simulation-digital-twins', label: 'Simulation and Digital Twins' },
+  { value: 'gaming-interactive', label: 'Gaming and Interactive Software' },
+  { value: 'ar-vr', label: 'AR and VR Applications' },
+  { value: 'blockchain-dlt', label: 'Blockchain and Distributed-Ledger Applications' },
+  { value: 'developer-tools-ides', label: 'Developer Tools and IDEs' },
+  { value: 'devops-infrastructure', label: 'DevOps and Infrastructure Automation' },
+  { value: 'education-research', label: 'Education and Research Applications' },
+  { value: 'healthcare-scientific', label: 'Healthcare and Scientific Applications' },
+  { value: 'financial-quantitative', label: 'Financial and Quantitative Software' },
+  { value: 'multimedia-creative', label: 'Multimedia and Creative Applications' },
+  { value: 'cross-platform', label: 'Cross-Platform Software' },
+  { value: 'custom-other', label: 'Custom / Other Domain' },
+];
+
+/* --------------------------------------------------------------------------
+   Platform support matrix.
+
+   `status` is an honestly-resolved capability for THIS build. ARTI AI runs
+   entirely in the browser with no build toolchain, SDK, signing identity or
+   deployment target connected, so no target can be marked build-ready or
+   build-verified here. The states are the real ones from Section 10.4.
+   -------------------------------------------------------------------------- */
+export type PlatformStatus =
+  | 'planned'
+  | 'architecture-supported'
+  | 'dependencies-required'
+  | 'build-ready'
+  | 'build-verified'
+  | 'blocked'
+  | 'not-supported';
+
+export interface PlatformOption {
+  value: string;
+  label: string;
+  /** SDKs / toolchains a real build of this target would require. */
+  dependencies: string;
+  /** Resolved capability note for the current environment. */
+  status: PlatformStatus;
+  statusNote: string;
+}
+
+export const PLATFORMS: PlatformOption[] = [
+  { value: 'android', label: 'Android', dependencies: 'Android SDK, Gradle, JDK, keystore for signing', status: 'dependencies-required', statusNote: 'No Android SDK or signing toolchain is connected.' },
+  { value: 'ios', label: 'iOS / iPadOS', dependencies: 'Xcode, Apple Developer signing identity', status: 'dependencies-required', statusNote: 'No Xcode or Apple signing identity is connected.' },
+  { value: 'windows', label: 'Windows', dependencies: 'Platform SDK / MSVC or a cross-compiler', status: 'dependencies-required', statusNote: 'No Windows packaging toolchain is connected.' },
+  { value: 'macos', label: 'macOS', dependencies: 'Xcode command-line tools, notarization identity', status: 'dependencies-required', statusNote: 'No macOS packaging or notarization is connected.' },
+  { value: 'linux', label: 'Linux', dependencies: 'Native toolchain, packaging (deb/rpm/AppImage)', status: 'dependencies-required', statusNote: 'No Linux packaging toolchain is connected.' },
+  { value: 'unix', label: 'Unix and Unix-like environments', dependencies: 'Portable POSIX build toolchain', status: 'dependencies-required', statusNote: 'Planned; no Unix build environment is connected.' },
+  { value: 'web-browser', label: 'Web browser', dependencies: 'Node.js + bundler (Vite)', status: 'architecture-supported', statusNote: 'Static web output is the only target this environment natively supports; no build is automated here.' },
+  { value: 'pwa', label: 'Progressive Web App', dependencies: 'Web build + service worker', status: 'architecture-supported', statusNote: 'Derived from a web build; no automated packaging.' },
+  { value: 'server-cloud', label: 'Server / cloud deployment', dependencies: 'Runtime, container image, hosting target', status: 'dependencies-required', statusNote: 'No deployment provider or container runtime is connected.' },
+  { value: 'embedded', label: 'Embedded targets', dependencies: 'Cross-compiler, board SDK, flashing tool', status: 'dependencies-required', statusNote: 'No cross-compiler or board SDK is connected.' },
+  { value: 'other', label: 'Other / custom platform', dependencies: 'Depends on the custom target', status: 'planned', statusNote: 'Describe the target; capability depends on its toolchain.' },
+];
+
+export const OTHER_PLATFORM_VALUE = 'other';
+export const CUSTOM_CLASS_VALUE = 'custom-other';
+
+export type PlatformMode = 'single' | 'cross-platform' | 'all-platforms';
+
+export interface ResolvedTarget {
+  value: string;
+  label: string;
+  status: PlatformStatus;
+  statusNote: string;
+  dependencies: string;
+}
+
+export function getPlatformOption(value: string): PlatformOption | undefined {
+  return PLATFORMS.find((p) => p.value === value);
+}
+
+/**
+ * Resolve the platform matrix for a project's configuration. For `all-platforms`
+ * every supported target is enumerated (with its real status); unsupported or
+ * dependency-gated targets are reported, never silently dropped.
+ */
+export function resolveTargets(
+  platforms: string[],
+  mode: PlatformMode,
+  customPlatform?: string
+): ResolvedTarget[] {
+  const toTarget = (p: PlatformOption): ResolvedTarget => ({
+    value: p.value,
+    label: p.label,
+    status: p.status,
+    statusNote: p.statusNote,
+    dependencies: p.dependencies,
+  });
+
+  const base =
+    mode === 'all-platforms'
+      ? PLATFORMS.filter((p) => p.value !== OTHER_PLATFORM_VALUE).map(toTarget)
+      : platforms
+          .map((v) => {
+            if (v === OTHER_PLATFORM_VALUE) {
+              return {
+                value: 'other',
+                label: customPlatform?.trim() ? `Other — ${customPlatform.trim()}` : 'Other / custom platform',
+                status: 'planned' as PlatformStatus,
+                statusNote: 'Describe the target; capability depends on its toolchain.',
+                dependencies: 'Depends on the custom target',
+              };
+            }
+            const p = getPlatformOption(v);
+            return p ? toTarget(p) : null;
+          })
+          .filter((t): t is ResolvedTarget => t !== null);
+
+  return base;
+}
+
+/* --------------------------------------------------------------------------
+   Test configuration & run records. ARTI AI has no server-side execution
+   environment, so a run is either `not-configured` (nothing to run) or
+   `blocked` (configured, but this environment cannot execute it) — it is never
+   reported as passed or failed without a real execution.
+   -------------------------------------------------------------------------- */
+export interface TestConfig {
+  framework: string;
+  command: string;
+  includeLint: boolean;
+  includeTypeCheck: boolean;
+  includeUnit: boolean;
+  includeIntegration: boolean;
+  includeE2e: boolean;
+  includeBuild: boolean;
+}
+
+export type TestStatus =
+  | 'passed'
+  | 'failed'
+  | 'blocked'
+  | 'not-configured'
+  | 'skipped';
+
+export interface TestSuiteResult {
+  name: string;
+  status: TestStatus;
+  detail: string;
+}
+
+export interface TestRun {
+  id: string;
+  projectId: string;
+  createdAt: string;
+  command: string;
+  framework: string;
+  status: TestStatus;
+  exitStatus: string;
+  suites: TestSuiteResult[];
+  message: string;
+}
+
+
 export interface Project {
   id: string;
   name: string;
@@ -82,6 +297,29 @@ export interface Project {
   isStarred: boolean;
   createdAt: string;
   updatedAt: string;
+
+  /** True when this record is a software project (created via Create Software / Apps). */
+  isSoftware?: boolean;
+  /** 1. Core functional classification value. */
+  coreClassification?: string;
+  /** Details when the core classification is `Custom / Other Software`. */
+  coreCustom?: string;
+  /** 2. Technology & application domain classification values (multi-select). */
+  domains?: string[];
+  /** Details when a domain classification is `Custom / Other Domain`. */
+  domainCustom?: string;
+  /** Requested target-platform values. */
+  platforms?: string[];
+  /** Target-platform mode; distinguishes cross-platform from all-platforms. */
+  platformMode?: PlatformMode;
+  /** Details when a target platform is `Other / custom platform`. */
+  customPlatform?: string;
+  /** Optional preferred technology stack (separate from the free-text `techStack`). */
+  stackPreference?: string;
+  /** Test configuration for Project Settings > Perform Tests. */
+  testConfig?: TestConfig;
+  /** Most recent Perform Tests run, if any. */
+  lastTestRun?: TestRun;
 }
 
 /** Demo projects shown only until the owner creates a real one (never persisted). */
@@ -126,6 +364,9 @@ function readStored(): Project[] | null {
       techStack: p.techStack ?? '',
       notes: p.notes ?? '',
       isStarred: Boolean(p.isStarred),
+      isSoftware: Boolean(p.isSoftware),
+      domains: Array.isArray(p.domains) ? p.domains : [],
+      platforms: Array.isArray(p.platforms) ? p.platforms : [],
     }));
   } catch {
     return null;
@@ -189,6 +430,15 @@ class ProjectStore {
     goal?: string;
     techStack?: string;
     notes?: string;
+    isSoftware?: boolean;
+    coreClassification?: string;
+    coreCustom?: string;
+    domains?: string[];
+    domainCustom?: string;
+    platforms?: string[];
+    platformMode?: PlatformMode;
+    customPlatform?: string;
+    stackPreference?: string;
   }): Project {
     const nowIso = new Date().toISOString();
     const project: Project = {
@@ -203,12 +453,38 @@ class ProjectStore {
       isStarred: false,
       createdAt: nowIso,
       updatedAt: nowIso,
+      isSoftware: input.isSoftware ?? false,
+      coreClassification: input.coreClassification,
+      coreCustom: input.coreCustom?.trim() || undefined,
+      domains: input.domains ?? [],
+      domainCustom: input.domainCustom?.trim() || undefined,
+      platforms: input.platforms ?? [],
+      platformMode: input.platformMode,
+      customPlatform: input.customPlatform?.trim() || undefined,
+      stackPreference: input.stackPreference?.trim() || undefined,
     };
     // Drop demo content the moment a real project exists so demo records never
     // masquerade as saved work.
     const base = this.state.isDemo ? [] : this.state.projects;
     this.setState({ projects: [project, ...base], isDemo: false });
     return project;
+  }
+
+  /** Persist the most recent test run for a project (kept in project history). */
+  saveTestRun(projectId: string, run: TestRun) {
+    this.setState({
+      projects: this.state.projects.map((p) =>
+        p.id === projectId ? { ...p, lastTestRun: run, updatedAt: new Date().toISOString() } : p
+      ),
+    });
+  }
+
+  setTestConfig(projectId: string, config: TestConfig) {
+    this.setState({
+      projects: this.state.projects.map((p) =>
+        p.id === projectId ? { ...p, testConfig: config, updatedAt: new Date().toISOString() } : p
+      ),
+    });
   }
 
   updateProject(id: string, patch: Partial<Omit<Project, 'id' | 'createdAt'>>) {

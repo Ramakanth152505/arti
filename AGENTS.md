@@ -2,26 +2,44 @@
 
 ## Typography (permanent)
 
-**RONALDSON GOTHIC IS THE PERMANENT DEFAULT TYPEFACE FOR ALL ARTI AI UI.**
-Every new or modified page and component must use the established global
-typography tokens. No alternative ordinary UI font may be introduced without
-the owner's explicit approval.
+**ARTI AI USES A THREE-FAMILY SYSTEM. All three are self-hosted under
+`public/fonts/` (OFL-licensed `*-OFL.txt` beside each) and must be used via the
+central tokens — never hardcoded per component.**
 
-- Single source of truth: `--font-primary` in `src/styles/typography.css`.
-  Use `var(--font-primary)`, or the legacy aliases `var(--font-sans)` /
-  `var(--font-serif)` which resolve to it. Prefer the semantic utility classes
-  (`.t-hero`, `.t-page-title`, `.t-h2`…`.t-h5`, `.t-body`, `.t-label`,
-  `.t-caption`).
+- **Orbitron** — brand/wordmark + major product identity titles. Token:
+  `--font-brand`. Use it on brand-level headings only, not long body headings.
+- **Inter** — the whole functional interface: dashboard, navigation, projects,
+  search, chat, composer, forms, settings, errors, mobile. Token:
+  `--font-primary` / `--font-sans`.
+- **JetBrains Mono** — code blocks, terminal output, logs, structured technical
+  output. Token: `--font-mono`. Never for ordinary interface text.
+- `--font-serif` is a legacy alias kept for older rules; it resolves to the
+  interface family, not to a serif.
+
+Rules:
 - Never hardcode a `font-family` with a named unrelated family, and never add a
   `<link>`/`@import` to an external font provider.
-- Verified weights are only 300 (Light) and 400 (Regular). Use the
-  `--fw-*` tokens; do not request other weights.
-- `var(--font-mono)` is allowed only for genuine code editors / code blocks,
-  never for ordinary interface text.
-- Ronaldson Gothic covers Latin + Latin Extended. Telugu/Devanagari are not
-  covered and fall back to the system font; that fallback must never become
-  the default for ordinary UI text.
+- Verified weights are only 300 (Light) and 400 (Regular). Use the `--fw-*`
+  tokens; do not request other weights.
+- Prefer the semantic utility classes (`.t-hero`, `.t-page-title`, `.t-h2`…`.t-h5`,
+  `.t-body`, `.t-label`, `.t-caption`).
+- The approved families cover Latin + Latin Extended. Telugu/Devanagari fall
+  back to the system font; that fallback must never become the default for
+  ordinary UI text.
 - Enforce with `npm run check:typography` (also runs as part of `npm run lint`).
+
+## Integrated inputs (permanent)
+
+Premium pill composers/search fields must show exactly one border and one focus
+ring, at the container level — never a nested second rectangle from the inner
+`<input>`.
+
+- Any `<input>`/`<textarea>` placed inside a rounded, bordered wrapper must carry
+  the `.field-integrated` class. Its policy block lives in
+  `src/styles/responsive.css` (`.field-integrated`, with the container
+  `:focus-within` as the sole focus surface).
+- Do not add a broad `input { border: none }` rule; the opt-in class is the
+  contract so native inputs on ordinary forms keep their borders.
 
 ## Conversation workspace (Home → chat)
 
@@ -67,23 +85,40 @@ the owner's explicit approval.
   a single conversation id and never touch the parent project.
 - The Projects route (`projects`) renders the overview; `projects?id=<id>`
   renders that project's workspace (`ProjectWorkspaceView`) with its own
-  conversation panel, `New Chat`, and per-chat delete. No artificial chat-count
-  limit is imposed.
-- `create-software` is the software-creation entry point
-  (`CreateSoftwareWorkspace`): it captures a brief + project type and creates a
-  real project (`projectStore.createProject`) seeded with a first planning
-  conversation, then opens the project workspace. It must never claim to
-  generate, compile, sign, or deploy software — that engine is not connected.
+  collapsible conversation panel, `New Chat`, and per-chat delete. No artificial
+  chat-count limit is imposed.
+- The project conversation panel is a disclosure control: `.project-chat-panel`
+  starts collapsed (`panel-collapsed`, no persisted open state) and the
+  `.project-chat-disclosure` button toggles `panel-open`; the choice is
+  remembered in localStorage `arti_project_chat_panel_open`. Collapsing must
+  preserve the active conversation and never delete data.
+- `create-software` (`CreateSoftwareWorkspace`) and the Apps workspace share the
+  one creation form: `src/components/software/SoftwareClassificationForm.tsx`.
+  It captures the two independent classifications (core functional +
+  technology/domain, defined in `projectStore.ts`) and the target-platform
+  configuration, then creates a real `isSoftware` project seeded with a first
+  planning conversation. It must never claim to generate, compile, sign, or
+  deploy software — that engine is not connected.
+- Every software project carries `coreClassification`, `domains[]`,
+  `platforms[]`, `platformMode` (`single` | `cross-platform` | `all-platforms`)
+  in `projectStore`. `resolveTargets()` enumerates the honest platform matrix;
+  no target is marked build-ready/verified in this build.
+- Project Settings (`src/components/software/ProjectSettingsPanel.tsx`) is
+  reachable from the project header and from Apps cards. Its `Perform Tests`
+  action calls `src/services/testRunner.ts`, which reports `not-configured` when
+  nothing is set up and `blocked` when a command exists but cannot run here —
+  never a fabricated pass/fail or coverage number.
 - Project delete removes the project **and** its conversations
   (`chatStore.deleteProjectConversations`) behind an explicit confirm.
 
 ## Sidebar navigation
 
 - Primary items run Home → Tools, then `Create Software` (route `create-software`),
-  then the Preferences group. Knowledge Base, Marketplace and the former System
-  Operations entries are intentionally **not** in the primary sidebar; their
-  routes/workspaces remain registered in `AppShell` and reachable (e.g. via
-  Ctrl+K search) so nothing was deleted.
+  then the Preferences group. Knowledge Base, Marketplace, Websites and the
+  former System Operations entries are intentionally **not** in the primary
+  sidebar; their routes/workspaces remain registered in `AppShell` and reachable
+  (e.g. via Ctrl+K search) so nothing was deleted. Websites keeps its route and
+  implementation — it is only removed from the visible primary list.
 
 
 ## Honesty rules

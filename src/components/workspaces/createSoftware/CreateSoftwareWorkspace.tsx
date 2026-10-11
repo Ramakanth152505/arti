@@ -11,65 +11,73 @@ import {
 import { WorkspaceHeader } from '../../common/WorkspaceHeader';
 import { useWorkspace } from '../../../context/WorkspaceContext';
 import { useToast } from '../../../context/ToastContext';
-import {
-  projectStore,
-  useProjectStore,
-  PROJECT_TYPES,
-  getProjectTypeOption,
-  type ProjectType,
-} from '../../../services/projectStore';
+import { projectStore, useProjectStore, type PlatformMode } from '../../../services/projectStore';
 import { chatStore } from '../../../services/chatStore';
+import { SoftwareClassificationForm } from '../../software/SoftwareClassificationForm';
+import {
+  initialClassifyState,
+  validateClassifyState,
+  type SoftwareClassifyState,
+} from '../../../services/softwareClassify';
 
 /**
  * Create Software — the entry point to ARTI AI's software-creation workspace.
  *
- * This is a real brief-and-plan foundation: it captures a software brief, lets
- * the user pick a target project type (with an honest capability note), and
- * creates or opens a real project in the Projects workspace. It does NOT claim
- * to compile, sign, or deploy software — no build toolchain or execution engine
- * is connected in this build, and the UI says so.
+ * Captures a real software brief with the two classifications (core functional
+ * + technology/domain) and a target-platform configuration, then creates a real
+ * persisted software project and opens its workspace. It does NOT compile, sign
+ * or deploy software — no build toolchain or execution engine is connected, and
+ * the UI states that honestly.
  */
 export const CreateSoftwareWorkspace: React.FC = () => {
   const { navigate } = useWorkspace();
   const { showToast } = useToast();
   const { projects } = useProjectStore();
 
-  const [name, setName] = useState('');
-  const [type, setType] = useState<ProjectType>('web-application');
-  const [customType, setCustomType] = useState('');
-  const [brief, setBrief] = useState('');
+  const [state, setState] = useState<SoftwareClassifyState>(initialClassifyState);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const selectedType = getProjectTypeOption(type);
-  const customTypeMissing = type === 'custom' && !customType.trim();
+  const patch = (p: Partial<SoftwareClassifyState>) => {
+    setState((prev) => ({ ...prev, ...p }));
+    if (error) setError('');
+  };
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
-    const projectName = name.trim() || brief.trim().slice(0, 48) || 'Untitled Software Project';
-    if (type === 'custom' && !customType.trim()) {
-      setError('Describe your custom software type before continuing.');
+    const problem = validateClassifyState(state);
+    if (problem) {
+      setError(problem);
       return;
     }
-    if (projects.some((p) => p.name.toLowerCase() === projectName.toLowerCase())) {
+    if (projects.some((p) => p.name.toLowerCase() === state.name.trim().toLowerCase())) {
       setError('A project with this name already exists. Choose a different name.');
       return;
     }
     setIsSubmitting(true);
     const project = projectStore.createProject({
-      name: projectName,
-      type,
-      customType: type === 'custom' ? customType : undefined,
-      goal: brief,
+      name: state.name,
+      type: 'custom',
+      customType: 'Software project',
+      isSoftware: true,
+      description: state.description,
+      goal: state.requirements,
+      techStack: state.stack,
+      stackPreference: state.stack,
+      coreClassification: state.core,
+      coreCustom: state.coreCustom,
+      domains: state.domains,
+      domainCustom: state.domainCustom,
+      platforms: state.platforms,
+      platformMode: state.platformMode as PlatformMode,
+      customPlatform: state.customPlatform,
     });
-    // Seed the project with a first planning conversation carrying the brief,
-    // so software creation continues into a real project-scoped workspace.
     const conv = chatStore.createConversation(project.id);
     setIsSubmitting(false);
     showToast(`Software project "${project.name}" created`, { type: 'success' });
-    if (brief.trim()) {
-      void chatStore.sendMessage(conv.id, brief.trim());
+    if (state.requirements.trim()) {
+      void chatStore.sendMessage(conv.id, state.requirements.trim());
     }
     navigate('projects', { id: project.id });
   };
@@ -78,108 +86,36 @@ export const CreateSoftwareWorkspace: React.FC = () => {
     <div className="workspace-page-container create-software-page">
       <WorkspaceHeader
         title="Create Software"
-        description="Brief a software idea, choose its target, and open a real project workspace to plan it."
+        description="Brief a software idea, classify it, choose its targets, and open a real project workspace."
         icon={Code2}
         badge="Project foundation"
         actions={
-          <button type="button" className="gold-ghost-btn" onClick={() => navigate('projects')}>
+          <button type="button" className="gold-ghost-btn" onClick={() => navigate('apps')}>
             <Folder size={14} />
-            <span>All Projects</span>
+            <span>Apps</span>
           </button>
         }
       />
 
-      {/* Honest capability banner */}
       <div className="software-capability-banner" role="note">
         <Sparkles size={14} className="software-capability-icon" aria-hidden="true" />
         <span>
           ARTI AI captures your software brief and opens a project workspace to plan it. Generating,
           compiling, signing, or deploying working software is <strong>not</strong> connected in this
-          build — the plan is real, the automated build is not.
+          build — the plan and metadata are real, the automated build is not.
         </span>
       </div>
 
       <div className="create-software-grid">
-        {/* Brief form */}
         <form className="software-brief-card" onSubmit={handleCreate}>
           <h2 className="software-section-title">New software project</h2>
-
           {error && (
             <div className="form-error-banner">
               <AlertCircle size={14} />
               <span>{error}</span>
             </div>
           )}
-
-          <div className="form-field">
-            <label className="form-label" htmlFor="sw-name">
-              Project name
-            </label>
-            <input
-              id="sw-name"
-              type="text"
-              className="form-input"
-              placeholder="e.g. Inventory Management App"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                if (error) setError('');
-              }}
-            />
-          </div>
-
-          <div className="form-field">
-            <label className="form-label" htmlFor="sw-type">
-              What are you building?
-            </label>
-            <select
-              id="sw-type"
-              className="form-select"
-              value={type}
-              onChange={(e) => setType(e.target.value as ProjectType)}
-            >
-              {PROJECT_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
-            <p className="form-hint">{selectedType.capability}</p>
-          </div>
-
-          {customTypeMissing && (
-            <div className="form-field">
-              <label className="form-label" htmlFor="sw-custom">
-                Custom software type *
-              </label>
-              <input
-                id="sw-custom"
-                type="text"
-                className="form-input"
-                placeholder="Describe what you are building..."
-                value={customType}
-                onChange={(e) => {
-                  setCustomType(e.target.value);
-                  if (error) setError('');
-                }}
-              />
-            </div>
-          )}
-
-          <div className="form-field">
-            <label className="form-label" htmlFor="sw-brief">
-              Software idea / requirements
-            </label>
-            <textarea
-              id="sw-brief"
-              className="form-textarea"
-              rows={5}
-              placeholder="Describe the software you want to create — purpose, key features, and any constraints."
-              value={brief}
-              onChange={(e) => setBrief(e.target.value)}
-            />
-          </div>
-
+          <SoftwareClassificationForm state={state} onChange={patch} />
           <div className="form-actions-row">
             <button type="button" className="gold-ghost-btn" onClick={() => navigate('projects')}>
               Cancel
@@ -191,28 +127,7 @@ export const CreateSoftwareWorkspace: React.FC = () => {
           </div>
         </form>
 
-        {/* Project types reference + existing projects */}
         <div className="software-side-column">
-          <div className="software-types-card">
-            <h2 className="software-section-title">Project types</h2>
-            <p className="software-types-note">
-              Choose the closest target. Categories describe intent — not a guarantee that every
-              target can be built or deployed automatically.
-            </p>
-            <ul className="software-types-list">
-              {PROJECT_TYPES.map((t) => (
-                <li
-                  key={t.value}
-                  className={`software-type-row ${t.value === type ? 'active' : ''}`}
-                  onClick={() => setType(t.value)}
-                >
-                  <span className="software-type-label">{t.label}</span>
-                  <span className="software-type-cap">{t.capability}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
           <div className="software-existing-card">
             <h2 className="software-section-title">Continue an existing project</h2>
             {projects.length === 0 ? (
@@ -221,7 +136,7 @@ export const CreateSoftwareWorkspace: React.FC = () => {
               </p>
             ) : (
               <ul className="software-existing-list">
-                {projects.slice(0, 6).map((p) => (
+                {projects.slice(0, 8).map((p) => (
                   <li key={p.id}>
                     <button
                       type="button"
@@ -231,9 +146,7 @@ export const CreateSoftwareWorkspace: React.FC = () => {
                       <ExternalLink size={13} aria-hidden="true" />
                       <span className="software-existing-name">{p.name}</span>
                       <span className="software-existing-type">
-                        {p.type === 'custom' && p.customType
-                          ? p.customType
-                          : getProjectTypeOption(p.type).label}
+                        {p.isSoftware ? 'Software' : 'Project'}
                       </span>
                       <ArrowRight size={13} aria-hidden="true" />
                     </button>

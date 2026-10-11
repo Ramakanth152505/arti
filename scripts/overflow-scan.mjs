@@ -36,10 +36,12 @@ const ROUTES = [
   'home',
   'chats',
   'projects',
+  'apps',
   'create-software',
   'websites',
   'tools',
   'settings',
+  'help-support',
 ];
 
 const userDataDir = mkdtempSync(join(tmpdir(), 'arti-cdp-'));

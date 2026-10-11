@@ -130,7 +130,7 @@ export const KnowledgeWorkspace: React.FC = () => {
           <Search size={14} className="toolbar-search-icon" />
           <input
             type="text"
-            className="toolbar-search-input"
+            className="toolbar-search-input field-integrated"
             placeholder="Search indexed knowledge documents, tags, or schemas..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}

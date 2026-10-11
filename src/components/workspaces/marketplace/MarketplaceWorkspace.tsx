@@ -85,7 +85,7 @@ export const MarketplaceWorkspace: React.FC = () => {
           <Search size={14} className="toolbar-search-icon" />
           <input
             type="text"
-            className="toolbar-search-input"
+            className="toolbar-search-input field-integrated"
             placeholder="Search extensions, workflows, or agent packs..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}

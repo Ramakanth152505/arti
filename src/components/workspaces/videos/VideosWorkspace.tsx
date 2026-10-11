@@ -394,7 +394,7 @@ export const VideosWorkspace: React.FC = () => {
               <Search size={14} className="toolbar-search-icon" />
               <input
                 type="text"
-                className="toolbar-search-input"
+                className="toolbar-search-input field-integrated"
                 placeholder="Search previously rendered video sequences..."
                 value={historySearch}
                 onChange={(e) => setHistorySearch(e.target.value)}

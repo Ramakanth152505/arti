@@ -4,8 +4,6 @@
    ========================================================================== */
 
 :root {
-  --font-serif: var(--font-primary);
-  --font-sans: var(--font-primary);
   
   --bg-primary: #050811;
   --bg-secondary: #090e1a;
@@ -182,9 +180,9 @@ input, textarea {
 
 
 .sidebar-brand-title {
-  font-family: var(--font-serif);
+  font-family: var(--font-brand);
   font-size: 14px;
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-semibold);
   letter-spacing: 0.12em;
   color: #faecc0;
   text-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
@@ -305,7 +303,7 @@ input, textarea {
 }
 
 .sidebar-footer-brand {
-  font-family: var(--font-serif);
+  font-family: var(--font-brand);
   font-size: 11px;
   font-weight: var(--fw-regular);
   letter-spacing: 0.1em;
@@ -446,7 +444,7 @@ input, textarea {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: #748398;
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
   letter-spacing: 0.04em;
   font-weight: var(--fw-regular);
 }
@@ -619,9 +617,9 @@ input, textarea {
 
 /* Main Hero Heading */
 .hero-heading {
-  font-family: var(--font-serif);
+  font-family: var(--font-primary);
   font-size: 38px;
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-light);
   letter-spacing: 0.02em;
   line-height: 1.25;
   color: #f8fafc;
@@ -688,17 +686,11 @@ input, textarea {
   letter-spacing: 0.01em;
 }
 
-/* The composer's own `:focus-within` treatment is the focus indicator for this
-   control. Suppressing the generic outline on the inner field prevents a second
-   rectangular box from appearing inside the unified composer, while keyboard
-   focus stays clearly visible on the container. */
-.prompt-input:focus,
-.prompt-input:focus-visible,
-.chat-composer-textarea:focus,
-.chat-composer-textarea:focus-visible {
-  outline: none;
-  box-shadow: none;
-}
+/* The `.field-integrated` contract (see the centralized focus policy at the end
+   of this file) suppresses the generic inner outline on text entry that lives
+   inside a bordered container. The container's own `:focus-within` treatment is
+   the focus indicator, so keyboard focus stays clearly visible without a second
+   rectangular box appearing inside the unified composer. */
 
 .prompt-input::placeholder {
   color: #64748b;
@@ -801,8 +793,8 @@ input, textarea {
 }
 
 .footer-brand-title {
-  font-family: var(--font-serif);
-  font-weight: var(--fw-regular);
+  font-family: var(--font-brand);
+  font-weight: var(--fw-medium);
   color: #c9a84e;
   letter-spacing: 0.08em;
 }
