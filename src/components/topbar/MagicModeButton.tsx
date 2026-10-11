@@ -15,7 +15,7 @@ export const MagicModeButton: React.FC = () => {
       aria-label="Magic Mode Orchestrator"
     >
       <Sparkles className="magic-spark-icon" size={14} />
-      <span>Magic Mode</span>
+      <span className="magic-mode-label">Magic Mode</span>
       <ChevronDown size={12} color="#c9a84e" />
     </button>
   );

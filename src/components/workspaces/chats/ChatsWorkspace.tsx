@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useWorkspace } from '../../../context/WorkspaceContext';
 import { useToast } from '../../../context/ToastContext';
+import { useIsMobileNav } from '../../../hooks/useMediaQuery';
 import { DemoDataNotice } from '../../common/DemoDataNotice';
 
 interface ChatMessage {
@@ -114,6 +115,7 @@ const DEMO_CONVERSATIONS: ChatConversation[] = [
 export const ChatsWorkspace: React.FC = () => {
   const { initialChatPrompt, setInitialChatPrompt, routeParams, navigate } = useWorkspace();
   const { showToast } = useToast();
+  const isMobileNav = useIsMobileNav();
 
   const demoConversations = DEMO_CONVERSATIONS;
   const [conversations, setConversations] = useState<ChatConversation[]>(() => {
@@ -142,6 +144,15 @@ export const ChatsWorkspace: React.FC = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [wasMobileNav, setWasMobileNav] = useState(isMobileNav);
+
+  // On small screens the conversation list is an overlay: start it closed so the
+  // active conversation is readable, and reset to the desktop default when the
+  // layout returns to the rail. Adjusted during render to avoid an extra commit.
+  if (wasMobileNav !== isMobileNav) {
+    setWasMobileNav(isMobileNav);
+    setIsSidebarOpen(!isMobileNav);
+  }
 
   const commitConversations = (next: ChatConversation[]) => {
     setConversations(next);
@@ -540,7 +551,10 @@ export const ChatsWorkspace: React.FC = () => {
       <div
         key={conv.id}
         className={`chat-item-row ${isActive ? 'active' : ''}`}
-        onClick={() => setActiveConvId(conv.id)}
+        onClick={() => {
+          setActiveConvId(conv.id);
+          if (isMobileNav) setIsSidebarOpen(false);
+        }}
       >
         <span className="chat-item-title">{conv.title}</span>
         <div className="chat-item-actions">

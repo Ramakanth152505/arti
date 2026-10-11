@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Sidebar } from '../sidebar/Sidebar';
 import { TopBar } from '../topbar/TopBar';
 import { HomePage } from '../home/HomePage';
@@ -6,6 +6,7 @@ import { CommandSearchModal } from '../common/CommandSearchModal';
 import { NotificationsDrawer } from '../common/NotificationsDrawer';
 import { ToastContainer } from '../common/ToastContainer';
 import { useWorkspace } from '../../context/WorkspaceContext';
+import { useIsMobileNav } from '../../hooks/useMediaQuery';
 
 // Workspaces
 import { ChatsWorkspace } from '../workspaces/chats/ChatsWorkspace';
@@ -32,6 +33,18 @@ import { MagicModeWorkspace } from '../workspaces/magicMode/MagicModeWorkspace';
 
 export const AppShell: React.FC = () => {
   const { currentRoute, navigate, isSidebarCollapsed, toggleSidebar } = useWorkspace();
+  const isMobileNav = useIsMobileNav();
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [wasMobileNav, setWasMobileNav] = useState(isMobileNav);
+
+  // Reset the drawer whenever the layout crosses the drawer breakpoint. Adjusted
+  // during render (not in an effect) so there is no extra commit.
+  if (wasMobileNav !== isMobileNav) {
+    setWasMobileNav(isMobileNav);
+    setIsMobileNavOpen(false);
+  }
+
+  const closeMobileNav = React.useCallback(() => setIsMobileNavOpen(false), []);
 
   const renderActiveWorkspace = () => {
     switch (currentRoute) {
@@ -86,12 +99,15 @@ export const AppShell: React.FC = () => {
 
   return (
     <div className={`app-shell route-${currentRoute}`}>
-      {/* Left Navigation Sidebar */}
+      {/* Left Navigation Sidebar (rail on desktop, overlay drawer on small screens) */}
       <Sidebar
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={toggleSidebar}
         activeItemId={currentRoute}
         onSelectItem={(id) => navigate(id)}
+        isMobileNav={isMobileNav}
+        isMobileOpen={isMobileNavOpen}
+        onMobileClose={closeMobileNav}
       />
 
       {/* Main Canvas */}
@@ -112,7 +128,7 @@ export const AppShell: React.FC = () => {
         )}
 
         {/* Top Navigation & Search Bar */}
-        <TopBar isSidebarCollapsed={isSidebarCollapsed} />
+        <TopBar isSidebarCollapsed={isSidebarCollapsed} onOpenMobileNav={() => setIsMobileNavOpen(true)} />
 
         {/* Dedicated Active Workspace */}
         <div className="active-workspace-mount" key={currentRoute}>
