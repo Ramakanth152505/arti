@@ -108,7 +108,7 @@ export const ToolsWorkspace: React.FC = () => {
           <Search size={14} className="toolbar-search-icon" />
           <input
             type="text"
-            className="toolbar-search-input"
+            className="toolbar-search-input field-integrated"
             placeholder="Search tools, permissions, or categories..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}

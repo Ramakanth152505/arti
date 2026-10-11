@@ -148,7 +148,7 @@ export const MagicModeWorkspace: React.FC = () => {
           <Sparkles size={16} className="goal-sparkle-icon" />
           <input
             type="text"
-            className="magic-goal-input"
+            className="magic-goal-input field-integrated"
             value={goalPrompt}
             onChange={(e) => setGoalPrompt(e.target.value)}
             placeholder="Define autonomous goal to decompose across specialist agent lanes..."

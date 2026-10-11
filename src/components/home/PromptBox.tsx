@@ -33,7 +33,7 @@ export const PromptBox: React.FC = () => {
         <Sparkles className="prompt-spark-icon" size={18} aria-hidden="true" />
         <input
           type="text"
-          className="prompt-input"
+          className="prompt-input field-integrated"
           placeholder="Ask ARTI anything, create a project, or synthesize ideas..."
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}

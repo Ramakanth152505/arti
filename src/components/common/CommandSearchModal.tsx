@@ -185,7 +185,7 @@ const CommandSearchModalInner: React.FC = () => {
           <input
             ref={inputRef}
             type="text"
-            className="command-input"
+            className="command-input field-integrated"
             placeholder="Search anything... (chats, projects, tools, workspaces, commands)"
             value={query}
             onChange={(e) => handleQueryChange(e.target.value)}

@@ -80,7 +80,7 @@ export const Composer: React.FC<ComposerProps> = ({
 
         <textarea
           ref={textareaRef}
-          className="chat-composer-textarea"
+          className="chat-composer-textarea field-integrated"
           placeholder={placeholder}
           rows={1}
           value={value}

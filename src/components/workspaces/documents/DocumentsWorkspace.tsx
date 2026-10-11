@@ -177,7 +177,7 @@ export const DocumentsWorkspace: React.FC = () => {
             <Search size={14} className="doc-search-icon" />
             <input
               type="text"
-              className="doc-search-input"
+              className="doc-search-input field-integrated"
               placeholder="Search documents..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

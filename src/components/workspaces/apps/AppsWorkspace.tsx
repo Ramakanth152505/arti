@@ -1,343 +1,318 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   LayoutGrid,
   Plus,
-  Layers,
-  FileCode,
-  CheckCircle2,
-  Smartphone,
-  Monitor,
-  Server,
-  Play,
-  FolderTree,
+  Search,
+  AlertCircle,
+  Settings2,
+  ArrowRight,
+  Cpu,
+  Boxes,
 } from 'lucide-react';
 import { WorkspaceHeader } from '../../common/WorkspaceHeader';
 import { Dialog } from '../../common/Dialog';
+import { EmptyState } from '../../common/EmptyState';
+import { useWorkspace } from '../../../context/WorkspaceContext';
 import { useToast } from '../../../context/ToastContext';
+import {
+  projectStore,
+  useProjectStore,
+  CORE_CATEGORIES,
+  DOMAIN_CATEGORIES,
+  resolveTargets,
+  type Project,
+  type PlatformMode,
+} from '../../../services/projectStore';
+import { chatStore } from '../../../services/chatStore';
+import { SoftwareClassificationForm } from '../../software/SoftwareClassificationForm';
+import {
+  initialClassifyState,
+  validateClassifyState,
+  type SoftwareClassifyState,
+} from '../../../services/softwareClassify';
+import { ProjectSettingsPanel } from '../../software/ProjectSettingsPanel';
 
-interface AppFeature {
-  id: string;
-  name: string;
-  category: string;
-  status: 'Planned' | 'In Progress' | 'Conceptual';
+const coreLabel = (value?: string) =>
+  CORE_CATEGORIES.find((c) => c.value === value)?.label ?? 'Unclassified';
+
+const domainLabel = (value: string) =>
+  DOMAIN_CATEGORIES.find((c) => c.value === value)?.label ?? value;
+
+function platformSummary(project: Project): string {
+  const mode = project.platformMode ?? 'single';
+  if (mode === 'all-platforms') return 'All Platforms';
+  if (mode === 'cross-platform') return 'Cross-Platform';
+  const targets = resolveTargets(project.platforms ?? [], 'single', project.customPlatform);
+  return targets.length > 0 ? targets.map((t) => t.label).join(', ') : 'No platform set';
 }
 
+/**
+ * Apps — the software-creation and software-project management workspace.
+ *
+ * Lists real, persisted software projects (records with `isSoftware`), provides
+ * search and filtering, a full Create New Software workflow with both
+ * classification categories and target-platform configuration, and per-project
+ * access to Project Settings / Perform Tests. It never shows fabricated project
+ * counts or generated artifacts.
+ */
 export const AppsWorkspace: React.FC = () => {
+  const { navigate } = useWorkspace();
   const { showToast } = useToast();
+  const { projects } = useProjectStore();
 
-  const [platform, setPlatform] = useState<'Web' | 'Desktop' | 'Mobile' | 'Full-Stack'>('Web');
-  const [activeTab, setActiveTab] = useState<'architecture' | 'code' | 'features'>('architecture');
-  const [isNewAppOpen, setIsNewAppOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [coreFilter, setCoreFilter] = useState('all');
+  const [platformFilter, setPlatformFilter] = useState('all');
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [settingsFor, setSettingsFor] = useState<Project | null>(null);
 
-  const [appName, setAppName] = useState('');
-  const [appReqs, setAppReqs] = useState('');
+  const [state, setState] = useState<SoftwareClassifyState>(initialClassifyState);
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [features] = useState<AppFeature[]>([
-    { id: 'f-1', name: 'Directed Acyclic Task Graph (DAG)', category: 'Core Engine', status: 'Planned' },
-    { id: 'f-2', name: 'Planned Encrypted Storage', category: 'Storage', status: 'Conceptual' },
-    { id: 'f-3', name: 'Background Worker Daemon', category: 'Execution', status: 'Conceptual' },
-    { id: 'f-4', name: 'Real-time Canvas Telemetry', category: 'UI Viewport', status: 'Planned' },
-  ]);
+  const softwareProjects = useMemo(() => projects.filter((p) => p.isSoftware), [projects]);
 
-  const handleRunBuild = () => {
-    showToast(
-      'No code generation or build service is connected. Build and test status requires an execution backend.',
-      { type: 'warning' }
-    );
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return softwareProjects.filter((p) => {
+      if (coreFilter !== 'all' && p.coreClassification !== coreFilter) return false;
+      if (platformFilter !== 'all') {
+        const mode = p.platformMode ?? 'single';
+        if (platformFilter === 'all-platforms' && mode !== 'all-platforms') return false;
+        if (platformFilter === 'cross-platform' && mode !== 'cross-platform') return false;
+        if (
+          platformFilter === 'single-web' &&
+          !(mode === 'single' && (p.platforms ?? []).includes('web-browser'))
+        )
+          return false;
+        if (
+          platformFilter === 'mobile' &&
+          !(p.platforms ?? []).some((v) => v === 'android' || v === 'ios')
+        )
+          return false;
+      }
+      if (q && !p.name.toLowerCase().includes(q) && !(p.description ?? '').toLowerCase().includes(q)) {
+        return false;
+      }
+      return true;
+    });
+  }, [softwareProjects, query, coreFilter, platformFilter]);
+
+  const resetForm = () => {
+    setState(initialClassifyState);
+    setError('');
+  };
+
+  const patch = (p: Partial<SoftwareClassifyState>) => {
+    setState((prev) => ({ ...prev, ...p }));
+    if (error) setError('');
+  };
+
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+    const problem = validateClassifyState(state);
+    if (problem) {
+      setError(problem);
+      return;
+    }
+    if (projects.some((p) => p.name.toLowerCase() === state.name.trim().toLowerCase())) {
+      setError('A project with this name already exists. Choose a different name.');
+      return;
+    }
+    setIsSubmitting(true);
+    const project = projectStore.createProject({
+      name: state.name,
+      type: 'custom',
+      customType: 'Software project',
+      isSoftware: true,
+      description: state.description,
+      goal: state.requirements,
+      techStack: state.stack,
+      stackPreference: state.stack,
+      coreClassification: state.core,
+      coreCustom: state.coreCustom,
+      domains: state.domains,
+      domainCustom: state.domainCustom,
+      platforms: state.platforms,
+      platformMode: state.platformMode as PlatformMode,
+      customPlatform: state.customPlatform,
+    });
+    const conv = chatStore.createConversation(project.id);
+    setIsSubmitting(false);
+    setIsCreateOpen(false);
+    showToast(`Software project "${project.name}" created`, { type: 'success' });
+    if (state.requirements.trim()) {
+      void chatStore.sendMessage(conv.id, state.requirements.trim());
+    }
+    resetForm();
+    navigate('projects', { id: project.id });
   };
 
   return (
-    <div className="workspace-page-container">
+    <div className="workspace-page-container apps-workspace-page">
       <WorkspaceHeader
-        title="Apps Studio"
-        description="Application architecture workspace. Code generation, builds, and execution are not connected in this phase."
+        title="Apps"
+        description="Create and manage software projects — classifications, target platforms, planning and testing."
         icon={LayoutGrid}
-        badge="Integration Boundary"
+        badge="Software workspace"
         actions={
-          <div className="header-action-cluster">
-            <button
-              type="button"
-              className="gold-ghost-btn"
-              onClick={handleRunBuild}
-              title="Build and test require a connected execution backend"
-            >
-              <Play size={14} />
-              <span>Run Build</span>
-            </button>
-            <button
-              type="button"
-              className="gold-primary-btn"
-              onClick={() => setIsNewAppOpen(true)}
-            >
-              <Plus size={15} />
-              <span>New Application</span>
-            </button>
-          </div>
+          <button type="button" className="gold-primary-btn" onClick={() => setIsCreateOpen(true)}>
+            <Plus size={15} />
+            <span>Create New Software</span>
+          </button>
         }
       />
 
-      {/* Main Apps Layout */}
-      <div className="apps-studio-grid">
-        {/* Left Column: Requirements & Platform */}
-        <aside className="apps-sidebar-column">
-          <div className="spec-card">
-            <h3 className="spec-card-heading">Target Platform</h3>
-            <div className="platform-selector-pills">
-              <button
-                type="button"
-                className={`platform-btn ${platform === 'Web' ? 'active' : ''}`}
-                onClick={() => setPlatform('Web')}
-              >
-                <Monitor size={14} />
-                <span>Web (Vite/React)</span>
-              </button>
-              <button
-                type="button"
-                className={`platform-btn ${platform === 'Desktop' ? 'active' : ''}`}
-                onClick={() => setPlatform('Desktop')}
-              >
-                <Layers size={14} />
-                <span>Desktop (Tauri/Rust)</span>
-              </button>
-              <button
-                type="button"
-                className={`platform-btn ${platform === 'Mobile' ? 'active' : ''}`}
-                onClick={() => setPlatform('Mobile')}
-              >
-                <Smartphone size={14} />
-                <span>Mobile (React Native)</span>
-              </button>
-              <button
-                type="button"
-                className={`platform-btn ${platform === 'Full-Stack' ? 'active' : ''}`}
-                onClick={() => setPlatform('Full-Stack')}
-              >
-                <Server size={14} />
-                <span>Full-Stack (Node/SQLite)</span>
-              </button>
-            </div>
-          </div>
-
-          <div className="spec-card">
-            <h3 className="spec-card-heading">Product Requirements</h3>
-            <textarea
-              className="spec-brief-textarea"
-              rows={4}
-              value={appReqs}
-              onChange={(e) => setAppReqs(e.target.value)}
-              placeholder="Define core user journeys, performance thresholds, and data schemas..."
-            />
-          </div>
-
-          {/* Build Telemetry Card */}
-          <div className="spec-card subtle">
-            <h4 className="info-card-subtitle">Integration Status</h4>
-            <div className="build-status-box">
-              <div className="build-row">
-                <span>Code Generator:</span>
-                <strong className="status-val standby">Not Connected</strong>
-              </div>
-              <div className="build-row">
-                <span>Compiler Target:</span>
-                <strong className="status-val standby">Not Configured</strong>
-              </div>
-              <div className="build-row">
-                <span>Cloud Packager:</span>
-                <strong className="status-val standby">Not Connected</strong>
-              </div>
-            </div>
-          </div>
-        </aside>
-
-        {/* Center/Right Content Area */}
-        <main className="apps-main-column">
-          {/* Workspace Tabs */}
-          <div className="apps-nav-toolbar">
-            <button
-              type="button"
-              className={`apps-tab-btn ${activeTab === 'architecture' ? 'active' : ''}`}
-              onClick={() => setActiveTab('architecture')}
-            >
-              <Layers size={14} />
-              <span>Architecture Blueprint</span>
-            </button>
-            <button
-              type="button"
-              className={`apps-tab-btn ${activeTab === 'code' ? 'active' : ''}`}
-              onClick={() => setActiveTab('code')}
-            >
-              <FileCode size={14} />
-              <span>Project Files &amp; Code</span>
-            </button>
-            <button
-              type="button"
-              className={`apps-tab-btn ${activeTab === 'features' ? 'active' : ''}`}
-              onClick={() => setActiveTab('features')}
-            >
-              <CheckCircle2 size={14} />
-              <span>Feature Status ({features.length})</span>
-            </button>
-          </div>
-
-          <div className="apps-view-container">
-            {activeTab === 'architecture' ? (
-              <div className="architecture-view-grid">
-                <div className="arch-card">
-                  <h4>Data Models &amp; Storage <span className="blueprint-tag">Blueprint</span></h4>
-                  <ul className="arch-list">
-                    <li><strong>TaskEntity:</strong> id, title, priority, status, dependencies[]</li>
-                    <li><strong>DependencyEdge:</strong> sourceId, targetId, condition</li>
-                    <li><strong>ExecutionLog:</strong> timestamp, status, latencyMs</li>
-                  </ul>
-                </div>
-
-                <div className="arch-card">
-                  <h4>State Management &amp; Dispatch <span className="blueprint-tag">Blueprint</span></h4>
-                  <ul className="arch-list">
-                    <li>Deterministic event reducer loop</li>
-                    <li>Synchronous local persistence journal commit</li>
-                    <li>Web Worker message bridge for background work</li>
-                  </ul>
-                </div>
-
-                <div className="arch-card">
-                  <h4>UI Component Hierarchy <span className="blueprint-tag">Blueprint</span></h4>
-                  <ul className="arch-list">
-                    <li>AppShell &gt; TopBar &middot; Sidebar &middot; MainCanvas</li>
-                    <li>DAGCanvas &gt; GraphNodes &middot; EdgeRenderers</li>
-                    <li>TaskInspector &gt; DetailDrawer &middot; LogStream</li>
-                  </ul>
-                </div>
-
-                <div className="arch-card">
-                  <h4>Security &amp; Sandboxing <span className="blueprint-tag">Blueprint</span></h4>
-                  <ul className="arch-list">
-                    <li>Planned: restricted execution sandbox</li>
-                    <li>Planned: local-only data handling policy</li>
-                    <li>Planned: provider-scoped credential handling</li>
-                  </ul>
-                </div>
-              </div>
-            ) : activeTab === 'code' ? (
-              <div className="code-workspace-layout">
-                <div className="file-tree-sidebar">
-                  <div className="tree-header">
-                    <FolderTree size={13} />
-                    <span>Project Tree (example)</span>
-                  </div>
-                  <div className="tree-items">
-                    <div className="tree-leaf active">src/engine/dag.ts</div>
-                    <div className="tree-leaf">src/engine/executor.ts</div>
-                    <div className="tree-leaf">src/storage/db.ts</div>
-                    <div className="tree-leaf">src/ui/Canvas.tsx</div>
-                    <div className="tree-leaf">package.json</div>
-                  </div>
-                </div>
-
-                <div className="code-editor-mock">
-                  <div className="editor-tab-bar">
-                    <span className="tab-pill active">dag.ts</span>
-                    <span className="example-mock-tag">Illustrative example — not generated code</span>
-                  </div>
-                  <pre className="code-block">
-{`export interface TaskNode {
-  id: string;
-  label: string;
-  dependencies: string[];
-  execute: () => Promise<TaskResult>;
-}
-
-export class TaskDAG {
-  private nodes = new Map<string, TaskNode>();
-
-  public addNode(node: TaskNode): void {
-    this.nodes.set(node.id, node);
-  }
-
-  public getTopologicalOrder(): TaskNode[] {
-    // Deterministic topological sort
-    return Array.from(this.nodes.values());
-  }
-}`}
-                  </pre>
-                </div>
-              </div>
-            ) : (
-              <div className="features-list-card">
-                <div className="features-header-row">
-                  <span className="col-feat-name">Feature</span>
-                  <span className="col-feat-cat">Subsystem</span>
-                  <span className="col-feat-status">Verification Status</span>
-                </div>
-                {features.map((f) => (
-                  <div key={f.id} className="feature-row">
-                    <span className="feat-name">{f.name}</span>
-                    <span className="feat-cat">{f.category}</span>
-                    <span className={`feat-status-pill status-${f.status.toLowerCase().replace(/\s+/g, '-')}`}>
-                      {f.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </main>
+      <div className="apps-toolbar">
+        <div className="toolbar-search-box">
+          <Search size={14} className="toolbar-search-icon" aria-hidden="true" />
+          <input
+            type="text"
+            className="toolbar-search-input field-integrated"
+            placeholder="Search software projects…"
+            aria-label="Search software projects"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        <label className="apps-filter-field">
+          <span className="apps-filter-label">Core</span>
+          <select
+            className="form-select apps-filter-select"
+            value={coreFilter}
+            onChange={(e) => setCoreFilter(e.target.value)}
+          >
+            <option value="all">All classifications</option>
+            {CORE_CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="apps-filter-field">
+          <span className="apps-filter-label">Platform</span>
+          <select
+            className="form-select apps-filter-select"
+            value={platformFilter}
+            onChange={(e) => setPlatformFilter(e.target.value)}
+          >
+            <option value="all">All targets</option>
+            <option value="all-platforms">All Platforms</option>
+            <option value="cross-platform">Cross-Platform</option>
+            <option value="single-web">Web</option>
+            <option value="mobile">Android / iOS</option>
+          </select>
+        </label>
       </div>
 
-      {/* New App Modal */}
+      {softwareProjects.length === 0 ? (
+        <EmptyState
+          icon={Boxes}
+          title="No software projects yet"
+          description="Create your first software project to capture its classification, technology domain and target platforms."
+          actionLabel="Create New Software"
+          onAction={() => setIsCreateOpen(true)}
+        />
+      ) : filtered.length === 0 ? (
+        <EmptyState
+          icon={AlertCircle}
+          title="No matching software projects"
+          description="Adjust your search or filters to find a software project."
+        />
+      ) : (
+        <div className="apps-project-grid">
+          {filtered.map((p) => (
+            <article key={p.id} className="apps-project-card">
+              <header className="apps-project-card-head">
+                <h3 className="apps-project-name">{p.name}</h3>
+                <span className="apps-platform-pill">{platformSummary(p)}</span>
+              </header>
+              {p.description && <p className="apps-project-desc">{p.description}</p>}
+              <div className="apps-project-meta">
+                <span className="apps-meta-row">
+                  <Cpu size={12} aria-hidden="true" />
+                  <span className="apps-meta-key">Core</span>
+                  <span className="apps-meta-val">
+                    {p.coreClassification === 'custom-other' && p.coreCustom
+                      ? p.coreCustom
+                      : coreLabel(p.coreClassification)}
+                  </span>
+                </span>
+                <span className="apps-meta-row">
+                  <Boxes size={12} aria-hidden="true" />
+                  <span className="apps-meta-key">Domain</span>
+                  <span className="apps-meta-val">
+                    {p.domains && p.domains.length > 0
+                      ? p.domains
+                          .slice(0, 3)
+                          .map((d) =>
+                            d === 'custom-other' && p.domainCustom ? p.domainCustom : domainLabel(d)
+                          )
+                          .join(', ') + (p.domains.length > 3 ? ` +${p.domains.length - 3}` : '')
+                      : 'Not set'}
+                  </span>
+                </span>
+              </div>
+              <div className="apps-project-actions">
+                <button type="button" className="gold-ghost-btn" onClick={() => setSettingsFor(p)}>
+                  <Settings2 size={13} aria-hidden="true" />
+                  <span>Settings &amp; Tests</span>
+                </button>
+                <button
+                  type="button"
+                  className="gold-primary-btn"
+                  onClick={() => navigate('projects', { id: p.id })}
+                >
+                  <span>Open</span>
+                  <ArrowRight size={13} aria-hidden="true" />
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+
       <Dialog
-        isOpen={isNewAppOpen}
-        onClose={() => setIsNewAppOpen(false)}
-        title="Initialize Application Workspace"
-        description="Configure application identity and architecture parameters"
+        isOpen={isCreateOpen}
+        onClose={() => {
+          setIsCreateOpen(false);
+          resetForm();
+        }}
+        title="Create New Software"
+        description="Classify the software, choose its technology domain and target platforms."
       >
-        <div className="dialog-form">
-          <div className="form-field">
-            <label className="form-label">Application Name</label>
-            <input
-              type="text"
-              className="form-input"
-              value={appName}
-              onChange={(e) => setAppName(e.target.value)}
-            />
-          </div>
-          <div className="form-field">
-            <label className="form-label">Target Framework</label>
-            <select className="form-select">
-              <option>React 19 + TypeScript + Vite</option>
-              <option>Tauri 2.0 (Rust + Web Frontend)</option>
-              <option>React Native (Expo SDK 52)</option>
-            </select>
-          </div>
+        <form className="dialog-form" onSubmit={handleCreate}>
+          {error && (
+            <div className="form-error-banner">
+              <AlertCircle size={14} />
+              <span>{error}</span>
+            </div>
+          )}
+          <SoftwareClassificationForm state={state} onChange={patch} />
           <div className="form-actions-row">
             <button
               type="button"
               className="gold-ghost-btn"
-              onClick={() => setIsNewAppOpen(false)}
+              onClick={() => {
+                setIsCreateOpen(false);
+                resetForm();
+              }}
             >
               Cancel
             </button>
-            <button
-              type="button"
-              className="gold-primary-btn"
-              disabled={!appName.trim()}
-              onClick={() => {
-                if (!appName.trim()) {
-                  showToast('Enter an application name', { type: 'warning' });
-                  return;
-                }
-                setIsNewAppOpen(false);
-                showToast(
-                  `App blueprint draft "${appName}" prepared. Persistence and code generation are not connected yet.`,
-                  { type: 'gold' }
-                );
-              }}
-            >
-              Create Workspace
+            <button type="submit" className="gold-primary-btn" disabled={isSubmitting}>
+              <Plus size={15} />
+              <span>Create &amp; Open Project</span>
             </button>
           </div>
-        </div>
+        </form>
       </Dialog>
+
+      {settingsFor && (
+        <ProjectSettingsPanel project={settingsFor} onClose={() => setSettingsFor(null)} />
+      )}
     </div>
   );
 };

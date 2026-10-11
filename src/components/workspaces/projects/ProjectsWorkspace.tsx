@@ -10,6 +10,7 @@ import {
   HardDrive,
   Trash2,
   ChevronLeft,
+  ChevronRight,
   MessageSquare,
   Sparkles,
   ShieldCheck,
@@ -35,6 +36,8 @@ import {
 } from '../../../services/projectStore';
 import { chatStore, useChatStore } from '../../../services/chatStore';
 import { getConnection, isAiConfigured, getProviderLabel } from '../../../services/aiService';
+import { resolveTargets } from '../../../services/projectStore';
+import { ProjectSettingsPanel } from '../../software/ProjectSettingsPanel';
 
 /* ==========================================================================
    Projects overview
@@ -172,7 +175,7 @@ export const ProjectsWorkspace: React.FC = () => {
           <Search size={14} className="toolbar-search-icon" />
           <input
             type="text"
-            className="toolbar-search-input"
+            className="toolbar-search-input field-integrated"
             placeholder="Search projects, goals, or stack..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -495,11 +498,36 @@ interface ProjectWorkspaceViewProps {
   onBack: () => void;
 }
 
+const PROJECT_PANEL_PREF_KEY = 'arti_project_chat_panel_open';
+
+/** Conversation panel starts collapsed; the user's last choice is restored. */
+function loadPanelOpenPref(): boolean {
+  try {
+    return localStorage.getItem(PROJECT_PANEL_PREF_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
 const ProjectWorkspaceView: React.FC<ProjectWorkspaceViewProps> = ({ project, onBack }) => {
   const { navigate } = useWorkspace();
   const { showToast } = useToast();
   const chatState = useChatStore();
   const [input, setInput] = useState('');
+  const [panelOpen, setPanelOpen] = useState<boolean>(loadPanelOpenPref);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const togglePanel = () => {
+    setPanelOpen((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(PROJECT_PANEL_PREF_KEY, next ? '1' : '0');
+      } catch {
+        /* Storage unavailable — the toggle still works for this session. */
+      }
+      return next;
+    });
+  };
 
   const projectConversations = chatState.conversations.filter((c) => c.projectId === project.id);
   const activeConv = projectConversations.find((c) => c.id === chatState.activeId);
@@ -551,12 +579,31 @@ const ProjectWorkspaceView: React.FC<ProjectWorkspaceViewProps> = ({ project, on
           <h2 className="t-h3 project-workspace-title">{project.name}</h2>
           <div className="project-workspace-meta">
             <span className="project-type-badge">{typeLabel}</span>
+            {project.isSoftware && project.platformMode && (
+              <span className="project-platform-badge" title="Target platform mode">
+                {project.platformMode === 'all-platforms'
+                  ? 'All Platforms'
+                  : project.platformMode === 'cross-platform'
+                    ? 'Cross-Platform'
+                    : resolveTargets(project.platforms ?? [], 'single', project.customPlatform)[0]?.label ??
+                      'Single platform'}
+              </span>
+            )}
             <span className="chat-private-pill">
               <ShieldCheck size={11} aria-hidden="true" />
               Local Browser Only
             </span>
           </div>
         </div>
+        <button
+          type="button"
+          className="chat-action-btn"
+          onClick={() => setSettingsOpen(true)}
+          title="Project settings and testing"
+        >
+          <SlidersHorizontal size={14} aria-hidden="true" />
+          <span>Project Settings</span>
+        </button>
         <button
           type="button"
           className="chat-action-btn"
@@ -568,12 +615,30 @@ const ProjectWorkspaceView: React.FC<ProjectWorkspaceViewProps> = ({ project, on
         </button>
       </header>
 
-      <div className="project-workspace-body">
-        <aside className="project-chat-panel" aria-label="Project conversations">
+      <div className={`project-workspace-body ${panelOpen ? 'panel-open' : 'panel-collapsed'}`}>
+        <aside
+          className="project-chat-panel"
+          aria-label="Project conversations"
+          aria-expanded={panelOpen}
+        >
           <div className="project-chat-panel-header">
-            <span className="project-chat-panel-title">
-              Conversations ({projectConversations.length})
-            </span>
+            <button
+              type="button"
+              className="project-chat-disclosure"
+              onClick={togglePanel}
+              aria-expanded={panelOpen}
+              aria-controls="project-chat-panel-content"
+              title={panelOpen ? 'Collapse conversations' : 'Expand conversations'}
+            >
+              <ChevronRight
+                size={15}
+                className={`project-chat-disclosure-chevron ${panelOpen ? 'open' : ''}`}
+                aria-hidden="true"
+              />
+              <span className="project-chat-panel-title">
+                Conversations ({projectConversations.length})
+              </span>
+            </button>
             <button
               type="button"
               className="project-new-chat-btn"
@@ -585,34 +650,38 @@ const ProjectWorkspaceView: React.FC<ProjectWorkspaceViewProps> = ({ project, on
             </button>
           </div>
 
-          {projectConversations.length === 0 ? (
-            <div className="project-chat-empty">
-              <p>No conversations yet in this project.</p>
-              <button type="button" className="gold-ghost-btn" onClick={handleNewChat}>
-                New Chat
-              </button>
-            </div>
-          ) : (
-            <div className="project-chat-list">
-              {projectConversations.map((conv) => (
-                <div
-                  key={conv.id}
-                  className={`project-chat-item ${conv.id === chatState.activeId ? 'active' : ''}`}
-                  onClick={() => chatStore.setActive(conv.id)}
-                >
-                  <MessageSquare size={13} className="project-chat-item-icon" aria-hidden="true" />
-                  <span className="project-chat-item-title">{conv.title}</span>
-                  <button
-                    type="button"
-                    className="project-chat-delete-btn"
-                    onClick={(e) => handleDeleteChat(conv.id, e)}
-                    title="Delete conversation"
-                    aria-label={`Delete conversation ${conv.title}`}
-                  >
-                    <X size={13} aria-hidden="true" />
+          {panelOpen && (
+            <div id="project-chat-panel-content" className="project-chat-panel-content">
+              {projectConversations.length === 0 ? (
+                <div className="project-chat-empty">
+                  <p>No conversations yet in this project.</p>
+                  <button type="button" className="gold-ghost-btn" onClick={handleNewChat}>
+                    New Chat
                   </button>
                 </div>
-              ))}
+              ) : (
+                <div className="project-chat-list">
+                  {projectConversations.map((conv) => (
+                    <div
+                      key={conv.id}
+                      className={`project-chat-item ${conv.id === chatState.activeId ? 'active' : ''}`}
+                      onClick={() => chatStore.setActive(conv.id)}
+                    >
+                      <MessageSquare size={13} className="project-chat-item-icon" aria-hidden="true" />
+                      <span className="project-chat-item-title">{conv.title}</span>
+                      <button
+                        type="button"
+                        className="project-chat-delete-btn"
+                        onClick={(e) => handleDeleteChat(conv.id, e)}
+                        title="Delete conversation"
+                        aria-label={`Delete conversation ${conv.title}`}
+                      >
+                        <X size={13} aria-hidden="true" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </aside>
@@ -681,6 +750,13 @@ const ProjectWorkspaceView: React.FC<ProjectWorkspaceViewProps> = ({ project, on
           />
         </section>
       </div>
+
+      {settingsOpen && (
+        <ProjectSettingsPanel
+          project={project}
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
     </div>
   );
 };

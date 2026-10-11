@@ -121,15 +121,17 @@ export const ChatsWorkspace: React.FC = () => {
 
         {/* Search Chats Input */}
         <div className="chats-search-bar">
-          <Search size={14} className="chats-search-icon" aria-hidden="true" />
-          <input
-            type="text"
-            className="chats-search-input"
-            placeholder="Search conversations..."
-            aria-label="Search conversations"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+          <div className="chats-search-box">
+            <Search size={14} className="chats-search-icon" aria-hidden="true" />
+            <input
+              type="text"
+              className="chats-search-input field-integrated"
+              placeholder="Search conversations..."
+              aria-label="Search conversations"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
         </div>
 
         {state.isDemo && (
