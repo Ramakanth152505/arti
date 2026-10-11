@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "oxlint",
+    "check:typography": "node scripts/check-typography.mjs",
+    "lint": "oxlint && node scripts/check-typography.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

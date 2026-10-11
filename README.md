@@ -40,7 +40,32 @@ ARTI AI is a private, ultra-premium AI command center designed with a unified Da
 - **Framework**: React 19 + TypeScript
 - **Bundler**: Vite 8
 - **Icons**: Lucide React
-- **Typography**: Cinzel, Plus Jakarta Sans, Inter
+- **Typography**: Ronaldson Gothic (permanent project typeface)
+
+## Typography Standard
+
+**RONALDSON GOTHIC IS THE PERMANENT DEFAULT TYPEFACE FOR ALL ARTI AI UI.**
+Every new or modified page and component must use the established global
+typography tokens. No alternative ordinary UI font may be introduced without
+the owner's explicit approval.
+
+- **Central definition**: `--font-primary` in `src/styles/typography.css`.
+  Legacy aliases `--font-sans` and `--font-serif` both resolve to it, so no
+  component can drift to an unrelated family.
+- **Font source**: Ronaldson Gothic by Peter Wiegel / CAT-Fonts (2014),
+  a revival of the 1889 William W. Jackson typeface.
+- **License**: SIL Open Font License 1.1 — see `public/fonts/RonaldsonGothic-OFL.txt`.
+  Web embedding is permitted under the OFL.
+- **Verified weights**: Regular (400) and Light (300) only. Do not request
+  other weights; the CSS weight tokens all resolve to these two.
+- **Assets**: `public/fonts/RonaldsonGothic-Regular.woff2`,
+  `public/fonts/RonaldsonGothic-Light.woff2`.
+- **Monospace exception**: `--font-mono` is reserved for genuine code editors
+  and code blocks. It must not be used for ordinary interface text.
+- **Glyph fallback**: Ronaldson Gothic covers Latin and Latin Extended, but not
+  Telugu or Devanagari. Those scripts fall back to the system font; the
+  fallback must never become the default for ordinary UI text.
+- **Enforcement**: run `npm run check:typography` (also run in `npm run lint`).
 
 ## Getting Started
 

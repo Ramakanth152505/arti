@@ -1,9 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+@import './styles/typography.css';
 @import './styles/workspaces.css';
 
 :root {
-  --font-serif: 'Cinzel', 'Playfair Display', Georgia, serif;
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: var(--font-primary);
+  --font-sans: var(--font-primary);
   
   --bg-primary: #050811;
   --bg-secondary: #090e1a;
@@ -157,7 +157,7 @@ input, textarea {
 .sidebar-brand-title {
   font-family: var(--font-serif);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--fw-regular);
   letter-spacing: 0.12em;
   color: #faecc0;
   text-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
@@ -167,7 +167,7 @@ input, textarea {
   font-size: 9.5px;
   letter-spacing: 0.08em;
   color: #8f8570;
-  font-weight: 500;
+  font-weight: var(--fw-regular);
 }
 
 /* Collapse Toggle Button */
@@ -236,7 +236,7 @@ input, textarea {
   color: #f3df9b;
   border: 1px solid var(--gold-border-subtle);
   box-shadow: inset 0 0 12px rgba(201, 168, 78, 0.08), 0 0 14px rgba(201, 168, 78, 0.06);
-  font-weight: 500;
+  font-weight: var(--fw-regular);
 }
 
 .sidebar-item-icon {
@@ -280,7 +280,7 @@ input, textarea {
 .sidebar-footer-brand {
   font-family: var(--font-serif);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: var(--fw-regular);
   letter-spacing: 0.1em;
   color: #c9a84e;
 }
@@ -421,7 +421,7 @@ input, textarea {
   color: #748398;
   font-family: var(--font-sans);
   letter-spacing: 0.04em;
-  font-weight: 500;
+  font-weight: var(--fw-regular);
 }
 
 /* Topbar Right Section */
@@ -463,7 +463,7 @@ input, textarea {
   box-shadow: 0 0 14px rgba(201, 168, 78, 0.1);
   color: #faecc0;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: var(--fw-regular);
   letter-spacing: 0.02em;
   transition: all 0.2s ease;
 }
@@ -507,7 +507,7 @@ input, textarea {
 
 .user-profile-name {
   font-size: 12.5px;
-  font-weight: 600;
+  font-weight: var(--fw-regular);
   color: #f1f5f9;
   letter-spacing: 0.01em;
 }
@@ -518,7 +518,7 @@ input, textarea {
   gap: 4px;
   font-size: 10px;
   color: #c9a84e;
-  font-weight: 500;
+  font-weight: var(--fw-regular);
   letter-spacing: 0.03em;
 }
 
@@ -594,7 +594,7 @@ input, textarea {
 .hero-heading {
   font-family: var(--font-serif);
   font-size: 38px;
-  font-weight: 600;
+  font-weight: var(--fw-regular);
   letter-spacing: 0.02em;
   line-height: 1.25;
   color: #f8fafc;
@@ -607,7 +607,7 @@ input, textarea {
   background: linear-gradient(135deg, #faecc0 0%, #d4af37 55%, #ab8222 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  font-weight: 700;
+  font-weight: var(--fw-regular);
 }
 
 /* Hero Subtitle */
@@ -712,7 +712,7 @@ input, textarea {
   backdrop-filter: blur(12px);
   color: #cbd5e1;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: var(--fw-regular);
   letter-spacing: 0.02em;
   transition: all 0.2s ease;
   cursor: pointer;
@@ -763,7 +763,7 @@ input, textarea {
 
 .footer-brand-title {
   font-family: var(--font-serif);
-  font-weight: 600;
+  font-weight: var(--fw-regular);
   color: #c9a84e;
   letter-spacing: 0.08em;
 }
