@@ -23,6 +23,7 @@ import { ResearchWorkspace } from '../workspaces/research/ResearchWorkspace';
 import { LearningWorkspace } from '../workspaces/learning/LearningWorkspace';
 import { AgentsWorkspace } from '../workspaces/agents/AgentsWorkspace';
 import { ToolsWorkspace } from '../workspaces/tools/ToolsWorkspace';
+import { CreateSoftwareWorkspace } from '../workspaces/createSoftware/CreateSoftwareWorkspace';
 import { KnowledgeWorkspace } from '../workspaces/knowledge/KnowledgeWorkspace';
 import { MarketplaceWorkspace } from '../workspaces/marketplace/MarketplaceWorkspace';
 import { TaskControlWorkspace } from '../workspaces/taskControl/TaskControlWorkspace';
@@ -79,6 +80,8 @@ export const AppShell: React.FC = () => {
         return <AgentsWorkspace />;
       case 'tools':
         return <ToolsWorkspace />;
+      case 'create-software':
+        return <CreateSoftwareWorkspace />;
       case 'knowledge-base':
         return <KnowledgeWorkspace />;
       case 'marketplace':

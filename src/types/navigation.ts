@@ -14,8 +14,7 @@ import {
   GraduationCap,
   Bot,
   Wrench,
-  Database,
-  ShoppingBag,
+  Code2,
   CheckSquare,
   Activity,
   Terminal,
@@ -40,6 +39,7 @@ export type RouteId =
   | 'learning'
   | 'agents'
   | 'tools'
+  | 'create-software'
   | 'knowledge-base'
   | 'marketplace'
   | 'task-control-center'
@@ -73,8 +73,7 @@ export const PRIMARY_NAV_ITEMS: NavItemDef[] = [
   { id: 'learning', label: 'Learning', icon: GraduationCap, category: 'primary', description: 'Interactive curriculum and cognitive study paths' },
   { id: 'agents', label: 'Agents', icon: Bot, category: 'primary', description: 'Agent directory and capability overview' },
   { id: 'tools', label: 'Tools', icon: Wrench, category: 'primary', description: 'Modular tool catalog & execution integrations' },
-  { id: 'knowledge-base', label: 'Knowledge Base', icon: Database, category: 'primary', description: 'Local knowledge items and source provenance' },
-  { id: 'marketplace', label: 'Marketplace', icon: ShoppingBag, category: 'primary', description: 'Planned capabilities, extension packs and connectors' },
+  { id: 'create-software', label: 'Create Software', icon: Code2, category: 'primary', description: 'Software creation workspace — brief a new build and open its project' },
 ];
 
 export const SECONDARY_NAV_ITEMS: NavItemDef[] = [

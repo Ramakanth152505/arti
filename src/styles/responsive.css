@@ -1169,3 +1169,73 @@ pre,
     --content-max-w: 1560px;
   }
 }
+
+/* ==========================================================================
+   Project workspace & Create Software — responsive layer
+   ========================================================================== */
+
+/* Tablet and below: stack the project conversation panel above the thread. */
+@media (max-width: 1023.98px) {
+  .project-workspace-body {
+    flex-direction: column;
+  }
+
+  .project-chat-panel {
+    width: 100%;
+    max-height: 42vh;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .project-chat-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .project-chat-item {
+    flex: 1 1 200px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .project-workspace-header {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  .project-workspace-title-group {
+    flex-basis: 100%;
+    order: 3;
+  }
+
+  .project-chat-panel {
+    max-height: 38vh;
+  }
+
+  .create-software-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .software-types-list {
+    max-height: none;
+  }
+
+  /* The reduced 4-column projects table fits the viewport — no forced min-width. */
+  .projects-list-table .table-header-row,
+  .projects-list-table .table-body-row {
+    min-width: 0;
+    grid-template-columns: minmax(0, 2.4fr) minmax(0, 1.1fr) minmax(0, 1fr) 70px;
+  }
+}
+
+@media (max-width: 479.98px) {
+  .project-back-btn span {
+    display: none;
+  }
+
+  .project-chat-panel {
+    max-height: 34vh;
+  }
+}
+

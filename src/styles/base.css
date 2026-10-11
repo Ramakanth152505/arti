@@ -127,7 +127,8 @@ input, textarea {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 14px;
+  gap: 8px;
+  padding: 0 10px;
   border-bottom: 1px solid var(--border-subtle);
   position: relative;
 }
@@ -136,7 +137,8 @@ input, textarea {
   display: flex;
   align-items: center;
   gap: 10px;
-  overflow: hidden;
+  min-width: 0;
+  overflow: visible;
   text-decoration: none;
 }
 
@@ -150,11 +152,34 @@ input, textarea {
   box-shadow: 0 0 10px rgba(201, 168, 78, 0.15);
 }
 
+/* Collapsed rail: center the logo in the full header and stack it above the
+   expand control so the phoenix is never clipped or overlapped. */
+.sidebar.collapsed .sidebar-header {
+  height: auto;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 8px 10px;
+}
+
+.sidebar.collapsed .sidebar-brand-wrapper {
+  justify-content: center;
+  width: 100%;
+}
+
+.sidebar.collapsed .sidebar-logo-img {
+  width: 34px;
+  height: 34px;
+}
+
 .sidebar-brand-text {
   display: flex;
   flex-direction: column;
   white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
 }
+
 
 .sidebar-brand-title {
   font-family: var(--font-serif);
@@ -661,6 +686,18 @@ input, textarea {
   font-size: 14px;
   color: #f8fafc;
   letter-spacing: 0.01em;
+}
+
+/* The composer's own `:focus-within` treatment is the focus indicator for this
+   control. Suppressing the generic outline on the inner field prevents a second
+   rectangular box from appearing inside the unified composer, while keyboard
+   focus stays clearly visible on the container. */
+.prompt-input:focus,
+.prompt-input:focus-visible,
+.chat-composer-textarea:focus,
+.chat-composer-textarea:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 .prompt-input::placeholder {
