@@ -35,7 +35,7 @@ export type DateGroup = 'today' | 'yesterday' | 'previous7' | 'older';
  * conversation created by the Images workspace. Projects and Games keep using
  * `projectId`, which is orthogonal to this flag.
  */
-export type WorkspaceKind = 'general' | 'images';
+export type WorkspaceKind = 'general' | 'images' | 'videos';
 
 /** A single image returned by a real provider. The URL is the provider's own
  * temporary output URL (or a data URL); ARTI never copies it to its own
@@ -98,6 +98,123 @@ export interface ImageConversationMeta {
   pendingGeneration: boolean;
 }
 
+/* ==========================================================================
+   Videos-workspace types. The Videos workspace owns conversations tagged
+   `workspace: 'videos'`, grouped into production-type categories. A video chat
+   may be linked to a production (a series/franchise/standalone record) so the
+   chat and the production hierarchy never diverge.
+   ========================================================================== */
+
+export type VideoChatCategoryId =
+  | 'standalone'
+  | 'short-films'
+  | 'feature-films'
+  | 'tv-web-series'
+  | 'animated-series'
+  | 'anime-series'
+  | 'documentary-series'
+  | 'multi-season-series'
+  | 'cinematic-universes'
+  | 'trailers-teasers'
+  | 'educational-series'
+  | 'social-media-series'
+  | 'other';
+
+export interface VideoChatCategory {
+  id: VideoChatCategoryId;
+  label: string;
+}
+
+export const VIDEO_CHAT_CATEGORIES: VideoChatCategory[] = [
+  { id: 'standalone', label: 'Standalone Videos' },
+  { id: 'short-films', label: 'Short Films' },
+  { id: 'feature-films', label: 'Feature Films' },
+  { id: 'tv-web-series', label: 'TV / Web Series' },
+  { id: 'animated-series', label: 'Animated Series' },
+  { id: 'anime-series', label: 'Anime Series' },
+  { id: 'documentary-series', label: 'Documentary Series' },
+  { id: 'multi-season-series', label: 'Multi-Season Series' },
+  { id: 'cinematic-universes', label: 'Cinematic Universes' },
+  { id: 'trailers-teasers', label: 'Trailers & Teasers' },
+  { id: 'educational-series', label: 'Educational Series' },
+  { id: 'social-media-series', label: 'Social-Media Video Series' },
+  { id: 'other', label: 'Other Custom Types' },
+];
+
+export function videoChatCategoryLabel(id: VideoChatCategoryId | undefined): string {
+  return VIDEO_CHAT_CATEGORIES.find((c) => c.id === id)?.label ?? 'Other Custom Types';
+}
+
+/** The provider-facing settings captured for one video request. */
+export interface VideoGenerationSettings {
+  providerId: string;
+  model: string;
+  /** Video *type* id (independent of style). */
+  videoType: string;
+  aspectRatio: string;
+  /** UI resolution token (`1080p`, `2160p`, `custom`). */
+  resolution: string;
+  customResolution: string;
+  fps: number;
+  /** Requested duration in seconds (fractional allowed). */
+  durationSeconds: number;
+  cameraMovement: string;
+  lighting: string;
+  colorGrade: string;
+  motion: string;
+  audio: string;
+  narration: string;
+  music: string;
+  language: string;
+  subtitles: boolean;
+  negativePrompt: string;
+  seed: string;
+  intendedPlatform: string;
+}
+
+/** One completed (or failed) generation, kept in the conversation history. */
+export interface VideoResultRecord {
+  id: string;
+  createdAt: string;
+  preparedPrompt: string;
+  originalPrompt: string;
+  styleId?: string;
+  styleName?: string;
+  settings: VideoGenerationSettings;
+  videos: GeneratedVideoRecord[];
+  status: 'complete' | 'failed' | 'blocked';
+  error?: string;
+  /** What the engine actually produced, when it differed from the request. */
+  effectiveNote?: string;
+}
+
+export interface GeneratedVideoRecord {
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+  durationSeconds: number;
+  format: string;
+  poster?: string;
+  upscaledFrom?: string;
+}
+
+/** Videos-workspace metadata carried on a conversation (`workspace: 'videos'`). */
+export interface VideoConversationMeta {
+  category: VideoChatCategoryId;
+  /** The video *type* selected for this conversation. */
+  videoType: string;
+  styleId?: string;
+  /** The exact style guidance inserted into the composer, so it can be removed. */
+  styleGuidance?: string;
+  settings: Partial<VideoGenerationSettings>;
+  results: VideoResultRecord[];
+  /** True while a real provider request is in flight for this conversation. */
+  pendingGeneration: boolean;
+  /** Linked production (series/franchise/standalone) record id, when any. */
+  productionId?: string;
+}
+
 export interface ChatConversation {
   id: string;
   title: string;
@@ -112,6 +229,12 @@ export interface ChatConversation {
   workspace?: WorkspaceKind;
   /** Images-only metadata (style, settings, results). */
   imageMeta?: ImageConversationMeta;
+  /** Videos-only metadata (category, type, style, settings, results). */
+  videoMeta?: VideoConversationMeta;
+  /** Production-type category for a video chat (mirrors `videoMeta.category`). */
+  category?: VideoChatCategoryId;
+  /** Archived chats stay stored and can be restored; they are hidden from the list. */
+  archived?: boolean;
 }
 
 const STORAGE_KEY = 'arti_ws_chats';
@@ -213,6 +336,7 @@ function readStored(): ChatConversation[] | null {
     return (parsed as ChatConversation[]).map((c) => ({
       ...c,
       messages: (c.messages || []).map((m) => ({ ...m, status: m.status || 'complete' })),
+      archived: Boolean(c.archived),
     }));
   } catch {
     return null;
@@ -375,6 +499,107 @@ class ChatStore {
         },
       };
     });
+  }
+
+  /* ======================================================================
+     Videos workspace. Video conversations are tagged `workspace: 'videos'`,
+     carry a production-type `category` and a `videoMeta` blob, and may be
+     linked to a production record. They never appear in Chats, Images,
+     Projects or Games, and vice versa.
+     ====================================================================== */
+
+  /** Video conversations only, newest first. */
+  getVideoConversations(): ChatConversation[] {
+    return this.state.conversations.filter((c) => !c.projectId && c.workspace === 'videos');
+  }
+
+  /**
+   * Create a real video conversation owned by the Videos workspace, tagged with
+   * its production-type category and an optional linked production id.
+   */
+  createVideoConversation(
+    category: VideoChatCategoryId,
+    title = 'New Video Conversation',
+    videoMeta?: VideoConversationMeta,
+    productionId?: string
+  ): ChatConversation {
+    const conv: ChatConversation = {
+      id: 'conv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+      title,
+      isPinned: false,
+      dateGroup: 'today',
+      updatedAt: 'Just now',
+      model: 'ARTI Video Studio',
+      messages: [],
+      workspace: 'videos',
+      category,
+      videoMeta: videoMeta
+        ? { ...videoMeta, category, productionId: productionId ?? videoMeta.productionId }
+        : undefined,
+    };
+    this.setState({
+      conversations: [conv, ...this.state.conversations],
+      activeId: conv.id,
+      isDemo: false,
+    });
+    return conv;
+  }
+
+  /** Patch the Videos metadata for one conversation, creating it if absent. */
+  patchVideoMeta(id: string, patch: Partial<VideoConversationMeta>) {
+    this.replaceConversation(id, (c) => {
+      const base: VideoConversationMeta = c.videoMeta ?? {
+        category: c.category ?? 'standalone',
+        videoType: 'single-video',
+        settings: {},
+        results: [],
+        pendingGeneration: false,
+      };
+      const next: VideoConversationMeta = { ...base, ...patch };
+      return {
+        ...c,
+        videoMeta: next,
+        category: next.category,
+        updatedAt: 'Just now',
+      };
+    });
+  }
+
+  /** Append a completed/failed video result to a conversation's history. */
+  addVideoResult(id: string, result: VideoResultRecord) {
+    this.replaceConversation(id, (c) => {
+      const base: VideoConversationMeta = c.videoMeta ?? {
+        category: c.category ?? 'standalone',
+        videoType: 'single-video',
+        settings: {},
+        results: [],
+        pendingGeneration: false,
+      };
+      return {
+        ...c,
+        videoMeta: { ...base, results: [result, ...base.results] },
+        updatedAt: 'Just now',
+      };
+    });
+  }
+
+  /** Remove one video result from a conversation (does not touch the parent). */
+  removeVideoResult(id: string, resultId: string) {
+    this.replaceConversation(id, (c) => {
+      if (!c.videoMeta) return c;
+      return {
+        ...c,
+        videoMeta: {
+          ...c.videoMeta,
+          results: c.videoMeta.results.filter((r) => r.id !== resultId),
+        },
+      };
+    });
+  }
+
+  /** Archive a conversation: kept in storage, hidden from the active list. */
+  setArchived(id: string, archived: boolean) {
+    this.replaceConversation(id, (c) => ({ ...c, archived }));
   }
 
   /** Drop demonstration content and start from an empty real collection. */

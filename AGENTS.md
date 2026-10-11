@@ -228,6 +228,62 @@ ring, at the container level — never a nested second rectangle from the inner
   `arti_image_model`). When nothing is configured the workspace states the real
   setup requirement and never fabricates an image.
 
+## Videos workspace (video-linked productions)
+
+- Videos is its own conversation + production workspace, **not** a project. A
+  video conversation is tagged `workspace: 'videos'` on the shared `chatStore`
+  (`chatStore.createVideoConversation`) and carries a `videoMeta` blob
+  (`category`, `videoType`, `styleId`, `styleGuidance`, `settings`, `results[]`,
+  `pendingGeneration`, `productionId?`). Chats lists only `general`
+  conversations, so video chats never leak into Chats/Projects/Games/Images —
+  and vice versa. A video chat is never moved into Projects automatically.
+- Two creation modes live in the same workspace and are never confused:
+  **Individual Video Creation** (one video with configurable duration, style,
+  resolution, aspect ratio, settings) and **Series & Cinematic Universe
+  Creation** (a production with seasons → episodes → scenes → shots).
+- `src/services/videoStyles.ts` is the single source for the visual style
+  library: 7 categories and ~137 data-driven `VIDEO_STYLES`, each with real
+  `promptGuidance`. Style describes *how* a video looks.
+- `src/services/videoTypes.ts` is the single source for the video *type*
+  taxonomy (82 `VIDEO_TYPES`, 5 categories, each flagged `structured`) plus the
+  duration model (`parseDuration`/`formatDuration`, 0.1 s → 1,000 h+) and
+  `classifyVideoIntent`, which reads a request and reports whether it is one
+  clip, a long continuous video, an episodic/multi-season series, a franchise,
+  a continuation, or genuinely `ambiguous`. Type is independent of style.
+- Selecting a style inserts the style's real guidance into the composer via
+  `insertStyleIntoPrompt` (never the bare name), preserves the user's text,
+  never duplicates, and **never auto-submits**. Removing it uses
+  `removeStyleFromPrompt`.
+- `src/services/videoProvider.ts` is the single generation boundary and the
+  honest capability registry. Only `custom-server` (an owner-run bridge at
+  `arti_endpoint_video`) is genuinely integrated; commercial engines are listed
+  with their real state and an unverified capability is reported `unknown`.
+  `validateContinuousDuration` reports the engine's real clip limit (or that it
+  is unknown), and `sixteenKStatement` never claims native 16K.
+- `src/services/videoGeneration.ts` builds the structured prompt
+  (`videoPrompt.ts`) and maps a real bridge response into a persisted result; a
+  failure yields a `failed` record with the real error and no engine yields a
+  `blocked` record.
+- `src/services/videoProduction.ts` is the single observable store
+  (`useSyncExternalStore`, localStorage `arti_video_productions`) for the
+  hierarchy Franchise → Series → Season → Episode → Scene → Shot → Job → Asset,
+  plus the series bible and continuity records. `productionOverview` and
+  `buildManifest` compute the dashboard and the (paginated) episode manifest
+  from real records — completion is never fabricated. Every node has a stable id
+  so regenerating one shot never touches a sibling or the rest of the season;
+  a failed job never removes successful output.
+- The workspace (route `videos`) renders five tabs — Create Video, Create
+  Series, My Productions, Video Chats, Previous Videos — plus contextual tools
+  (`ProductionWorkspaceView`, `SceneShotEditor`, `SeriesBiblePanel`,
+  `ContinuityPanel`, `VideoProviderStatus`). Sub-components live in
+  `src/components/videos/`. Styles in `src/styles/videos.css` (imported between
+  `images.css` and `conversation.css`).
+- Configure the video bridge in Settings > Connected Services
+  (`arti_endpoint_video`, `arti_key_video`, `arti_video_model`). When nothing is
+  configured the workspace states the real setup requirement and never
+  fabricates a video. No engine, SDK, renderer or FFmpeg pipeline is connected:
+  the UI never claims a generated/compiled/playable render it did not receive.
+
 ## Verification
 
 - `npm run test:games [baseUrl]` — headless-Chromium (CDP, no extra deps)
@@ -240,5 +296,13 @@ ring, at the container level — never a nested second rectangle from the inner
   not-connected honesty, workspace isolation from Chats/Projects/Games,
   New Chat / persistence / collapse / rename / delete, genuine client-side
   download with no upload, font loading and input policy. Currently 42 checks.
+- `npm run test:videos [baseUrl]` — headless-Chromium Videos suite: five tabs,
+  default 1080p/16:9, style → guidance injection without erasing the prompt and
+  without duplication, separate type taxonomy, structured-type routing, the
+  3×5=15 series hierarchy with per-episode independence, season expansion,
+  series bible + continuity, the 1,000-hour ambiguity decision, duration presets,
+  16K honesty, provider capability honesty, category grouping / persistence /
+  isolation, collapse, a genuine download with no upload, fonts and the
+  integrated-input policy. Currently 53 checks.
 
 

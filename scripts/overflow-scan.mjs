@@ -40,6 +40,7 @@ const ROUTES = [
   'create-software',
   'games',
   'images',
+  'videos',
   'websites',
   'tools',
   'settings',

@@ -11,6 +11,7 @@
     "test:responsive": "node scripts/overflow-scan.mjs",
     "test:games": "node scripts/verify-games.mjs",
     "test:images": "node scripts/verify-images.mjs",
+    "test:videos": "node scripts/verify-videos.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
