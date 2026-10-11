@@ -26,6 +26,7 @@ import {
 
 export type RouteId =
   | 'home'
+  | 'conversation'
   | 'chats'
   | 'projects'
   | 'websites'

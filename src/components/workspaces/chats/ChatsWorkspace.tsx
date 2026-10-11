@@ -1,145 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Plus,
   Search,
   Pin,
   PinOff,
   MoreVertical,
-  Send,
-  Paperclip,
   Archive,
   Edit2,
   Sparkles,
-  Bot,
-  User,
+  ShieldCheck,
   SlidersHorizontal,
   ChevronLeft,
   ChevronRight,
-  ShieldCheck,
-  FileCode,
 } from 'lucide-react';
 import { useWorkspace } from '../../../context/WorkspaceContext';
 import { useToast } from '../../../context/ToastContext';
 import { useIsMobileNav } from '../../../hooks/useMediaQuery';
 import { DemoDataNotice } from '../../common/DemoDataNotice';
-
-interface ChatMessage {
-  id: string;
-  sender: 'user' | 'assistant' | 'system';
-  content: string;
-  timestamp: string;
-}
-
-interface ChatConversation {
-  id: string;
-  title: string;
-  isPinned: boolean;
-  dateGroup: 'today' | 'yesterday' | 'previous7' | 'older';
-  updatedAt: string;
-  messages: ChatMessage[];
-  model: string;
-}
-
-const DEMO_CONVERSATIONS: ChatConversation[] = [
-  {
-    id: 'conv-1',
-    title: 'Universal AI Operating Architecture',
-    isPinned: true,
-    dateGroup: 'today',
-    updatedAt: '10:45 AM',
-    model: 'ARTI Hybrid Engine (Standby)',
-    messages: [
-      {
-        id: 'msg-1',
-        sender: 'user',
-        content: 'How should ARTI AI structure its autonomous agent orchestration and task execution engine?',
-        timestamp: '10:45 AM',
-      },
-      {
-        id: 'msg-2',
-        sender: 'assistant',
-        content:
-          'ARTI AI is architected with a decoupled 3-tier foundation:\n1. Universal Workspace Shell & Graphical Canvas (User Interface)\n2. Task Control Center & Dependency Planner (Deterministic Orchestration)\n3. Model Execution & Verification Engine (Specialist Agents with Proof of Work)\n\nNote: Live AI inference requires connecting a provider in Settings > Connected Services.',
-        timestamp: '10:45 AM',
-      },
-    ],
-  },
-  {
-    id: 'conv-2',
-    title: 'High-Fidelity Cinema Pipeline Specs',
-    isPinned: false,
-    dateGroup: 'yesterday',
-    updatedAt: 'Yesterday',
-    model: 'ARTI Visual Orchestrator',
-    messages: [
-      {
-        id: 'msg-3',
-        sender: 'user',
-        content: 'Review the scene consistency requirements for multi-scene video generation.',
-        timestamp: 'Yesterday',
-      },
-      {
-        id: 'msg-4',
-        sender: 'assistant',
-        content:
-          'Scene continuity requires anchor latent embeddings, character identity seed locks, and camera trajectory interpolation across adjacent generation segments.',
-        timestamp: 'Yesterday',
-      },
-    ],
-  },
-  {
-    id: 'conv-3',
-    title: 'Where Is My Data Stored?',
-    isPinned: false,
-    dateGroup: 'previous7',
-    updatedAt: '3 days ago',
-    model: 'ARTI Engine (Standby)',
-    messages: [
-      {
-        id: 'msg-5',
-        sender: 'user',
-        content: 'Where does ARTI store my conversations?',
-        timestamp: '3 days ago',
-      },
-      {
-        id: 'msg-6',
-        sender: 'assistant',
-        content:
-          'In this build, records you create are saved to your browser\u2019s localStorage on this device. They persist across reloads in this browser only. No encryption layer is applied and nothing is sent to a server.',
-        timestamp: '3 days ago',
-      },
-    ],
-  },
-];
+import { chatStore, useChatStore, type ChatConversation } from '../../../services/chatStore';
+import { getConnection, isAiConfigured, getProviderLabel } from '../../../services/aiService';
+import { MessageList } from '../../conversation/MessageList';
+import { Composer } from '../../conversation/Composer';
 
 export const ChatsWorkspace: React.FC = () => {
-  const { initialChatPrompt, setInitialChatPrompt, routeParams, navigate } = useWorkspace();
+  const { navigate } = useWorkspace();
   const { showToast } = useToast();
   const isMobileNav = useIsMobileNav();
+  const state = useChatStore();
 
-  const demoConversations = DEMO_CONVERSATIONS;
-  const [conversations, setConversations] = useState<ChatConversation[]>(() => {
-    try {
-      const stored = localStorage.getItem('arti_ws_chats');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed as ChatConversation[];
-      }
-    } catch {
-      // ignore malformed storage
-    }
-    return demoConversations;
-  });
-  const [isDemo, setIsDemo] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem('arti_ws_chats') === null && demoConversations.length > 0;
-    } catch {
-      return demoConversations.length > 0;
-    }
-  });
-  const [activeConvId, setActiveConvId] = useState<string>(
-    () => conversations[0]?.id ?? ''
-  );
   const [searchQuery, setSearchQuery] = useState('');
   const [inputMessage, setInputMessage] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -154,110 +42,39 @@ export const ChatsWorkspace: React.FC = () => {
     setIsSidebarOpen(!isMobileNav);
   }
 
-  const commitConversations = (next: ChatConversation[]) => {
-    setConversations(next);
-    setIsDemo(false);
-    try {
-      localStorage.setItem('arti_ws_chats', JSON.stringify(next));
-    } catch {
-      // storage unavailable
-    }
-  };
+  const conversations = state.conversations;
+  const activeConv = conversations.find((c) => c.id === state.activeId);
+  const isPending = activeConv ? state.pendingIds.includes(activeConv.id) : false;
+  const connected = isAiConfigured();
+  const connection = getConnection();
 
   const handleCreateNewChat = () => {
-    const newConv: ChatConversation = {
-      id: 'conv_' + Date.now(),
-      title: 'New Conversation',
-      isPinned: false,
-      dateGroup: 'today',
-      updatedAt: 'Just now',
-      model: 'ARTI Engine (Standby)',
-      messages: [],
-    };
-    commitConversations([newConv, ...conversations]);
-    setActiveConvId(newConv.id);
+    chatStore.createConversation();
+    setInputMessage('');
     showToast('New conversation initialized', { type: 'gold' });
   };
 
-  // Handle passed initial prompt from Home. This synchronizes React state with an
-  // external system (navigation params / context), which is the intended use of an effect.
-  /* oxlint-disable react/set-state-in-effect */
-  useEffect(() => {
-    const passedPrompt = routeParams.prompt
-      ? decodeURIComponent(routeParams.prompt)
-      : initialChatPrompt;
-    if (passedPrompt) {
-      const newId = 'conv_' + Date.now();
-      const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const newConv: ChatConversation = {
-        id: newId,
-        title: passedPrompt.slice(0, 36) + (passedPrompt.length > 36 ? '...' : ''),
-        isPinned: false,
-        dateGroup: 'today',
-        updatedAt: 'Just now',
-        model: 'ARTI Engine (Standby)',
-        messages: [
-          { id: 'msg_' + Date.now(), sender: 'user', content: passedPrompt, timestamp: now },
-        ],
-      };
-      setConversations((prev) => {
-        const next = [newConv, ...prev];
-        try {
-          localStorage.setItem('arti_ws_chats', JSON.stringify(next));
-        } catch {
-          // storage unavailable
-        }
-        return next;
-      });
-      setIsDemo(false);
-      setActiveConvId(newId);
-      setInitialChatPrompt('');
+  const handleSendMessage = (value: string) => {
+    if (!activeConv) {
+      const conv = chatStore.createConversation();
+      void chatStore.sendMessage(conv.id, value);
+    } else {
+      void chatStore.sendMessage(activeConv.id, value);
     }
-  }, [initialChatPrompt, routeParams.prompt, setInitialChatPrompt]);
-  /* oxlint-enable react/set-state-in-effect */
-
-  const activeConv = conversations.find((c) => c.id === activeConvId);
-
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputMessage.trim() || !activeConv) return;
-
-    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const userMsg: ChatMessage = {
-      id: 'msg_' + Date.now(),
-      sender: 'user',
-      content: inputMessage.trim(),
-      timestamp: now,
-    };
-
-    const next = conversations.map((c) => {
-      if (c.id !== activeConvId) return c;
-      return {
-        ...c,
-        title: c.title === 'New Conversation' ? userMsg.content.slice(0, 32) : c.title,
-        updatedAt: 'Just now',
-        messages: [...c.messages, userMsg],
-      };
-    });
-    commitConversations(next);
     setInputMessage('');
   };
 
   const handleTogglePin = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    commitConversations(
-      conversations.map((c) => (c.id === id ? { ...c, isPinned: !c.isPinned } : c))
-    );
+    chatStore.togglePin(id);
     setActiveMenuId(null);
     showToast('Pin status updated', { type: 'info' });
   };
 
   const handleArchive = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const remaining = conversations.filter((c) => c.id !== id);
-    commitConversations(remaining);
+    chatStore.archive(id);
     setActiveMenuId(null);
-    if (activeConvId === id && remaining.length > 0) setActiveConvId(remaining[0].id);
     showToast('Conversation archived', { type: 'info' });
   };
 
@@ -266,9 +83,7 @@ export const ChatsWorkspace: React.FC = () => {
     const conv = conversations.find((c) => c.id === id);
     const newTitle = window.prompt('Rename conversation:', conv?.title);
     if (newTitle && newTitle.trim()) {
-      commitConversations(
-        conversations.map((c) => (c.id === id ? { ...c, title: newTitle.trim() } : c))
-      );
+      chatStore.rename(id, newTitle);
       showToast('Conversation renamed', { type: 'success' });
     }
     setActiveMenuId(null);
@@ -289,12 +104,8 @@ export const ChatsWorkspace: React.FC = () => {
       {/* Resizable / Collapsible Conversations Sidebar */}
       <aside className={`chats-sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
         <div className="chats-sidebar-header">
-          <button
-            type="button"
-            className="new-chat-btn"
-            onClick={handleCreateNewChat}
-          >
-            <Plus size={15} />
+          <button type="button" className="new-chat-btn" onClick={handleCreateNewChat}>
+            <Plus size={15} aria-hidden="true" />
             <span>New Chat</span>
           </button>
           <button
@@ -302,31 +113,30 @@ export const ChatsWorkspace: React.FC = () => {
             className="chats-sidebar-toggle-btn"
             onClick={() => setIsSidebarOpen(false)}
             title="Collapse chats list"
+            aria-label="Collapse chats list"
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft size={16} aria-hidden="true" />
           </button>
         </div>
 
         {/* Search Chats Input */}
         <div className="chats-search-bar">
-          <Search size={14} className="chats-search-icon" />
+          <Search size={14} className="chats-search-icon" aria-hidden="true" />
           <input
             type="text"
             className="chats-search-input"
             placeholder="Search conversations..."
+            aria-label="Search conversations"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
-        {isDemo && (
+        {state.isDemo && (
           <div className="chats-demo-notice-wrap">
             <DemoDataNotice
               message="These example conversations are not real chat history. Start a new chat to create your own."
-              onClear={() => {
-                commitConversations([]);
-                setActiveConvId('');
-              }}
+              onClear={() => chatStore.clearDemo()}
             />
           </div>
         )}
@@ -336,7 +146,7 @@ export const ChatsWorkspace: React.FC = () => {
           {pinnedList.length > 0 && (
             <div className="chats-group">
               <span className="chats-group-title">
-                <Pin size={11} /> Pinned Chats
+                <Pin size={11} aria-hidden="true" /> Pinned Chats
               </span>
               {pinnedList.map((conv) => renderConvItem(conv))}
             </div>
@@ -373,11 +183,7 @@ export const ChatsWorkspace: React.FC = () => {
           {filtered.length === 0 && (
             <div className="chats-empty-list">
               <p>No conversations found</p>
-              <button
-                type="button"
-                className="gold-ghost-btn"
-                onClick={handleCreateNewChat}
-              >
+              <button type="button" className="gold-ghost-btn" onClick={handleCreateNewChat}>
                 Create New Chat
               </button>
             </div>
@@ -396,8 +202,9 @@ export const ChatsWorkspace: React.FC = () => {
                 className="chats-sidebar-open-btn"
                 onClick={() => setIsSidebarOpen(true)}
                 title="Open conversations list"
+                aria-label="Open conversations list"
               >
-                <ChevronRight size={16} />
+                <ChevronRight size={16} aria-hidden="true" />
               </button>
             )}
             <div>
@@ -406,11 +213,10 @@ export const ChatsWorkspace: React.FC = () => {
               </h2>
               <div className="chat-active-meta">
                 <span className="chat-engine-pill">
-                  <Bot size={11} />
-                  {activeConv?.model || 'ARTI Engine'}
+                  {connected && connection ? getProviderLabel(connection.provider) : 'ARTI Engine · Standby'}
                 </span>
                 <span className="chat-private-pill">
-                  <ShieldCheck size={11} />
+                  <ShieldCheck size={11} aria-hidden="true" />
                   Local Browser Only
                 </span>
               </div>
@@ -424,127 +230,60 @@ export const ChatsWorkspace: React.FC = () => {
               onClick={() => navigate('settings')}
               title="Configure Model Providers"
             >
-              <SlidersHorizontal size={14} />
+              <SlidersHorizontal size={14} aria-hidden="true" />
               <span>Model Config</span>
             </button>
           </div>
         </div>
 
         {/* Conversation Feed */}
-        <div className="chat-messages-container">
-          {!activeConv || activeConv.messages.length === 0 ? (
+        <MessageList
+          messages={activeConv?.messages ?? []}
+          onRetry={() => activeConv && void chatStore.retry(activeConv.id)}
+          emptyState={
             <div className="chat-empty-state">
               <div className="chat-empty-spark">
-                <Sparkles size={28} />
+                <Sparkles size={28} aria-hidden="true" />
               </div>
               <h3>Begin an Intelligent Conversation</h3>
               <p>
-                Ask technical questions, draft whitepapers, synthesize architectures, or plan multi-agent workflows.
+                Ask technical questions, draft whitepapers, synthesize architectures, or plan
+                multi-agent workflows.
               </p>
-              <div className="chat-prompt-starters">
-                <button
-                  type="button"
-                  className="prompt-starter-pill"
-                  onClick={() =>
-                    setInputMessage('Explain the architecture of ARTI AI Universal Task Engine')
-                  }
-                >
-                  &ldquo;Explain the architecture of ARTI AI Universal Task Engine&rdquo;
-                </button>
-                <button
-                  type="button"
-                  className="prompt-starter-pill"
-                  onClick={() =>
-                    setInputMessage('Outline a plan for a private local-first workspace')
-                  }
-                >
-                  &ldquo;Outline a plan for a private local-first workspace&rdquo;
-                </button>
-              </div>
             </div>
-          ) : (
-            <div className="chat-messages-list">
-              {activeConv.messages.map((msg) => (
-                <div key={msg.id} className={`chat-message-row ${msg.sender}`}>
-                  <div className="chat-avatar-box">
-                    {msg.sender === 'user' ? <User size={15} /> : <Bot size={15} />}
-                  </div>
-                  <div className="chat-message-bubble">
-                    <div className="chat-message-header">
-                      <span className="chat-sender-name">
-                        {msg.sender === 'user' ? 'Ramakanth' : 'ARTI AI'}
-                      </span>
-                      <span className="chat-msg-time">{msg.timestamp}</span>
-                    </div>
-                    <div className="chat-message-text">{msg.content}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+          }
+        />
 
         {/* Message Composer */}
-        <div className="chat-composer-container">
-          <form onSubmit={handleSendMessage} className="chat-composer-box">
-            <button
-              type="button"
-              className="chat-attachment-btn"
-              title="Attach File or Code Reference"
-              onClick={() =>
-                showToast('Attachment handler ready. Select file from local disk.', {
-                  type: 'info',
-                })
-              }
-            >
-              <Paperclip size={16} />
-            </button>
-
-            <textarea
-              className="chat-composer-textarea"
-              placeholder="Type your message to ARTI AI... (Enter to send, Shift+Enter for new line)"
-              rows={1}
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage(e);
-                }
-              }}
-            />
-
-            <button
-              type="submit"
-              className="chat-send-btn"
-              disabled={!inputMessage.trim()}
-              title="Send Message"
-            >
-              <Send size={15} />
-            </button>
-          </form>
-
-          <div className="chat-composer-notice">
-            <FileCode size={11} />
-            <span>
-              Standalone UI Mode: Connect real inference keys in{' '}
-              <button
-                type="button"
-                className="chat-link-btn"
-                onClick={() => navigate('settings')}
-              >
-                Settings &gt; Connected Services
-              </button>{' '}
-              to enable live AI responses.
-            </span>
-          </div>
-        </div>
+        <Composer
+          value={inputMessage}
+          onChange={setInputMessage}
+          onSubmit={handleSendMessage}
+          pending={isPending}
+          onStop={() => activeConv && chatStore.stop(activeConv.id)}
+          onAttach={() =>
+            showToast('Attachment handler ready. Select file from local disk.', { type: 'info' })
+          }
+          notice={
+            connected && connection ? (
+              <span>Connected to {getProviderLabel(connection.provider)}. Responses are generated live.</span>
+            ) : (
+              <span>
+                Not connected. Add an API key in{' '}
+                <button type="button" className="chat-link-btn" onClick={() => navigate('settings')}>
+                  Settings &gt; Connected Services
+                </button>{' '}
+                to enable live AI responses.
+              </span>
+            )
+          }
+        />
       </main>
     </div>
   );
 
   function renderConvItem(conv: ChatConversation) {
-    const isActive = conv.id === activeConvId;
+    const isActive = conv.id === state.activeId;
     const isMenuOpen = activeMenuId === conv.id;
 
     return (
@@ -552,13 +291,13 @@ export const ChatsWorkspace: React.FC = () => {
         key={conv.id}
         className={`chat-item-row ${isActive ? 'active' : ''}`}
         onClick={() => {
-          setActiveConvId(conv.id);
+          chatStore.setActive(conv.id);
           if (isMobileNav) setIsSidebarOpen(false);
         }}
       >
         <span className="chat-item-title">{conv.title}</span>
         <div className="chat-item-actions">
-          {conv.isPinned && <Pin size={11} className="chat-pin-icon" />}
+          {conv.isPinned && <Pin size={11} className="chat-pin-icon" aria-hidden="true" />}
           <button
             type="button"
             className="chat-menu-btn"
@@ -567,8 +306,9 @@ export const ChatsWorkspace: React.FC = () => {
               setActiveMenuId(isMenuOpen ? null : conv.id);
             }}
             title="Conversation options"
+            aria-label="Conversation options"
           >
-            <MoreVertical size={13} />
+            <MoreVertical size={13} aria-hidden="true" />
           </button>
         </div>
 

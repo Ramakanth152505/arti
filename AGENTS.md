@@ -23,6 +23,31 @@ the owner's explicit approval.
   the default for ordinary UI text.
 - Enforce with `npm run check:typography` (also runs as part of `npm run lint`).
 
+## Conversation workspace (Home → chat)
+
+- The Home prompt composer (`src/components/home/PromptBox.tsx`) submits to the
+  dedicated conversation route: `navigate('conversation', { prompt })`. The
+  initial message travels in the URL, is sent from the workspace, and is then
+  replaced in history (`replace`) so refresh/back never resends it.
+- Route ids live in `src/types/navigation.ts` (`RouteId`); the switch is in
+  `src/components/shell/AppShell.tsx`. `conversation` renders
+  `ConversationWorkspace`; `chats` keeps the multi-conversation list view.
+- Conversation state is the single observable store `src/services/chatStore.ts`
+  (`useSyncExternalStore` + localStorage `arti_ws_chats`). Chats and the
+  conversation workspace both read it, so they never diverge. Persistence is
+  browser-local only — never claim server-side history.
+- Message UI is shared and **speakerless** (`src/components/conversation/`):
+  `MessageList` conveys ownership by alignment/surface only (user right, AI
+  left). Never render names, avatars, role badges or speaker headings on
+  individual messages; expose them to assistive tech via `aria-label` instead.
+  `Composer` is the shared multiline composer (Enter sends, Shift+Enter
+  newline, IME-safe, Stop while pending).
+- AI responses go through the single boundary `src/services/aiService.ts`
+  (Anthropic or OpenAI, key read from Settings' localStorage). No other module
+  may fabricate, mock, or simulate a model response. When no provider is
+  configured the workspace shows an honest "Not connected" state with a link to
+  Settings > Connected Services.
+
 ## Build / verify
 
 - `npm run build` — `tsc -b && vite build` must pass.
@@ -37,10 +62,12 @@ the owner's explicit approval.
 ## Responsive architecture
 
 - Stylesheet entry is `src/index.css`; import order is fixed and must stay:
-  `typography.css` → `base.css` → `workspaces.css` → `responsive.css`.
-  `base.css` holds the original base component rules; `responsive.css` is the
-  responsive layer. Base rules must never be re-inlined after the `@import`s or
-  they win the equal-specificity cascade and silently break responsive overrides.
+  `typography.css` → `base.css` → `workspaces.css` → `conversation.css` →
+  `responsive.css`.
+  `base.css` holds the original base component rules; `conversation.css` refines
+  the chat/conversation surfaces; `responsive.css` is the responsive layer.
+  Base rules must never be re-inlined after the `@import`s or they win the
+  equal-specificity cascade and silently break responsive overrides.
 - Responsive tokens (`--page-pad-x`, `--content-max-w`, `--mobile-drawer-w`,
   `--touch-target`, fluid `--fs-*` clamps, …) live at the top of
   `responsive.css`. Prefer them over new hardcoded breakpoints.

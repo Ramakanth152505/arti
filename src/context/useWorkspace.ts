@@ -21,8 +21,6 @@ export interface WorkspaceContextValue {
   cycleTheme: () => void;
   isPrivateMode: boolean;
   togglePrivateMode: () => void;
-  initialChatPrompt: string;
-  setInitialChatPrompt: (prompt: string) => void;
 }
 
 export const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
