@@ -34,7 +34,8 @@ import { HelpWorkspace } from '../workspaces/help/HelpWorkspace';
 import { MagicModeWorkspace } from '../workspaces/magicMode/MagicModeWorkspace';
 
 export const AppShell: React.FC = () => {
-  const { currentRoute, navigate, isSidebarCollapsed, toggleSidebar } = useWorkspace();
+  const { currentRoute, navigate, isSidebarCollapsed, toggleSidebar, isFocusMode, isFocusChromeRevealed } =
+    useWorkspace();
   const isMobileNav = useIsMobileNav();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [wasMobileNav, setWasMobileNav] = useState(isMobileNav);
@@ -103,8 +104,15 @@ export const AppShell: React.FC = () => {
     }
   };
 
+  // Distraction-free conversation mode: the navigation rail (and the workspace's
+  // own panels) recede while a conversation is in progress, and return as soon
+  // as the user moves the mouse, focuses the workspace, or uses the toggle.
+  const focusActive = isFocusMode && !isFocusChromeRevealed;
+
   return (
-    <div className={`app-shell route-${currentRoute}`}>
+    <div
+      className={`app-shell route-${currentRoute} ${focusActive ? 'focus-mode' : ''}`}
+    >
       {/* Left Navigation Sidebar (rail on desktop, overlay drawer on small screens) */}
       <Sidebar
         isCollapsed={isSidebarCollapsed}

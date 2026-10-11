@@ -4780,6 +4780,8 @@
   min-height: 0;
   min-width: 0;
   overflow: hidden;
+  /* Anchors the absolute-positioned focus reveal control to the workspace. */
+  position: relative;
 }
 
 .project-workspace-header {
@@ -5777,4 +5779,422 @@
   color: #cbd5e1;
   background: rgba(148, 163, 184, 0.12);
   border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+/* ==========================================================================
+   Games workspace — overview, cards and the Create-a-New-Game form
+   ========================================================================== */
+.games-workspace-page {
+  min-width: 0;
+}
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.game-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 10px;
+  background: rgba(12, 18, 30, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  min-width: 0;
+}
+
+.game-card:hover {
+  border-color: var(--gold-border);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+}
+
+.game-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.game-card-name {
+  font-size: 15px;
+  font-weight: var(--fw-semibold);
+  color: #f8fafc;
+  line-height: 1.3;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.game-card-desc {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.game-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.game-meta-row {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-size: 11.5px;
+  min-width: 0;
+}
+
+.game-meta-row svg {
+  color: var(--gold-accent);
+  flex-shrink: 0;
+  position: relative;
+  top: 1px;
+}
+
+.game-meta-key {
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 10px;
+  flex-shrink: 0;
+  min-width: 62px;
+}
+
+.game-meta-val {
+  color: var(--text-secondary);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.game-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.game-card-engine {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  color: #cbd5e1;
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  overflow-wrap: anywhere;
+}
+
+.game-card-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.game-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ---- Game creation form ------------------------------------------------- */
+.game-create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.game-fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 14px;
+  border-radius: 9px;
+  background: rgba(8, 12, 22, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  min-width: 0;
+}
+
+.game-legend {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: var(--fw-semibold);
+  color: #faecc0;
+  padding: 0 4px;
+}
+
+.game-legend svg {
+  color: var(--gold-accent);
+}
+
+.game-hint {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.game-mechanic-search {
+  margin-bottom: 4px;
+}
+
+.game-mechanic-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.game-mechanic-group {
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(12, 18, 30, 0.5);
+  overflow: hidden;
+}
+
+.game-mechanic-group-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 11px;
+  font-size: 12px;
+  color: #e2e8f0;
+  text-align: left;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.game-mechanic-group-head:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: #faecc0;
+}
+
+.game-group-chevron {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.game-group-chevron.open {
+  transform: rotate(180deg);
+}
+
+.game-group-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.game-group-count {
+  font-size: 10px;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  background: var(--gold-pill);
+  border: 1px solid var(--gold-border);
+  color: #faecc0;
+}
+
+.game-mechanic-group-body {
+  padding: 0 11px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.game-group-summary {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.game-chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.game-mp-requirements {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  margin-top: 4px;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(8, 12, 22, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.game-mp-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.game-mp-label {
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.game-advanced-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #e2e8f0;
+  background: rgba(12, 18, 30, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.game-advanced-toggle:hover {
+  border-color: var(--gold-border-subtle);
+  color: #faecc0;
+}
+
+.game-advanced-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 9px;
+  background: rgba(8, 12, 22, 0.4);
+  border: 1px dashed rgba(255, 255, 255, 0.09);
+}
+
+.game-adv-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.game-adv-label {
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ---- Development lifecycle honesty list --------------------------------- */
+.game-lifecycle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.game-lifecycle-row {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  flex-wrap: wrap;
+  font-size: 11.5px;
+}
+
+.game-lifecycle-name {
+  color: #e2e8f0;
+  min-width: 150px;
+}
+
+.game-lifecycle-note {
+  color: var(--text-muted);
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+/* ==========================================================================
+   Distraction-free conversation mode (shared)
+   --------------------------------------------------------------------------
+   The navigation rail and the workspace's own panels recede while a
+   conversation is under way, and return on mouse movement, keyboard focus, or
+   the explicit toggle. Nothing is deleted — this is a temporary focus state.
+   ========================================================================== */
+/* The rail collapse only applies to the desktop rail; on smaller screens the
+   sidebar is an overlay drawer and keeps its own open/closed behaviour. */
+@media (min-width: 1024px) {
+  .app-shell .sidebar {
+    transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.22s ease;
+  }
+
+  .app-shell.focus-mode .sidebar {
+    width: 0;
+    min-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    border-right-color: transparent;
+    pointer-events: none;
+  }
+
+  .app-shell.focus-mode .sidebar * {
+    visibility: hidden;
+  }
+}
+
+/* Focus reveal control — required on touch, where hover does not exist. */
+.focus-reveal-pill {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 13px;
+  border-radius: 9999px;
+  font-size: 11.5px;
+  color: #faecc0;
+  background: rgba(12, 18, 30, 0.92);
+  border: 1px solid var(--gold-border);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5);
+  animation: focusPillIn 0.2s ease-out;
+}
+
+@keyframes focusPillIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.game-focus-toggle {
+  flex-shrink: 0;
+}
+
+/* While focus mode is active in a conversation workspace, recede its panels. */
+.project-workspace.focus-active .project-chat-panel {
+  display: none;
+}
+
+.project-workspace.focus-active .project-workspace-header {
+  background: transparent;
+  border-bottom-color: transparent;
+}
+
+.project-workspace.focus-active .project-workspace-header .chat-action-btn {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.project-workspace.focus-active .project-conversation-area {
+  width: 100%;
+}
+
+.project-workspace .project-workspace-header .chat-action-btn,
+.project-workspace .project-chat-panel {
+  transition: opacity 0.24s ease;
 }

@@ -38,6 +38,7 @@ const ROUTES = [
   'projects',
   'apps',
   'create-software',
+  'games',
   'websites',
   'tools',
   'settings',

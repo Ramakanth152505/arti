@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Folder,
   Plus,
@@ -15,6 +15,7 @@ import {
   Sparkles,
   ShieldCheck,
   SlidersHorizontal,
+  Eye,
   X,
 } from 'lucide-react';
 import { WorkspaceHeader } from '../../common/WorkspaceHeader';
@@ -38,6 +39,7 @@ import { chatStore, useChatStore } from '../../../services/chatStore';
 import { getConnection, isAiConfigured, getProviderLabel } from '../../../services/aiService';
 import { resolveTargets } from '../../../services/projectStore';
 import { ProjectSettingsPanel } from '../../software/ProjectSettingsPanel';
+import { useConversationFocus } from '../../../hooks/useConversationFocus';
 
 /* ==========================================================================
    Projects overview
@@ -129,6 +131,8 @@ export const ProjectsWorkspace: React.FC = () => {
   const filteredProjects = useMemo(
     () =>
       projects
+        // Games live only in the Games workspace; they are never listed here.
+        .filter((p) => !p.isGame)
         .filter((p) => {
           const q = searchQuery.toLowerCase();
           const matchesSearch =
@@ -146,8 +150,11 @@ export const ProjectsWorkspace: React.FC = () => {
     [projects, searchQuery, typeFilter, sortBy]
   );
 
+  // Games are excluded from the general Projects list entirely.
+  const generalProjects = useMemo(() => projects.filter((p) => !p.isGame), [projects]);
+
   const openProjectRecord = routeParams.id
-    ? projects.find((p) => p.id === routeParams.id)
+    ? projects.find((p) => p.id === routeParams.id && !p.isGame)
     : undefined;
 
   if (openProjectRecord) {
@@ -160,7 +167,7 @@ export const ProjectsWorkspace: React.FC = () => {
         title="Projects"
         description="Each project is a persistent workspace with its own conversations, brief, and notes."
         icon={Folder}
-        badge={`${projects.length} Saved`}
+        badge={`${generalProjects.length} Saved`}
         actions={
           <button type="button" className="gold-primary-btn" onClick={() => setIsCreateOpen(true)}>
             <Plus size={15} />
@@ -191,7 +198,7 @@ export const ProjectsWorkspace: React.FC = () => {
               onChange={(e) => setTypeFilter(e.target.value)}
             >
               <option value="All">All Types</option>
-              {PROJECT_TYPES.map((t) => (
+              {PROJECT_TYPES.filter((t) => t.value !== 'game').map((t) => (
                 <option key={t.value} value={t.value}>
                   {t.label}
                 </option>
@@ -233,9 +240,9 @@ export const ProjectsWorkspace: React.FC = () => {
         {filteredProjects.length === 0 ? (
           <EmptyState
             icon={Folder}
-            title={projects.length === 0 ? 'No projects yet' : 'No projects match your filter'}
+            title={generalProjects.length === 0 ? 'No projects yet' : 'No projects match your filter'}
             description={
-              projects.length === 0
+              generalProjects.length === 0
                 ? 'Create your first project to organise conversations, briefs, and notes around a single goal.'
                 : 'Adjust your search or type filter to find a project.'
             }
@@ -388,7 +395,7 @@ export const ProjectsWorkspace: React.FC = () => {
               value={formType}
               onChange={(e) => setFormType(e.target.value as ProjectType)}
             >
-              {PROJECT_TYPES.map((t) => (
+              {PROJECT_TYPES.filter((t) => t.value !== 'game').map((t) => (
                 <option key={t.value} value={t.value}>
                   {t.label}
                 </option>
@@ -568,8 +575,23 @@ const ProjectWorkspaceView: React.FC<ProjectWorkspaceViewProps> = ({ project, on
     showToast('Conversation deleted', { type: 'info' });
   };
 
+  // Opening a project restores its own conversation. The shared store keeps a
+  // single active conversation, so if the active one belongs to a different
+  // project this project's most recent chat is selected instead.
+  useEffect(() => {
+    const convs = chatStore.getProjectConversations(project.id);
+    if (convs.length === 0) return;
+    if (!convs.some((c) => c.id === chatState.activeId)) {
+      chatStore.setActive(convs[0].id);
+    }
+  }, [project.id, chatState.activeId, chatState.conversations]);
+
+  const hasConversation = (activeConv?.messages.length ?? 0) > 0 || isPending;
+  const { chromeRevealed, toggleChrome, containerRef } = useConversationFocus(hasConversation);
+  const focusActive = hasConversation && !chromeRevealed;
+
   return (
-    <div className="project-workspace">
+    <div className={`project-workspace ${focusActive ? 'focus-active' : ''}`} ref={containerRef}>
       <header className="project-workspace-header">
         <button type="button" className="project-back-btn" onClick={onBack}>
           <ChevronLeft size={15} aria-hidden="true" />
@@ -613,6 +635,19 @@ const ProjectWorkspaceView: React.FC<ProjectWorkspaceViewProps> = ({ project, on
           <SlidersHorizontal size={14} aria-hidden="true" />
           <span>Model Config</span>
         </button>
+        {hasConversation && (
+          <button
+            type="button"
+            className="chat-action-btn project-focus-toggle"
+            onClick={toggleChrome}
+            title={chromeRevealed ? 'Enter distraction-free mode' : 'Show navigation and panels'}
+            aria-label={chromeRevealed ? 'Enter distraction-free mode' : 'Show navigation and panels'}
+            aria-pressed={!chromeRevealed}
+          >
+            <Eye size={14} aria-hidden="true" />
+            <span>{chromeRevealed ? 'Focus' : 'Show panels'}</span>
+          </button>
+        )}
       </header>
 
       <div className={`project-workspace-body ${panelOpen ? 'panel-open' : 'panel-collapsed'}`}>
@@ -750,6 +785,18 @@ const ProjectWorkspaceView: React.FC<ProjectWorkspaceViewProps> = ({ project, on
           />
         </section>
       </div>
+
+      {focusActive && (
+        <button
+          type="button"
+          className="focus-reveal-pill"
+          onClick={toggleChrome}
+          title="Show navigation and panels"
+        >
+          <Eye size={14} aria-hidden="true" />
+          <span>Show panels</span>
+        </button>
+      )}
 
       {settingsOpen && (
         <ProjectSettingsPanel

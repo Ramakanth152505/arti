@@ -9,6 +9,7 @@
     "check:typography": "node scripts/check-typography.mjs",
     "lint": "oxlint && node scripts/check-typography.mjs",
     "test:responsive": "node scripts/overflow-scan.mjs",
+    "test:games": "node scripts/verify-games.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

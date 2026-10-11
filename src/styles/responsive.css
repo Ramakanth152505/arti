@@ -1327,3 +1327,58 @@ pre,
   }
 }
 
+
+/* ==========================================================================
+   Games workspace — responsive layer
+   ========================================================================== */
+@media (max-width: 1023.98px) {
+  .games-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+
+  .game-card-meta .game-meta-key {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .games-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .game-fieldset {
+    padding: 12px 10px;
+  }
+
+  .game-mp-requirements,
+  .game-advanced-panel {
+    padding: 11px 10px;
+  }
+
+  .game-lifecycle-name {
+    min-width: 0;
+  }
+
+  .focus-reveal-pill {
+    right: 12px;
+    bottom: 12px;
+  }
+
+  /* Touch has no hover: the reveal control stays reachable and every chip is a
+     comfortable target. */
+  .focus-reveal-pill,
+  .game-advanced-toggle,
+  .game-mechanic-group-head {
+    min-height: var(--touch-target);
+  }
+}
+
+@media (max-width: 479.98px) {
+  .game-meta-row {
+    flex-wrap: wrap;
+  }
+
+  .game-card {
+    padding: 13px;
+  }
+}
