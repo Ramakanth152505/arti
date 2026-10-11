@@ -3,13 +3,7 @@ import {
   Bot,
   Plus,
   Play,
-  Square,
-  Sliders,
   Shield,
-  Cpu,
-  Layers,
-  Terminal,
-  Activity,
   AlertCircle,
   CheckCircle2,
 } from 'lucide-react';
@@ -26,7 +20,7 @@ interface AgentProfile {
   capabilities: string[];
   toolsAllowed: string[];
   contextWindow: string;
-  status: 'Standby' | 'Configured';
+  status: 'Standby' | 'Template';
   modelFoundation: string;
 }
 
@@ -36,60 +30,60 @@ const SPECIALIST_AGENTS: AgentProfile[] = [
     name: 'Architect Prime',
     callsign: 'AP-01',
     role: 'System Design & Workflow Planning',
-    description: 'Decomposes complex human objectives into verifiable DAG execution nodes and dependency maps.',
+    description: 'Intended to decompose complex human objectives into verifiable DAG execution nodes and dependency maps.',
     capabilities: ['Topological Sort', 'Cycle Detection', 'Risk Estimation', 'Subsystem Boundaries'],
     toolsAllowed: ['TaskGraphAPI', 'WorkspaceInspector', 'DependencyValidator'],
-    contextWindow: '128k Tokens',
-    status: 'Standby',
-    modelFoundation: 'ARTI Planning Foundation (Standby)',
+    contextWindow: 'Planned',
+    status: 'Template',
+    modelFoundation: 'Not connected',
   },
   {
     id: 'ag-2',
     name: 'Code Synthesis Engine',
     callsign: 'CS-02',
     role: 'Full-Stack Software Engineering',
-    description: 'Generates strongly typed TypeScript, Rust runtimes, and WebGPU shaders adhering to strict lints.',
-    capabilities: ['React 19 Architecture', 'AST Rewriting', 'Strict Type Checking', 'Test Simulation'],
+    description: 'Intended to generate strongly typed TypeScript, Rust runtimes, and WebGPU shaders adhering to strict lints.',
+    capabilities: ['React Architecture', 'AST Rewriting', 'Strict Type Checking', 'Test Simulation'],
     toolsAllowed: ['FileTreeIO', 'CompilerSandbox', 'LinterVerification'],
-    contextWindow: '64k Tokens',
-    status: 'Standby',
-    modelFoundation: 'ARTI Code Specialist (Standby)',
+    contextWindow: 'Planned',
+    status: 'Template',
+    modelFoundation: 'Not connected',
   },
   {
     id: 'ag-3',
     name: 'Research Sovereign',
     callsign: 'RS-03',
     role: 'Scientific Evidence & Provenance',
-    description: 'Verifies claims against primary literature and detects hallucinated citations in synthesis drafts.',
+    description: 'Intended to verify claims against primary literature and detect hallucinated citations in synthesis drafts.',
     capabilities: ['Corpus Cross-Examination', 'Citation Provenance', 'Logic Consistency'],
     toolsAllowed: ['LocalVectorVault', 'DocumentParser', 'CitationEngine'],
-    contextWindow: '128k Tokens',
-    status: 'Standby',
-    modelFoundation: 'ARTI Research Core (Standby)',
+    contextWindow: 'Planned',
+    status: 'Template',
+    modelFoundation: 'Not connected',
   },
   {
     id: 'ag-4',
     name: 'Visual Maestro',
     callsign: 'VM-04',
     role: 'Cinematic Imagery & Shot Direction',
-    description: 'Directs multi-scene storyboard continuity, camera motion trajectories, and latent keyframe consistency.',
-    capabilities: ['Latent Keyframe Locking', 'Camera Choreography', 'Aspect Ratio Mastery'],
+    description: 'Intended to direct multi-scene storyboard continuity, camera motion trajectories, and latent keyframe consistency.',
+    capabilities: ['Latent Keyframe Locking', 'Camera Choreography', 'Aspect Ratio Control'],
     toolsAllowed: ['StoryboardPlanner', 'LatentSeedAPI', 'VisualTimeline'],
-    contextWindow: '32k Tokens',
-    status: 'Standby',
-    modelFoundation: 'ARTI Cinema Core (Standby)',
+    contextWindow: 'Planned',
+    status: 'Template',
+    modelFoundation: 'Not connected',
   },
   {
     id: 'ag-5',
     name: 'Linguistic Strategist',
     callsign: 'LS-05',
     role: 'Executive & Technical Writing',
-    description: 'Drafts sovereign whitepapers, technical specifications, and manifesto literature with restrained elegance.',
+    description: 'Intended to draft sovereign whitepapers, technical specifications, and literature with restrained elegance.',
     capabilities: ['Tone Harmonization', 'Technical Brevity', 'Information Density'],
     toolsAllowed: ['MarkdownEngine', 'LexicalAnalyzer', 'ExportFormatters'],
-    contextWindow: '64k Tokens',
-    status: 'Standby',
-    modelFoundation: 'ARTI Prose Core (Standby)',
+    contextWindow: 'Planned',
+    status: 'Template',
+    modelFoundation: 'Not connected',
   },
 ];
 
@@ -97,7 +91,7 @@ export const AgentsWorkspace: React.FC = () => {
   const { navigate } = useWorkspace();
   const { showToast } = useToast();
 
-  const [agents, setAgents] = useState<AgentProfile[]>(SPECIALIST_AGENTS);
+  const [agents] = useState<AgentProfile[]>(SPECIALIST_AGENTS);
   const [selectedAgentId, setSelectedAgentId] = useState<string>('ag-1');
 
   const selectedAgent = agents.find((a) => a.id === selectedAgentId) || agents[0];
@@ -113,15 +107,20 @@ export const AgentsWorkspace: React.FC = () => {
     <div className="workspace-page-container">
       <WorkspaceHeader
         title="Specialist Agents Fleet"
-        description="Autonomous specialist agent directory, permission sandboxes, and orchestration profiles"
+        description="Template agent profiles for planned orchestration. No agent is running or connected to a model."
         icon={Bot}
-        badge={`${agents.length} Specialist Profiles`}
+        badge={`${agents.length} Template Profiles`}
         actions={
           <div className="header-action-cluster">
             <button
               type="button"
               className="gold-primary-btn"
-              onClick={() => showToast('Agent specification wizard ready', { type: 'gold' })}
+              onClick={() =>
+                showToast(
+                  'Agent authoring is not implemented in this phase. A configuration interface will be added with the orchestration engine.',
+                  { type: 'warning' }
+                )
+              }
             >
               <Plus size={15} />
               <span>Define Specialist Agent</span>
@@ -170,6 +169,7 @@ export const AgentsWorkspace: React.FC = () => {
                   type="button"
                   className="gold-ghost-btn"
                   onClick={handleStartAgent}
+                  title="Agent dispatch requires a connected execution daemon"
                 >
                   <Play size={14} />
                   <span>Test Dispatch</span>
@@ -199,11 +199,11 @@ export const AgentsWorkspace: React.FC = () => {
             </div>
             <div className="spec-tile">
               <span className="tile-label">Runtime State</span>
-              <strong className="tile-value standby">Standby (Zero Fabricated Execution)</strong>
+              <strong className="tile-value standby">Standby — no execution daemon</strong>
             </div>
             <div className="spec-tile">
               <span className="tile-label">Execution Sandbox</span>
-              <strong className="tile-value">Restricted Client Environment</strong>
+              <strong className="tile-value standby">Not configured</strong>
             </div>
           </div>
 
@@ -222,13 +222,13 @@ export const AgentsWorkspace: React.FC = () => {
 
           {/* Tool Permissions */}
           <div className="agent-section-card">
-            <h3 className="section-card-title">Permitted Tool Call Handlers</h3>
+            <h3 className="section-card-title">Planned Tool Call Handlers</h3>
             <div className="tools-permitted-list">
               {selectedAgent.toolsAllowed.map((t) => (
                 <div key={t} className="tool-permitted-row">
                   <Shield size={13} className="tool-perm-shield" />
                   <span className="tool-perm-name">{t}</span>
-                  <span className="tool-perm-level">Read/Execute</span>
+                  <span className="tool-perm-level">Planned</span>
                 </div>
               ))}
             </div>
@@ -238,9 +238,9 @@ export const AgentsWorkspace: React.FC = () => {
           <div className="service-status-banner info">
             <AlertCircle size={15} />
             <div className="status-banner-text">
-              <strong>Execution Transparency Guarantee</strong>
+              <strong>Execution Transparency Principle</strong>
               <p>
-                ARTI strictly represents real agent states. Running agents will only be displayed when an active background orchestration daemon is actively processing tasks.
+                ARTI represents real agent states only. No agent is displayed as running until an execution daemon is actually connected and processing tasks.
               </p>
             </div>
           </div>

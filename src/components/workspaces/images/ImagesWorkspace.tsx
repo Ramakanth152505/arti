@@ -4,15 +4,8 @@ import {
   Sparkles,
   History,
   Sliders,
-  Download,
   Search,
-  Filter,
-  Eye,
-  Maximize2,
-  X,
   AlertCircle,
-  Settings,
-  Layers,
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
@@ -54,7 +47,7 @@ export const ImagesWorkspace: React.FC = () => {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   // Gallery items - initialized empty or real stored
-  const [gallery, setGallery] = useState<ImageRecord[]>([]);
+  const [gallery] = useState<ImageRecord[]>([]);
   const [historySearch, setHistorySearch] = useState('');
   const [previewImage, setPreviewImage] = useState<ImageRecord | null>(null);
 
@@ -98,9 +91,9 @@ export const ImagesWorkspace: React.FC = () => {
     <div className="workspace-page-container">
       <WorkspaceHeader
         title="Images Studio"
-        description="Cinematic high-fidelity image composition and latent visual generation studio"
+        description="Image prompt composition and generation controls. No image provider is connected in this phase."
         icon={ImageIcon}
-        badge="Precision Studio"
+        badge="Generation Studio"
         actions={
           <div className="header-action-cluster">
             {activeTab === 'create' ? (
@@ -320,23 +313,28 @@ export const ImagesWorkspace: React.FC = () => {
               <div className="capability-checklist">
                 <div className="capability-row">
                   <span className="cap-label">Target Resolutions</span>
-                  <span className="cap-val">Up to native 4K UHD</span>
+                  <span className="cap-val disconnected">Provider-dependent (unverified)</span>
                 </div>
                 <div className="capability-row">
                   <span className="cap-label">Latent Seed Lock</span>
-                  <span className="cap-val">Enabled</span>
+                  <span className="cap-val disconnected">Unavailable</span>
                 </div>
                 <div className="capability-row">
                   <span className="cap-label">Model Pipeline</span>
                   <span className="cap-val disconnected">Awaiting API Key</span>
                 </div>
               </div>
+              <p className="info-card-footnote">
+                Resolution and control options are exposed for configuration only. Actual limits are
+                determined by the connected model and verified at generation time.
+              </p>
             </div>
 
             <div className="studio-info-card subtle">
-              <h4 className="info-card-subtitle">Zero Fabrication Guarantee</h4>
+              <h4 className="info-card-subtitle">Honest Capability Reporting</h4>
               <p className="info-card-footnote">
-                ARTI never fabricates fake generated images or simulated success when backend providers are disconnected.
+                Generated images appear here only after a connected provider returns a real result.
+                While no provider is connected, this studio will not display placeholder output.
               </p>
             </div>
           </aside>

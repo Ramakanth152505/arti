@@ -11,8 +11,6 @@ import {
   HardDrive,
   Save,
   Check,
-  AlertCircle,
-  Lock,
 } from 'lucide-react';
 import { WorkspaceHeader } from '../../common/WorkspaceHeader';
 import { useWorkspace, type AppTheme } from '../../../context/WorkspaceContext';
@@ -43,9 +41,9 @@ export const SettingsWorkspace: React.FC = () => {
 
   // Appearance settings
   const [accentIntensity, setAccentIntensity] = useState('Standard Luxury (100%)');
-  const [fontScale, setFontScale] = useState('Default (100%)');
 
-  // Connected Services API Keys (stored safely in local storage only)
+  // Provider endpoint credentials. These are persisted in this browser's localStorage
+  // only, unencrypted, and are never transmitted anywhere by the frontend.
   const [geminiKey, setGeminiKey] = useState(() => localStorage.getItem('arti_key_gemini') || '');
   const [anthropicKey, setAnthropicKey] = useState(() => localStorage.getItem('arti_key_anthropic') || '');
   const [openaiKey, setOpenaiKey] = useState(() => localStorage.getItem('arti_key_openai') || '');
@@ -54,7 +52,6 @@ export const SettingsWorkspace: React.FC = () => {
   );
 
   // Notification toggles
-  const [notifSound, setNotifSound] = useState(false);
   const [notifBanners, setNotifBanners] = useState(true);
 
   // Accessibility
@@ -67,7 +64,7 @@ export const SettingsWorkspace: React.FC = () => {
       localStorage.setItem('arti_key_anthropic', anthropicKey);
       localStorage.setItem('arti_key_openai', openaiKey);
       localStorage.setItem('arti_endpoint_ollama', ollamaEndpoint);
-      showToast('API credentials securely saved to client browser storage', { type: 'success' });
+      showToast('Credentials saved to this browser only', { type: 'success' });
     } catch {
       showToast('Failed to save to local storage', { type: 'error' });
     }
@@ -298,7 +295,8 @@ export const SettingsWorkspace: React.FC = () => {
             <div className="settings-section-card">
               <h3 className="section-title">Connected AI Services</h3>
               <p className="section-desc">
-                API credentials are encrypted in local browser memory only. No keys are ever transmitted to third-party tracking servers.
+                Provider keys are stored in this browser&rsquo;s local storage on this device, unencrypted.
+                Do not use shared or untrusted devices. No key is transmitted anywhere from this build.
               </p>
 
               <form onSubmit={handleSaveKeys} className="api-keys-form">
@@ -356,11 +354,11 @@ export const SettingsWorkspace: React.FC = () => {
 
           {activeTab === 'security' && (
             <div className="settings-section-card">
-              <h3 className="section-title">Privacy &amp; Cryptography</h3>
+              <h3 className="section-title">Privacy</h3>
               <div className="setting-toggle-row">
                 <div>
-                  <h4 className="setting-toggle-title">Zero-Cloud Private Mode</h4>
-                  <p className="setting-toggle-desc">Enforce local client session encryption and block telemetry egress</p>
+                  <h4 className="setting-toggle-title">Private Mode</h4>
+                  <p className="setting-toggle-desc">Keep workspace activity local to this browser. No telemetry is collected in this build.</p>
                 </div>
                 <button
                   type="button"

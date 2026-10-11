@@ -2,77 +2,67 @@ import React, { useState } from 'react';
 import {
   ShoppingBag,
   Search,
-  Filter,
-  CheckCircle2,
-  Clock,
-  ExternalLink,
   Shield,
-  Layers,
-  Sparkles,
-  Sliders,
   AlertCircle,
 } from 'lucide-react';
 import { WorkspaceHeader } from '../../common/WorkspaceHeader';
 import { Dialog } from '../../common/Dialog';
-import { useToast } from '../../../context/ToastContext';
 
 interface ExtensionItem {
   id: string;
   name: string;
   category: 'Agent Packs' | 'Toolkits' | 'Workflows' | 'Visual Models' | 'Sound Packs';
   description: string;
-  status: 'Open Protocol' | 'Planned Integration' | 'Verified Core';
+  status: 'Planned Integration' | 'Conceptual';
   version: string;
   author: string;
 }
 
-const EXTENSIONS: ExtensionItem[] = [
+const PLANNED_EXTENSIONS: ExtensionItem[] = [
   {
     id: 'ext-1',
     name: 'Autonomous Systems Engineer Agent Pack',
     category: 'Agent Packs',
-    description: 'Fleet of 4 specialized software engineering agents for TypeScript, Rust, and WebGL.',
-    status: 'Verified Core',
-    version: 'v2.1',
-    author: 'ARTI Core Labs',
+    description: 'Concept for a fleet of specialized software engineering agents for TypeScript, Rust, and WebGL.',
+    status: 'Planned Integration',
+    version: 'Not released',
+    author: 'Proposed',
   },
   {
     id: 'ext-2',
-    name: 'Local ComfyUI / Stable Diffusion Connector',
+    name: 'Local Image Generation Connector',
     category: 'Toolkits',
-    description: 'Websocket bridge to self-hosted local ComfyUI instances for zero-cloud image generation.',
-    status: 'Open Protocol',
-    version: 'v1.0',
-    author: 'Open Community Spec',
+    description: 'Concept for a bridge to self-hosted local generation instances for zero-cloud image creation.',
+    status: 'Planned Integration',
+    version: 'Not released',
+    author: 'Proposed',
   },
   {
     id: 'ext-3',
     name: 'Cinematic Storyboard Long-Form Assembly Workflow',
     category: 'Workflows',
-    description: '12-stage production pipeline for multi-scene narrative consistency and audio alignment.',
-    status: 'Planned Integration',
-    version: 'v0.9',
-    author: 'Cinema Architecture Team',
+    description: 'Concept for a multi-stage production pipeline for multi-scene narrative consistency and audio alignment.',
+    status: 'Conceptual',
+    version: 'Not released',
+    author: 'Proposed',
   },
   {
     id: 'ext-4',
-    name: 'Symphonic Orchestral Latent Sound Pack',
+    name: 'Orchestral Latent Sound Pack',
     category: 'Sound Packs',
-    description: 'Curated harmonic soundbed presets and orchestral instruments for cinema scores.',
-    status: 'Open Protocol',
-    version: 'v1.2',
-    author: 'Audio Synthesis Foundation',
+    description: 'Concept for curated harmonic soundbed presets and orchestral instruments for cinema scores.',
+    status: 'Conceptual',
+    version: 'Not released',
+    author: 'Proposed',
   },
 ];
 
 export const MarketplaceWorkspace: React.FC = () => {
-  const { showToast } = useToast();
-
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState<string>('All');
   const [selectedExt, setSelectedExt] = useState<ExtensionItem | null>(null);
 
-  const filteredExtensions = EXTENSIONS.filter((ext) => {
+  const filteredExtensions = PLANNED_EXTENSIONS.filter((ext) => {
     const matchesSearch =
       ext.name.toLowerCase().includes(search.toLowerCase()) ||
       ext.description.toLowerCase().includes(search.toLowerCase());
@@ -84,7 +74,7 @@ export const MarketplaceWorkspace: React.FC = () => {
     <div className="workspace-page-container">
       <WorkspaceHeader
         title="Marketplace &amp; Capability Exchange"
-        description="Discover specialist agent fleets, verified protocol connectors, and production workflows"
+        description="Explore planned specialist agent fleets, planned protocol connectors, and future workflows"
         icon={ShoppingBag}
         badge="Open Architecture"
       />
@@ -124,7 +114,7 @@ export const MarketplaceWorkspace: React.FC = () => {
       <div className="workspace-storage-callout">
         <Shield size={13} className="callout-icon" />
         <span>
-          Non-Commercial Architecture: No paywalls, paid credits, or monetization tiers. All extensions follow open protocols.
+          No paywalls, paid credits, or monetization tiers. Entries below are proposed concepts, not installed or available extensions.
         </span>
       </div>
 
@@ -185,9 +175,10 @@ export const MarketplaceWorkspace: React.FC = () => {
             <div className="service-status-banner info">
               <AlertCircle size={15} />
               <div className="status-banner-text">
-                <strong>Protocol Standard Specification</strong>
+                <strong>Proposed Concept</strong>
                 <p>
-                  ARTI extensions run in isolated client sandboxes. To enable custom workflows, configure their schema definition in your project directory.
+                  This entry describes a planned integration concept. It is not installed, downloadable, or
+                  available for use in this build.
                 </p>
               </div>
             </div>
@@ -203,12 +194,10 @@ export const MarketplaceWorkspace: React.FC = () => {
               <button
                 type="button"
                 className="gold-primary-btn"
-                onClick={() => {
-                  setSelectedExt(null);
-                  showToast(`Selected protocol: ${selectedExt.name}`, { type: 'gold' });
-                }}
+                disabled
+                title="No install or download service is configured"
               >
-                Inspect Schema
+                Not Available
               </button>
             </div>
           </div>

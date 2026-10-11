@@ -10,15 +10,9 @@ import {
   Eye,
   Download,
   UploadCloud,
-  Sparkles,
-  ExternalLink,
-  ChevronRight,
-  AlertCircle,
   FileCode,
 } from 'lucide-react';
 import { WorkspaceHeader } from '../../common/WorkspaceHeader';
-import { Dialog } from '../../common/Dialog';
-import { useWorkspace } from '../../../context/WorkspaceContext';
 import { useToast } from '../../../context/ToastContext';
 
 interface WebsitePage {
@@ -29,7 +23,6 @@ interface WebsitePage {
 }
 
 export const WebsitesWorkspace: React.FC = () => {
-  const { navigate } = useWorkspace();
   const { showToast } = useToast();
 
   const [brief, setBrief] = useState(
@@ -55,12 +48,15 @@ export const WebsitesWorkspace: React.FC = () => {
   ];
 
   const handleExportZip = () => {
-    showToast('Exporting static HTML/Tailwind project bundle...', { type: 'gold' });
+    showToast(
+      'Export is not available: no site has been generated and no code-generation service is connected.',
+      { type: 'warning' }
+    );
   };
 
   const handlePublish = () => {
     showToast(
-      'Static export generated. Cloud deployment provider (Vercel / Cloudflare) is not configured in this private session.',
+      'Publish is not available: no deployment provider (Vercel / Cloudflare) is configured and no site has been generated.',
       { type: 'warning' }
     );
   };
@@ -69,9 +65,9 @@ export const WebsitesWorkspace: React.FC = () => {
     <div className="workspace-page-container">
       <WorkspaceHeader
         title="Websites Studio"
-        description="Natural-language website architecture synthesis, responsive viewport studio, and template explorer"
+        description="Website brief, page outline, and responsive preview foundation. Publishing is not connected."
         icon={Globe}
-        badge="Responsive Builder"
+        badge="Planning Studio"
         actions={
           <div className="header-action-cluster">
             <button
@@ -171,7 +167,7 @@ export const WebsitesWorkspace: React.FC = () => {
           <div className="spec-card subtle">
             <div className="engine-boundary-notice">
               <FileCode size={13} />
-              <span>Boundary: Static bundle generation ready. Hosting runner decoupled.</span>
+              <span>Integration boundary: website generation and hosting are not connected yet.</span>
             </div>
           </div>
         </aside>
@@ -244,6 +240,7 @@ export const WebsitesWorkspace: React.FC = () => {
             <div className={`viewport-mock-frame frame-${viewport}`}>
               {activeTab === 'preview' ? (
                 <div className="mock-site-render">
+                  <span className="example-mock-tag">Illustrative preview — not generated</span>
                   {/* Mock Site Header */}
                   <header className="mock-site-nav">
                     <span className="mock-site-logo">ARTI AI</span>
@@ -259,7 +256,7 @@ export const WebsitesWorkspace: React.FC = () => {
                     <span className="mock-site-badge">{template}</span>
                     <h2 className="mock-site-h1">Autonomous Intelligence Operating Environment</h2>
                     <p className="mock-site-sub">
-                      Private, encrypted, and designed for infinite exploratory creation.
+                      Private and designed for exploratory creation.
                     </p>
                     <div className="mock-site-ctas">
                       <button type="button" className="mock-cta-primary">
@@ -274,19 +271,20 @@ export const WebsitesWorkspace: React.FC = () => {
                   {/* Mock Feature Grid */}
                   <div className="mock-site-grid">
                     <div className="mock-card">
-                      <h4>Deterministic Task Engine</h4>
-                      <p>Multi-agent orchestration with verifiable proof of execution.</p>
+                      <h4>Task Engine (Planned)</h4>
+                      <p>Multi-agent orchestration with verifiable execution is a planned capability.</p>
                     </div>
                     <div className="mock-card">
-                      <h4>Client-Side Isolation</h4>
-                      <p>Zero telemetry. Local memory protected with AES-256 client cryptography.</p>
+                      <h4>Local Browser Storage</h4>
+                      <p>Data stays in this browser on this device. No encryption layer is applied.</p>
                     </div>
                   </div>
                 </div>
               ) : activeTab === 'code' ? (
                 <div className="mock-code-viewer">
                   <pre className="code-block">
-{`<!-- ARTI Generated Website Page: ${pages.find((p) => p.id === activePageId)?.name} -->
+{`<!-- Illustrative example scaffold — not generated code -->
+<!-- Page: ${pages.find((p) => p.id === activePageId)?.name} -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -320,7 +318,7 @@ export const WebsitesWorkspace: React.FC = () => {
                   </div>
                   <div className="structure-section-item">
                     <span className="sec-tag">Footer</span>
-                    <span className="sec-desc">Legal Notice &middot; Private Encryption Badge</span>
+                    <span className="sec-desc">Legal Notice &middot; Privacy Badge</span>
                   </div>
                 </div>
               )}

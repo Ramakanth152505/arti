@@ -1,20 +1,14 @@
 import React, { useState } from 'react';
 import {
   Compass,
-  Plus,
-  Search,
-  BookOpen,
   FileCheck,
   CheckCircle2,
   AlertTriangle,
-  HelpCircle,
   Sparkles,
-  ExternalLink,
-  Layers,
-  FileText,
 } from 'lucide-react';
 import { WorkspaceHeader } from '../../common/WorkspaceHeader';
-import { useWorkspace } from '../../../context/WorkspaceContext';
+import { EmptyState } from '../../common/EmptyState';
+import { DemoDataNotice } from '../../common/DemoDataNotice';
 import { useToast } from '../../../context/ToastContext';
 
 interface EvidenceSource {
@@ -25,40 +19,37 @@ interface EvidenceSource {
   notes: string;
 }
 
+const DEMO_RESEARCH_SOURCES: EvidenceSource[] = [
+  {
+    id: 'src-1',
+    title: 'Example: In-browser index memory layout study',
+    provenance: 'Unverified Hypothesis',
+    citation: 'Not a real citation — demonstration entry',
+    notes: 'Illustrates how a verified source record would appear. Not a real reference.',
+  },
+  {
+    id: 'src-2',
+    title: 'Example: Client-side embedding protocol spec',
+    provenance: 'Unverified Hypothesis',
+    citation: 'Not a real citation — demonstration entry',
+    notes: 'Illustrates how a documentation record would appear. Not a real reference.',
+  },
+];
+
 export const ResearchWorkspace: React.FC = () => {
   const { showToast } = useToast();
 
-  const [question, setQuestion] = useState(
-    'How do low-latency local vector embedding caches compare with server-side HNSW indexes in private desktop applications?'
-  );
+  const [question, setQuestion] = useState('');
   const [depth, setDepth] = useState('Deep Academic Synthesis');
-  const [notes, setNotes] = useState(
-    'Key finding: In-memory quantized binary vector representations achieve 85% recall with sub-millisecond lookups for personal vaults (< 100k items) without transmitting plaintexts over WAN.'
-  );
+  const [notes, setNotes] = useState('');
 
-  const [sources, setSources] = useState<EvidenceSource[]>([
-    {
-      id: 'src-1',
-      title: 'Efficient Memory Layouts for In-Browser HNSW Indexes',
-      provenance: 'Verified Peer-Reviewed',
-      citation: 'ACM Trans. Web Systems (2025)',
-      notes: 'Demonstrates IndexedDB blob chunking reduces garbage collection spikes by 60%.',
-    },
-    {
-      id: 'src-2',
-      title: 'Zero-Knowledge Client-Side Embedding Protocols',
-      provenance: 'Primary Documentation',
-      citation: 'Cryptography Research Labs Spec (2026)',
-      notes: 'Validates AES-GCM salt isolation per document chunk.',
-    },
-    {
-      id: 'src-3',
-      title: 'Extrapolated Scaling for 1M Local Embeddings',
-      provenance: 'Model Inference',
-      citation: 'ARTI Synthetic Estimation Loop',
-      notes: 'Hypothesis requires empirical benchmark verification on client memory hardware.',
-    },
-  ]);
+  const [sources, setSources] = useState<EvidenceSource[]>(DEMO_RESEARCH_SOURCES);
+  const [isDemo, setIsDemo] = useState(true);
+
+  const clearDemo = () => {
+    setSources([]);
+    setIsDemo(false);
+  };
 
   const getProvenanceBadgeClass = (prov: EvidenceSource['provenance']) => {
     switch (prov) {
@@ -80,13 +71,18 @@ export const ResearchWorkspace: React.FC = () => {
         title="Research Laboratory"
         description="Deep scientific inquiry, academic evidence synthesis, and verifiable source provenance"
         icon={Compass}
-        badge="Evidence Grounded"
+        badge="Research Workspace"
         actions={
           <div className="header-action-cluster">
             <button
               type="button"
               className="gold-primary-btn"
-              onClick={() => showToast('Research inquiry submitted to synthesis queue', { type: 'gold' })}
+              onClick={() =>
+                showToast(
+                  'Research synthesis requires a configured retrieval and reasoning provider. None is connected.',
+                  { type: 'warning' }
+                )
+              }
             >
               <Sparkles size={14} />
               <span>Execute Research Query</span>
@@ -96,6 +92,14 @@ export const ResearchWorkspace: React.FC = () => {
       />
 
       <div className="research-studio-grid">
+        {isDemo && (
+          <div className="demo-notice-span">
+            <DemoDataNotice
+              message="The sample sources and plan steps below are illustrative placeholders, not verified evidence."
+              onClear={clearDemo}
+            />
+          </div>
+        )}
         {/* Left Column: Research Question & Plan */}
         <aside className="research-sidebar-column">
           <div className="spec-card">
@@ -125,16 +129,16 @@ export const ResearchWorkspace: React.FC = () => {
           <div className="spec-card">
             <h3 className="spec-card-heading">Structured Research Plan</h3>
             <div className="research-plan-steps">
-              <div className="plan-step-item done">
-                <CheckCircle2 size={13} className="step-check" />
+              <div className="plan-step-item">
+                <span className="step-dot" />
                 <span>1. Problem Formulation &amp; Query Tokenization</span>
               </div>
-              <div className="plan-step-item done">
-                <CheckCircle2 size={13} className="step-check" />
+              <div className="plan-step-item">
+                <span className="step-dot" />
                 <span>2. Corpus Retrieval &amp; Citation Indexing</span>
               </div>
-              <div className="plan-step-item active">
-                <span className="step-dot active" />
+              <div className="plan-step-item">
+                <span className="step-dot" />
                 <span>3. Provenance Verification &amp; Hypothesis Audit</span>
               </div>
               <div className="plan-step-item">
@@ -142,6 +146,7 @@ export const ResearchWorkspace: React.FC = () => {
                 <span>4. Report Synthesis &amp; LaTeX Export</span>
               </div>
             </div>
+            <span className="plan-step-meta">Plan outline only — steps execute once a research provider is connected.</span>
           </div>
         </aside>
 
@@ -168,22 +173,30 @@ export const ResearchWorkspace: React.FC = () => {
           <div className="sources-card">
             <div className="sources-header-row">
               <h3 className="sources-title">Indexed Sources &amp; Literature</h3>
-              <span className="sources-count">{sources.length} Documents Grounded</span>
+              <span className="sources-count">{sources.length} Example Entries (not verified)</span>
             </div>
 
             <div className="sources-list">
-              {sources.map((src) => (
-                <div key={src.id} className="source-item-card">
-                  <div className="source-item-header">
-                    <span className="source-title">{src.title}</span>
-                    <span className={`provenance-pill ${getProvenanceBadgeClass(src.provenance)}`}>
-                      {src.provenance}
-                    </span>
+              {sources.length === 0 ? (
+                <EmptyState
+                  icon={Compass}
+                  title="No sources indexed"
+                  description="Add references or connect a retrieval provider to ground this research in real evidence."
+                />
+              ) : (
+                sources.map((src) => (
+                  <div key={src.id} className="source-item-card">
+                    <div className="source-item-header">
+                      <span className="source-title">{src.title}</span>
+                      <span className={`provenance-pill ${getProvenanceBadgeClass(src.provenance)}`}>
+                        {src.provenance}
+                      </span>
+                    </div>
+                    <span className="source-citation">{src.citation}</span>
+                    <p className="source-notes">{src.notes}</p>
                   </div>
-                  <span className="source-citation">{src.citation}</span>
-                  <p className="source-notes">{src.notes}</p>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 

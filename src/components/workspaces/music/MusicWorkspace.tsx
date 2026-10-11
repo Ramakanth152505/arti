@@ -3,19 +3,15 @@ import {
   Music as MusicIcon,
   Play,
   Pause,
-  Plus,
   Volume2,
-  Sliders,
   Download,
   Sparkles,
   Disc,
-  Clock,
-  Layers,
-  AlertCircle,
   FileAudio,
 } from 'lucide-react';
 import { WorkspaceHeader } from '../../common/WorkspaceHeader';
-import { useWorkspace } from '../../../context/WorkspaceContext';
+import { EmptyState } from '../../common/EmptyState';
+import { DemoDataNotice } from '../../common/DemoDataNotice';
 import { useToast } from '../../../context/ToastContext';
 
 interface TrackItem {
@@ -26,7 +22,39 @@ interface TrackItem {
   duration: string;
   keySignature: string;
   instruments: string[];
+  /** Set only when a real, playable audio artifact exists. Demonstrations have none. */
+  audioUrl?: string;
 }
+
+const DEMO_TRACKS: TrackItem[] = [
+  {
+    id: 'trk-1',
+    title: 'Ascent to the Planetary Citadel',
+    genre: 'Neo-Classical Cinema',
+    bpm: 78,
+    duration: '3:42',
+    keySignature: 'D Minor',
+    instruments: ['Solo Cello', 'Celestial Choir', 'Analog Sub', 'Grand Piano'],
+  },
+  {
+    id: 'trk-2',
+    title: 'Reflective Waters at Midnight',
+    genre: 'Ambient Atmospheric',
+    bpm: 64,
+    duration: '4:15',
+    keySignature: 'A Minor',
+    instruments: ['Tape Echo Synth', 'Orchestral Flute', 'Harp'],
+  },
+  {
+    id: 'trk-3',
+    title: 'Zero-G Orbital Pulse',
+    genre: 'Cybernettic Downtempo',
+    bpm: 92,
+    duration: '2:58',
+    keySignature: 'C Minor',
+    instruments: ['Modular Synth', 'Moog Sub 37', 'Granular FX'],
+  },
+];
 
 export const MusicWorkspace: React.FC = () => {
   const { showToast } = useToast();
@@ -40,65 +68,78 @@ export const MusicWorkspace: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeTrackId, setActiveTrackId] = useState('trk-1');
 
-  const [tracks, setTracks] = useState<TrackItem[]>([
-    {
-      id: 'trk-1',
-      title: 'Ascent to the Planetary Citadel',
-      genre: 'Neo-Classical Cinema',
-      bpm: 78,
-      duration: '3:42',
-      keySignature: 'D Minor',
-      instruments: ['Solo Cello', 'Celestial Choir', 'Analog Sub', 'Grand Piano'],
-    },
-    {
-      id: 'trk-2',
-      title: 'Reflective Waters at Midnight',
-      genre: 'Ambient Atmospheric',
-      bpm: 64,
-      duration: '4:15',
-      keySignature: 'A Minor',
-      instruments: ['Tape Echo Synth', 'Orchestral Flute', 'Harp'],
-    },
-    {
-      id: 'trk-3',
-      title: 'Zero-G Orbital Pulse',
-      genre: 'Cybernetic Downtempo',
-      bpm: 92,
-      duration: '2:58',
-      keySignature: 'C Minor',
-      instruments: ['Modular Synth', 'Moog Sub 37', 'Granular FX'],
-    },
-  ]);
+  const [tracks, setTracks] = useState<TrackItem[]>(() => {
+    try {
+      const stored = localStorage.getItem('arti_ws_music');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed as TrackItem[];
+      }
+    } catch {
+      // ignore
+    }
+    return DEMO_TRACKS;
+  });
+  const [isDemo, setIsDemo] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('arti_ws_music') === null && DEMO_TRACKS.length > 0;
+    } catch {
+      return true;
+    }
+  });
 
   const activeTrack = tracks.find((t) => t.id === activeTrackId) || tracks[0];
+  const hasAudio = Boolean(activeTrack?.audioUrl);
 
   const handleTogglePlay = () => {
+    if (!hasAudio) {
+      showToast(
+        'No audio artifact is loaded. Connect a synthesis provider to generate real playable audio.',
+        { type: 'warning' }
+      );
+      return;
+    }
     setIsPlaying(!isPlaying);
-    showToast(!isPlaying ? `Playing: ${activeTrack.title}` : 'Audio playback paused', {
-      type: 'gold',
-    });
   };
 
-  const handleExport = (format: string) => {
-    showToast(`Master export generated: ${activeTrack.title}.${format.toLowerCase()}`, {
-      type: 'gold',
-    });
+  const handleExport = () => {
+    if (!hasAudio || !activeTrack) {
+      showToast('Export unavailable: no rendered audio artifact exists for this track.', {
+        type: 'warning',
+      });
+      return;
+    }
+    const a = document.createElement('a');
+    a.href = activeTrack.audioUrl as string;
+    a.download = `${activeTrack.title}.wav`;
+    a.click();
+    showToast(`Exported: ${activeTrack.title}`, { type: 'gold' });
+  };
+
+  const clearDemo = () => {
+    setTracks([]);
+    setIsDemo(false);
+    try {
+      localStorage.setItem('arti_ws_music', JSON.stringify([]));
+    } catch {
+      // ignore
+    }
   };
 
   return (
     <div className="workspace-page-container">
       <WorkspaceHeader
         title="Music Studio"
-        description="Algorithmic soundtrack composition, harmonic orchestration, and audio stem synthesis"
+        description="Track planning and audio synthesis controls. No audio provider is connected in this phase."
         icon={MusicIcon}
-        badge="Spatial Audio"
+        badge="Composition Studio"
         actions={
           <div className="header-action-cluster">
             <button
               type="button"
               className="gold-ghost-btn"
-              onClick={() => handleExport('WAV')}
-              title="Export 24-bit uncompressed WAV"
+              onClick={handleExport}
+              title="Export rendered audio artifact"
             >
               <Download size={14} />
               <span>Export Master</span>
@@ -122,6 +163,14 @@ export const MusicWorkspace: React.FC = () => {
 
       {/* Main Studio Grid */}
       <div className="music-studio-grid">
+        {isDemo && (
+          <div className="demo-notice-span">
+            <DemoDataNotice
+              message="These example scores are illustrative metadata only. No real audio has been generated."
+              onClear={clearDemo}
+            />
+          </div>
+        )}
         {/* Left Column: Composition Prompt & Harmonic Controls */}
         <aside className="music-sidebar-column">
           <div className="spec-card">
@@ -186,12 +235,21 @@ export const MusicWorkspace: React.FC = () => {
           </div>
         </aside>
 
-        {/* Center/Right: Interactive Player & Track Library */}
         <main className="music-main-column">
+          {tracks.length === 0 ? (
+            <EmptyState
+              icon={MusicIcon}
+              title="No tracks yet"
+              description="Composed scores will appear here once an audio synthesis provider is connected and a track is generated."
+              actionLabel="Compose a Score"
+              onAction={() => showToast('Enter a composition brief, then connect a synthesis provider in Settings.', { type: 'info' })}
+            />
+          ) : (
+          <>
           {/* Active Track Player Card */}
           <div className="audio-player-card">
             <div className="player-disc-spin-box">
-              <Disc size={64} className={`player-disc-icon ${isPlaying ? 'spinning' : ''}`} />
+              <Disc size={64} className={`player-disc-icon ${isPlaying && hasAudio ? 'spinning' : ''}`} />
             </div>
 
             <div className="player-track-info">
@@ -205,32 +263,37 @@ export const MusicWorkspace: React.FC = () => {
                 <span>{activeTrack.duration}</span>
               </div>
 
-              {/* Waveform Visualization Mockup */}
               <div className="player-waveform-bar">
                 {Array.from({ length: 48 }).map((_, i) => {
                   const height = 8 + Math.sin(i * 0.4) * 14 + (i % 5) * 4;
                   return (
                     <div
                       key={i}
-                      className={`waveform-stripe ${isPlaying ? 'active' : ''}`}
+                      className={`waveform-stripe ${isPlaying && hasAudio ? 'active' : ''}`}
                       style={{ height: `${height}px` }}
                     />
                   );
                 })}
               </div>
 
-              {/* Audio Controls */}
+              {!hasAudio && (
+                <span className="player-no-audio-note">
+                  No audio artifact loaded
+                </span>
+              )}
+
               <div className="player-controls-row">
                 <button
                   type="button"
                   className="player-play-btn"
                   onClick={handleTogglePlay}
-                  title={isPlaying ? 'Pause playback' : 'Play audio'}
+                  title={hasAudio ? (isPlaying ? 'Pause playback' : 'Play audio') : 'No audio artifact available'}
+                  aria-disabled={!hasAudio}
                 >
-                  {isPlaying ? <Pause size={18} /> : <Play size={18} />}
+                  {isPlaying && hasAudio ? <Pause size={18} /> : <Play size={18} />}
                 </button>
                 <div className="player-time-display">
-                  <span>0:45</span> / <span>{activeTrack.duration}</span>
+                  <span>{hasAudio ? '0:00' : '--:--'}</span> / <span>{activeTrack.duration}</span>
                 </div>
                 <div className="player-volume-group">
                   <Volume2 size={15} />
@@ -262,10 +325,14 @@ export const MusicWorkspace: React.FC = () => {
                       onClick={(e) => {
                         e.stopPropagation();
                         setActiveTrackId(t.id);
+                        if (!t.audioUrl) {
+                          showToast('No audio artifact loaded for this track.', { type: 'warning' });
+                          return;
+                        }
                         setIsPlaying(!isPlaying || t.id !== activeTrackId);
                       }}
                     >
-                      {isSelected && isPlaying ? <Pause size={13} /> : <Play size={13} />}
+                      {isSelected && isPlaying && t.audioUrl ? <Pause size={13} /> : <Play size={13} />}
                     </button>
 
                     <div className="track-item-details">
@@ -289,6 +356,8 @@ export const MusicWorkspace: React.FC = () => {
               })}
             </div>
           </div>
+          </>
+          )}
         </main>
       </div>
     </div>

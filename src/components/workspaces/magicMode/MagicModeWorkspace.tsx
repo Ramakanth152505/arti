@@ -1,21 +1,9 @@
 import React, { useState } from 'react';
 import {
   Sparkles,
-  Layers,
   Bot,
-  Wrench,
-  CheckCircle2,
   ShieldCheck,
   Play,
-  RotateCcw,
-  Sliders,
-  ChevronRight,
-  ArrowRight,
-  Info,
-  Clock,
-  HardDrive,
-  FileCode,
-  X,
   AlertCircle,
 } from 'lucide-react';
 import { WorkspaceHeader } from '../../common/WorkspaceHeader';
@@ -27,7 +15,7 @@ interface WorkflowNode {
   phase: string;
   lane: 'Planning' | 'Specialist Agents' | 'Tools & Artifacts' | 'Verification';
   assignedAgent: string;
-  status: 'Ready' | 'Configured' | 'Awaiting Dispatch';
+  status: 'Planned Stage';
   inputs: string[];
   outputs: string[];
   description: string;
@@ -42,7 +30,7 @@ const ORCHESTRATION_NODES: WorkflowNode[] = [
     phase: 'Phase 1: Clarification',
     lane: 'Planning',
     assignedAgent: 'Operator (Ramakanth) + Architect Prime',
-    status: 'Ready',
+    status: 'Planned Stage',
     inputs: ['User Intent Prompt', 'Target Constraints'],
     outputs: ['Signed Goal Spec', 'Topological Scope Token'],
     description: 'Refines ambiguous prompts into deterministic, machine-verifiable sub-goals.',
@@ -55,7 +43,7 @@ const ORCHESTRATION_NODES: WorkflowNode[] = [
     phase: 'Phase 2: Topology',
     lane: 'Planning',
     assignedAgent: 'Architect Prime (AP-01)',
-    status: 'Configured',
+    status: 'Planned Stage',
     inputs: ['Signed Goal Spec'],
     outputs: ['Acyclic Dependency Graph', 'Agent Route Table'],
     description: 'Computes Kahn topological order, validates 0 cycles, and delegates task lanes.',
@@ -68,7 +56,7 @@ const ORCHESTRATION_NODES: WorkflowNode[] = [
     phase: 'Phase 3: Execution',
     lane: 'Specialist Agents',
     assignedAgent: 'Code Synthesis Engine (CS-02)',
-    status: 'Awaiting Dispatch',
+    status: 'Planned Stage',
     inputs: ['Subsystem Architecture Specs'],
     outputs: ['TypeScript Modules', 'Unit Test Suite'],
     description: 'Implements production-quality React 19 components with strict type safety.',
@@ -81,7 +69,7 @@ const ORCHESTRATION_NODES: WorkflowNode[] = [
     phase: 'Phase 3: Execution',
     lane: 'Specialist Agents',
     assignedAgent: 'Visual Maestro (VM-04)',
-    status: 'Awaiting Dispatch',
+    status: 'Planned Stage',
     inputs: ['Scene Latent Anchors'],
     outputs: ['Storyboard Keyframes', 'Camera Trajectories'],
     description: 'Coordinates multi-scene visual continuity, camera choreography, and lighting.',
@@ -93,24 +81,24 @@ const ORCHESTRATION_NODES: WorkflowNode[] = [
     label: '5. Deterministic Tool Calls & IO',
     phase: 'Phase 4: Tool Execution',
     lane: 'Tools & Artifacts',
-    assignedAgent: 'Execution Sandbox Daemon',
-    status: 'Awaiting Dispatch',
+    assignedAgent: 'Tool Execution Sandbox (planned)',
+    status: 'Planned Stage',
     inputs: ['Generated Source Files'],
-    outputs: ['Compiled Client Artifacts', 'Local Storage Commit'],
-    description: 'Executes lints, builds bundles, and seals artifacts into local IndexedDB storage.',
+    outputs: ['Compiled Artifacts', 'Local Storage Commit'],
+    description: 'Planned: runs lints, builds bundles, and stores artifacts locally.',
     x: 920,
     y: 100,
   },
   {
     id: 'node-6',
-    label: '6. Cryptographic Quality Verification',
+    label: '6. Quality Verification',
     phase: 'Phase 5: Verification',
     lane: 'Verification',
-    assignedAgent: 'Research Sovereign + Verification Core',
-    status: 'Awaiting Dispatch',
+    assignedAgent: 'Verification Core (planned)',
+    status: 'Planned Stage',
     inputs: ['Compiled Artifacts', 'Goal Acceptance Criteria'],
-    outputs: ['Proof of Work Signature', 'Operator Delivery Card'],
-    description: 'Audits evidence provenance, checks zero-telemetry rules, and signs execution.',
+    outputs: ['Verification Report', 'Operator Delivery Card'],
+    description: 'Planned: audits evidence provenance and checks acceptance criteria.',
     x: 1220,
     y: 100,
   },
@@ -119,43 +107,36 @@ const ORCHESTRATION_NODES: WorkflowNode[] = [
 export const MagicModeWorkspace: React.FC = () => {
   const { showToast } = useToast();
 
-  const [goalPrompt, setGoalPrompt] = useState(
-    'Synthesize a complete universal workspace foundation with 21 dedicated module landing pages, cinematic aesthetics, and zero fake generation.'
-  );
+  const [goalPrompt, setGoalPrompt] = useState('');
   const [selectedNodeId, setSelectedNodeId] = useState<string>('node-1');
-  const [nodes, setNodes] = useState<WorkflowNode[]>(ORCHESTRATION_NODES);
-  const [isSimulating, setIsSimulating] = useState(false);
+  const [nodes] = useState<WorkflowNode[]>(ORCHESTRATION_NODES);
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId) || nodes[0];
 
   const handleValidatePlan = () => {
-    setIsSimulating(true);
-    showToast('Plan Topology Audit: Validating DAG consistency across 6 stages...', { type: 'gold' });
-    setTimeout(() => {
-      setIsSimulating(false);
-      showToast('Validation Complete: 0 cycles detected, all dependencies strictly acyclic.', {
-        type: 'success',
-      });
-    }, 1200);
+    showToast(
+      'No workflow engine is connected. Plan validation and topology auditing are not available in this build.',
+      { type: 'warning' }
+    );
   };
 
   return (
     <div className="workspace-page-container magic-mode-container">
       <WorkspaceHeader
-        title="Magic Mode &middot; Autonomous Orchestration Canvas"
-        description="Graphical multi-agent task planner, topological dependency DAG, and deterministic verification stage"
+        title="Magic Mode &middot; Orchestration Canvas"
+        description="A planned workflow canvas for multi-agent task planning. The orchestration engine is not connected in this phase."
         icon={Sparkles}
-        badge="Autonomous Canvas"
+        badge="Design Foundation"
         actions={
           <div className="header-action-cluster">
             <button
               type="button"
               className="gold-primary-btn"
               onClick={handleValidatePlan}
-              disabled={isSimulating}
+              title="Requires a connected workflow engine"
             >
               <Play size={14} />
-              <span>{isSimulating ? 'Auditing Topology...' : 'Validate DAG Plan'}</span>
+              <span>Validate Plan</span>
             </button>
           </div>
         }
@@ -326,9 +307,10 @@ export const MagicModeWorkspace: React.FC = () => {
             <div className="service-status-banner info">
               <AlertCircle size={14} />
               <div className="status-banner-text">
-                <strong>Deterministic Foundation</strong>
+                <strong>Design Foundation</strong>
                 <p>
-                  Magic Mode visualizes genuine DAG dependency structures. Live autonomous execution will engage once local background daemons are configured.
+                  This canvas illustrates how Magic Mode will decompose a goal into workflow nodes, agent
+                  lanes, tools, and verification stages. No task is running and no status is live.
                 </p>
               </div>
             </div>

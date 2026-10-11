@@ -1,20 +1,13 @@
 import React, { useState } from 'react';
 import {
   Terminal,
-  Activity,
   Layers,
-  Cpu,
-  Clock,
   ShieldAlert,
   CheckCircle2,
-  AlertTriangle,
-  Play,
-  RotateCcw,
   Sparkles,
 } from 'lucide-react';
 import { WorkspaceHeader } from '../../common/WorkspaceHeader';
 import { useWorkspace } from '../../../context/WorkspaceContext';
-import { useToast } from '../../../context/ToastContext';
 
 interface ApprovalItem {
   id: string;
@@ -26,42 +19,17 @@ interface ApprovalItem {
 
 export const CommandCenterWorkspace: React.FC = () => {
   const { navigate } = useWorkspace();
-  const { showToast } = useToast();
 
-  const [approvals, setApprovals] = useState<ApprovalItem[]>([
-    {
-      id: 'appr-1',
-      action: 'File IO Write: /src/engine/dag.ts',
-      agent: 'Code Synthesis Engine',
-      riskLevel: 'Low',
-      details: 'Overwrites DAG topological resolver with unit-tested implementation.',
-    },
-    {
-      id: 'appr-2',
-      action: 'API Key Access: Google Gemini Model Endpoint',
-      agent: 'Architect Prime',
-      riskLevel: 'Medium',
-      details: 'Requests token budget of 4k tokens to decompose project brief.',
-    },
-  ]);
-
-  const handleApprove = (id: string) => {
-    setApprovals((prev) => prev.filter((a) => a.id !== id));
-    showToast('Action approved by operator (Ramakanth)', { type: 'success' });
-  };
-
-  const handleReject = (id: string) => {
-    setApprovals((prev) => prev.filter((a) => a.id !== id));
-    showToast('Action denied by operator', { type: 'warning' });
-  };
+  const [approvals] = useState<ApprovalItem[]>([]);
+  const [showPreview, setShowPreview] = useState(false);
 
   return (
     <div className="workspace-page-container">
       <WorkspaceHeader
         title="AI Command Center"
-        description="Mission control orchestration interface, multi-agent dependency telemetry, and human-in-the-loop approval queue"
+        description="Mission control orchestration interface. The orchestration engine is not connected in this phase."
         icon={Terminal}
-        badge="Mission Control"
+        badge="Orchestration Offline"
         actions={
           <div className="header-action-cluster">
             <button
@@ -80,26 +48,26 @@ export const CommandCenterWorkspace: React.FC = () => {
         {/* Top Row: Mission Telemetry Overview */}
         <div className="command-overview-row">
           <div className="telemetry-card">
-            <span className="telemetry-label">Active Specialist Lanes</span>
-            <strong className="telemetry-val">5 Configured</strong>
-            <span className="telemetry-sub">Architect, Code, Research, Visual, Prose</span>
+            <span className="telemetry-label">Specialist Lanes</span>
+            <strong className="telemetry-val">None Running</strong>
+            <span className="telemetry-sub">No agents are currently executing</span>
           </div>
           <div className="telemetry-card">
-            <span className="telemetry-label">Pending Operator Approvals</span>
+            <span className="telemetry-label">Pending Approvals</span>
             <strong className={`telemetry-val ${approvals.length > 0 ? 'alert' : ''}`}>
               {approvals.length} Pending
             </strong>
             <span className="telemetry-sub">Human-in-the-loop safety protocol</span>
           </div>
           <div className="telemetry-card">
-            <span className="telemetry-label">Execution Guardrails</span>
-            <strong className="telemetry-val">Zero-Eval Sandbox</strong>
-            <span className="telemetry-sub">Client memory isolation</span>
+            <span className="telemetry-label">Execution Service</span>
+            <strong className="telemetry-val standby">Not Connected</strong>
+            <span className="telemetry-sub">No task engine configured</span>
           </div>
           <div className="telemetry-card">
             <span className="telemetry-label">Orchestrator Mode</span>
-            <strong className="telemetry-val">Deterministic DAG</strong>
-            <span className="telemetry-sub">Acyclic dependency mapping</span>
+            <strong className="telemetry-val standby">Standby</strong>
+            <span className="telemetry-sub">Awaiting workflow engine</span>
           </div>
         </div>
 
@@ -109,7 +77,7 @@ export const CommandCenterWorkspace: React.FC = () => {
           <div className="workflow-staging-card">
             <div className="staging-header">
               <Layers size={14} />
-              <span>Universal Workflow Graph Architecture</span>
+              <span>Planned Workflow Graph Architecture</span>
             </div>
 
             <div className="graph-preview-box">
@@ -118,7 +86,7 @@ export const CommandCenterWorkspace: React.FC = () => {
               </div>
               <div className="graph-arrow">&darr;</div>
               <div className="graph-node-preview agents">
-                <span>Phase 2: Specialist Agent Decomposition (5 Lanes)</span>
+                <span>Phase 2: Specialist Agent Decomposition</span>
               </div>
               <div className="graph-arrow">&darr;</div>
               <div className="graph-node-preview tools">
@@ -126,9 +94,12 @@ export const CommandCenterWorkspace: React.FC = () => {
               </div>
               <div className="graph-arrow">&darr;</div>
               <div className="graph-node-preview verify">
-                <span>Phase 4: Artifact Quality &amp; Cryptographic Verification</span>
+                <span>Phase 4: Artifact Quality &amp; Verification</span>
               </div>
             </div>
+            <span className="plan-step-meta">
+              Diagram shows the intended pipeline. No stages are executing and no status is live.
+            </span>
           </div>
 
           {/* Right: Human-in-the-Loop Approval Queue */}
@@ -141,8 +112,39 @@ export const CommandCenterWorkspace: React.FC = () => {
             {approvals.length === 0 ? (
               <div className="approvals-empty">
                 <CheckCircle2 size={24} className="empty-ok-icon" />
-                <p>All agent operations cleared</p>
-                <span>No high-privilege actions awaiting operator authorization</span>
+                <p>No approvals pending</p>
+                <span>
+                  There is no active orchestration engine, so no agent actions are awaiting authorization.
+                </span>
+                <button
+                  type="button"
+                  className="gold-ghost-btn small"
+                  onClick={() => setShowPreview((v) => !v)}
+                >
+                  {showPreview ? 'Hide example approval' : 'Show example approval (demo)'}
+                </button>
+                {showPreview && (
+                  <div className="approval-row-card demo">
+                    <span className="approval-demo-tag">Demonstration preview</span>
+                    <div className="approval-row-header">
+                      <span className="approval-agent">Example Agent</span>
+                      <span className="risk-badge risk-low">Risk: Low</span>
+                    </div>
+                    <h4 className="approval-action">Example: File write request</h4>
+                    <p className="approval-details">
+                      This is an illustrative card showing how a real approval request would appear. It is
+                      not a live request and cannot be authorized.
+                    </p>
+                    <div className="approval-btn-row">
+                      <button type="button" className="gold-ghost-btn small danger" disabled>
+                        Deny Action
+                      </button>
+                      <button type="button" className="gold-primary-btn small" disabled>
+                        Authorize Execution
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="approvals-list">
@@ -157,23 +159,6 @@ export const CommandCenterWorkspace: React.FC = () => {
 
                     <h4 className="approval-action">{appr.action}</h4>
                     <p className="approval-details">{appr.details}</p>
-
-                    <div className="approval-btn-row">
-                      <button
-                        type="button"
-                        className="gold-ghost-btn small danger"
-                        onClick={() => handleReject(appr.id)}
-                      >
-                        Deny Action
-                      </button>
-                      <button
-                        type="button"
-                        className="gold-primary-btn small"
-                        onClick={() => handleApprove(appr.id)}
-                      >
-                        Authorize Execution
-                      </button>
-                    </div>
                   </div>
                 ))}
               </div>

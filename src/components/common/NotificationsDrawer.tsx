@@ -11,40 +11,7 @@ interface NotificationEntry {
   type: 'security' | 'system' | 'storage' | 'info';
 }
 
-const INITIAL_NOTIFICATIONS: NotificationEntry[] = [
-  {
-    id: 'notif-1',
-    title: 'Zero-Cloud Private Mode Active',
-    message: 'Local memory session initialized with AES-256 client encryption. No external telemetry active.',
-    timestamp: 'Just now',
-    isRead: false,
-    type: 'security',
-  },
-  {
-    id: 'notif-2',
-    title: 'Task Engine in Standby Mode',
-    message: 'Local execution engine is standing by for orchestration workflows.',
-    timestamp: '12m ago',
-    isRead: false,
-    type: 'system',
-  },
-  {
-    id: 'notif-3',
-    title: 'Client Storage Verified',
-    message: 'IndexedDB & localStorage allocations validated. Ready for persistent local projects.',
-    timestamp: '1h ago',
-    isRead: true,
-    type: 'storage',
-  },
-  {
-    id: 'notif-4',
-    title: 'Model Endpoints Configuration',
-    message: 'Configure your preferred API keys in Settings > Connected Services to activate real-time generation.',
-    timestamp: '2h ago',
-    isRead: true,
-    type: 'info',
-  },
-];
+const INITIAL_NOTIFICATIONS: NotificationEntry[] = [];
 
 export const NotificationsDrawer: React.FC = () => {
   const { isNotificationsOpen, setIsNotificationsOpen } = useWorkspace();

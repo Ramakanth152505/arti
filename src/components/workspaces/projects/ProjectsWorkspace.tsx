@@ -1,15 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Folder,
   Plus,
   Search,
   Filter,
-  Calendar,
-  Layers,
   Star,
   FileText,
   Clock,
-  ArrowUpRight,
   X,
   AlertCircle,
   HardDrive,
@@ -19,6 +16,7 @@ import { WorkspaceHeader } from '../../common/WorkspaceHeader';
 import { ViewToggle } from '../../common/ViewToggle';
 import { Dialog } from '../../common/Dialog';
 import { EmptyState } from '../../common/EmptyState';
+import { DemoDataNotice } from '../../common/DemoDataNotice';
 import { useWorkspace } from '../../../context/WorkspaceContext';
 import { useToast } from '../../../context/ToastContext';
 
@@ -65,12 +63,12 @@ const DEFAULT_PROJECTS: ProjectItem[] = [
   },
   {
     id: 'proj-3',
-    name: 'Client Memory AES Cryptography',
-    description: 'Zero-telemetry cryptographic layer keeping memory in private client IndexedDB storage.',
+    name: 'Local-First Storage Layer',
+    description: 'Browser localStorage persistence for workspace records, scoped per device.',
     category: 'Research',
-    status: 'Active',
+    status: 'Planning',
     platform: 'Universal',
-    tags: ['Cryptography', 'AES-256', 'Privacy', 'IndexedDB'],
+    tags: ['localStorage', 'Privacy', 'Client Store'],
     isStarred: false,
     updatedAt: '3 days ago',
     artifactsCount: 5,
@@ -104,13 +102,21 @@ export const ProjectsWorkspace: React.FC = () => {
     }
   });
 
+  const [isDemo, setIsDemo] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('arti_saved_projects') === null && DEFAULT_PROJECTS.length > 0;
+    } catch {
+      return true;
+    }
+  });
+
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [sortBy, setSortBy] = useState<'updated' | 'name'>('updated');
 
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(() => routeParams.create === 'true');
   const [selectedProject, setSelectedProject] = useState<ProjectItem | null>(null);
 
   // Form states for Create Project
@@ -121,15 +127,11 @@ export const ProjectsWorkspace: React.FC = () => {
   const [formTags, setFormTags] = useState('');
   const [formError, setFormError] = useState('');
 
-  // Handle open from routeParams
-  useEffect(() => {
-    if (routeParams.create === 'true') {
-      setIsCreateOpen(true);
-    }
-  }, [routeParams.create]);
+  // Handle open from routeParams: initial state reads routeParams.create.
 
   const saveProjects = (updated: ProjectItem[]) => {
     setProjects(updated);
+    setIsDemo(false);
     try {
       localStorage.setItem('arti_saved_projects', JSON.stringify(updated));
     } catch {
@@ -289,9 +291,19 @@ export const ProjectsWorkspace: React.FC = () => {
       <div className="workspace-storage-callout">
         <HardDrive size={13} className="callout-icon" />
         <span>
-          Local Session Persistence: Projects are securely stored in your browser storage. Client-side private session.
+          Projects you create are stored in your browser&apos;s local storage on this device. They persist across reloads on this browser only.
         </span>
       </div>
+
+      {isDemo && (
+        <DemoDataNotice
+          message="These example projects are placeholders, not real saved work. Create a project to start your own list."
+          onClear={() => {
+            saveProjects([]);
+            setSelectedProject(null);
+          }}
+        />
+      )}
 
       {/* Main Grid / List */}
       <div className="workspace-content-area">
@@ -560,18 +572,16 @@ export const ProjectsWorkspace: React.FC = () => {
 
               <div className="detail-section">
                 <h4>Artifacts &amp; Files</h4>
-                <div className="detail-artifacts-list">
-                  <div className="artifact-item">
-                    <FileText size={14} />
-                    <span>architecture_blueprint.md</span>
-                    <span className="artifact-size">14.2 KB</span>
+                {selectedProject.artifactsCount > 0 ? (
+                  <div className="detail-artifacts-list">
+                    <div className="artifact-item">
+                      <FileText size={14} />
+                      <span>Artifact contents not available in UI-only mode</span>
+                    </div>
                   </div>
-                  <div className="artifact-item">
-                    <FileText size={14} />
-                    <span>task_dependency_graph.json</span>
-                    <span className="artifact-size">8.6 KB</span>
-                  </div>
-                </div>
+                ) : (
+                  <p className="detail-text muted">No artifacts have been produced for this project yet.</p>
+                )}
               </div>
 
               <div className="detail-section">
@@ -579,7 +589,7 @@ export const ProjectsWorkspace: React.FC = () => {
                 <div className="detail-history-list">
                   <div className="history-item">
                     <Clock size={12} />
-                    <span>Project initialized by Ramakanth</span>
+                    <span>Project record last modified</span>
                     <span className="history-time">{selectedProject.updatedAt}</span>
                   </div>
                 </div>
@@ -593,12 +603,10 @@ export const ProjectsWorkspace: React.FC = () => {
                 style={{ width: '100%' }}
                 onClick={() => {
                   setSelectedProject(null);
-                  showToast(`Switched active workspace context to ${selectedProject.name}`, {
-                    type: 'gold',
-                  });
+                  showToast('Project details closed.', { type: 'info' });
                 }}
               >
-                Open in Workspace
+                Close Details
               </button>
             </div>
           </aside>

@@ -74,9 +74,9 @@ export const UserProfileMenu: React.FC = () => {
             <ShieldCheck size={15} color="#c9a84e" />
           </div>
           <div className="profile-menu-item-text">
-            <span className="profile-menu-item-title">Zero-Cloud Privacy</span>
+            <span className="profile-menu-item-title">Private Mode</span>
             <span className="profile-menu-item-desc">
-              {isPrivateMode ? 'Encrypted local session' : 'Standard local mode'}
+              {isPrivateMode ? 'Private mode on — local only' : 'Standard local mode'}
             </span>
           </div>
           {isPrivateMode && <Check size={14} className="profile-menu-check" />}

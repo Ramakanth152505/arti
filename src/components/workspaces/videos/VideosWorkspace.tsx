@@ -1,26 +1,20 @@
 import React, { useState } from 'react';
 import {
   Video as VideoIcon,
-  Play,
   Film,
   History,
-  Sliders,
   Plus,
-  Clock,
-  Layers,
-  Camera,
   Music,
   AlertCircle,
   Sparkles,
   Search,
-  Maximize2,
   Trash2,
 } from 'lucide-react';
 import { WorkspaceHeader } from '../../common/WorkspaceHeader';
 import { EmptyState } from '../../common/EmptyState';
-import { Dialog } from '../../common/Dialog';
-import { useWorkspace } from '../../../context/WorkspaceContext';
+import { DemoDataNotice } from '../../common/DemoDataNotice';
 import { useToast } from '../../../context/ToastContext';
+import { useWorkspaceData } from '../../../hooks/useWorkspaceData';
 
 interface StoryboardScene {
   id: string;
@@ -68,18 +62,24 @@ const DEFAULT_SCENES: StoryboardScene[] = [
 ];
 
 export const VideosWorkspace: React.FC = () => {
-  const { navigate } = useWorkspace();
   const { showToast } = useToast();
 
   const [activeTab, setActiveTab] = useState<'studio' | 'history'>('studio');
-  const [scenes, setScenes] = useState<StoryboardScene[]>(DEFAULT_SCENES);
+  const {
+    items: scenes,
+    isDemo,
+    addItem,
+    removeItem,
+    updateItem,
+    clear,
+  } = useWorkspaceData<StoryboardScene>('video_scenes', () => DEFAULT_SCENES);
   const [activeSceneId, setActiveSceneId] = useState<string>('sc-1');
   const [aspectRatio, setAspectRatio] = useState('16:9 (Cinema)');
   const [resolution, setResolution] = useState('1080p (Full HD)');
   const [audioScore, setAudioScore] = useState('Orchestral Cinematic Vibe');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
-  const [historyVideos, setHistoryVideos] = useState<VideoRecord[]>([]);
+  const [historyVideos] = useState<VideoRecord[]>([]);
   const [historySearch, setHistorySearch] = useState('');
 
   const activeScene = scenes.find((s) => s.id === activeSceneId) || scenes[0];
@@ -95,15 +95,14 @@ export const VideosWorkspace: React.FC = () => {
       duration: 6,
       cameraMovement: 'Static Horizon',
     };
-    setScenes([...scenes, newScene]);
+    addItem(newScene);
     setActiveSceneId(newScene.id);
     showToast(`Added Scene ${nextNum} to storyboard`, { type: 'gold' });
   };
 
   const handleUpdateActiveScene = (field: keyof StoryboardScene, val: any) => {
-    setScenes((prev) =>
-      prev.map((s) => (s.id === activeSceneId ? { ...s, [field]: val } : s))
-    );
+    if (!activeScene) return;
+    updateItem(activeScene.id, (s) => ({ ...s, [field]: val }));
   };
 
   const handleDeleteScene = (id: string, e: React.MouseEvent) => {
@@ -112,9 +111,11 @@ export const VideosWorkspace: React.FC = () => {
       showToast('Storyboard requires at least one scene', { type: 'warning' });
       return;
     }
-    const updated = scenes.filter((s) => s.id !== id);
-    setScenes(updated);
-    if (activeSceneId === id) setActiveSceneId(updated[0].id);
+    removeItem(id);
+    if (activeSceneId === id) {
+      const remaining = scenes.filter((s) => s.id !== id);
+      setActiveSceneId(remaining[0].id);
+    }
     showToast('Scene removed from timeline', { type: 'info' });
   };
 
@@ -130,9 +131,9 @@ export const VideosWorkspace: React.FC = () => {
     <div className="workspace-page-container">
       <WorkspaceHeader
         title="Videos Studio"
-        description="Cinematic film direction, multi-scene storyboard orchestration, and timeline video synthesis"
+        description="Storyboard planning and shot direction. Video rendering is not connected in this phase."
         icon={VideoIcon}
-        badge="Cinematic Engine"
+        badge="Planning Studio"
         actions={
           <div className="header-action-cluster">
             {activeTab === 'studio' ? (
@@ -159,7 +160,24 @@ export const VideosWorkspace: React.FC = () => {
       />
 
       {activeTab === 'studio' ? (
+        scenes.length === 0 || !activeScene ? (
+          <EmptyState
+            icon={Film}
+            title="No storyboard scenes"
+            description="Add a scene to start planning your cinematic sequence. Scenes are saved in this browser."
+            actionLabel="Add First Scene"
+            onAction={handleAddScene}
+          />
+        ) : (
         <div className="video-studio-layout">
+          {isDemo && (
+            <div className="demo-notice-span">
+              <DemoDataNotice
+                message="The example storyboard scenes below are placeholder planning content, not a real production. Adding a scene starts your own storyboard."
+                onClear={clear}
+              />
+            </div>
+          )}
           {/* Top Row: Preview Canvas & Scene Editor */}
           <div className="video-top-workspace-grid">
             {/* Viewport / Video Preview Mockup */}
@@ -367,6 +385,7 @@ export const VideosWorkspace: React.FC = () => {
             </div>
           </div>
         </div>
+        )
       ) : (
         /* Previous Videos View */
         <div className="video-history-view">

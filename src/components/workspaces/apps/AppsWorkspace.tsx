@@ -4,72 +4,65 @@ import {
   Plus,
   Layers,
   FileCode,
-  Terminal,
   CheckCircle2,
-  Clock,
   Smartphone,
   Monitor,
   Server,
   Play,
-  Download,
-  AlertCircle,
   FolderTree,
 } from 'lucide-react';
 import { WorkspaceHeader } from '../../common/WorkspaceHeader';
 import { Dialog } from '../../common/Dialog';
-import { useWorkspace } from '../../../context/WorkspaceContext';
 import { useToast } from '../../../context/ToastContext';
 
 interface AppFeature {
   id: string;
   name: string;
   category: string;
-  status: 'Verified' | 'In Progress' | 'Planned';
+  status: 'Planned' | 'In Progress' | 'Conceptual';
 }
 
 export const AppsWorkspace: React.FC = () => {
-  const { navigate } = useWorkspace();
   const { showToast } = useToast();
 
   const [platform, setPlatform] = useState<'Web' | 'Desktop' | 'Mobile' | 'Full-Stack'>('Web');
   const [activeTab, setActiveTab] = useState<'architecture' | 'code' | 'features'>('architecture');
   const [isNewAppOpen, setIsNewAppOpen] = useState(false);
 
-  const [appName, setAppName] = useState('Task Orbits');
-  const [appReqs, setAppReqs] = useState(
-    'A high-performance offline-first task scheduler with dependency graphing and local SQLite persistence.'
-  );
+  const [appName, setAppName] = useState('');
+  const [appReqs, setAppReqs] = useState('');
 
-  const [features, setFeatures] = useState<AppFeature[]>([
-    { id: 'f-1', name: 'Directed Acyclic Task Graph (DAG)', category: 'Core Engine', status: 'Verified' },
-    { id: 'f-2', name: 'Local SQLite Cipher Encryption', category: 'Storage', status: 'Verified' },
-    { id: 'f-3', name: 'Background Web Worker Daemon', category: 'Execution', status: 'In Progress' },
+  const [features] = useState<AppFeature[]>([
+    { id: 'f-1', name: 'Directed Acyclic Task Graph (DAG)', category: 'Core Engine', status: 'Planned' },
+    { id: 'f-2', name: 'Planned Encrypted Storage', category: 'Storage', status: 'Conceptual' },
+    { id: 'f-3', name: 'Background Worker Daemon', category: 'Execution', status: 'Conceptual' },
     { id: 'f-4', name: 'Real-time Canvas Telemetry', category: 'UI Viewport', status: 'Planned' },
   ]);
 
   const handleRunBuild = () => {
-    showToast('App build test simulation: Passed with 0 errors (TypeScript strict)', {
-      type: 'success',
-    });
+    showToast(
+      'No code generation or build service is connected. Build and test status requires an execution backend.',
+      { type: 'warning' }
+    );
   };
 
   return (
     <div className="workspace-page-container">
       <WorkspaceHeader
         title="Apps Studio"
-        description="Full-stack application synthesis, systems architecture blueprinting, and client execution"
+        description="Application architecture workspace. Code generation, builds, and execution are not connected in this phase."
         icon={LayoutGrid}
-        badge="Full-Stack IDE"
+        badge="Integration Boundary"
         actions={
           <div className="header-action-cluster">
             <button
               type="button"
               className="gold-ghost-btn"
               onClick={handleRunBuild}
-              title="Test application bundle"
+              title="Build and test require a connected execution backend"
             >
               <Play size={14} />
-              <span>Simulate Build</span>
+              <span>Run Build</span>
             </button>
             <button
               type="button"
@@ -142,15 +135,15 @@ export const AppsWorkspace: React.FC = () => {
             <div className="build-status-box">
               <div className="build-row">
                 <span>Code Generator:</span>
-                <strong className="status-val ok">Ready</strong>
+                <strong className="status-val standby">Not Connected</strong>
               </div>
               <div className="build-row">
                 <span>Compiler Target:</span>
-                <strong className="status-val">{platform} 64-bit</strong>
+                <strong className="status-val standby">Not Configured</strong>
               </div>
               <div className="build-row">
                 <span>Cloud Packager:</span>
-                <strong className="status-val standby">Local Standby</strong>
+                <strong className="status-val standby">Not Connected</strong>
               </div>
             </div>
           </div>
@@ -190,7 +183,7 @@ export const AppsWorkspace: React.FC = () => {
             {activeTab === 'architecture' ? (
               <div className="architecture-view-grid">
                 <div className="arch-card">
-                  <h4>Data Models &amp; Storage</h4>
+                  <h4>Data Models &amp; Storage <span className="blueprint-tag">Blueprint</span></h4>
                   <ul className="arch-list">
                     <li><strong>TaskEntity:</strong> id, title, priority, status, dependencies[]</li>
                     <li><strong>DependencyEdge:</strong> sourceId, targetId, condition</li>
@@ -199,16 +192,16 @@ export const AppsWorkspace: React.FC = () => {
                 </div>
 
                 <div className="arch-card">
-                  <h4>State Management &amp; Dispatch</h4>
+                  <h4>State Management &amp; Dispatch <span className="blueprint-tag">Blueprint</span></h4>
                   <ul className="arch-list">
                     <li>Deterministic event reducer loop</li>
-                    <li>Synchronous localStorage / SQLite journal commit</li>
-                    <li>Web Worker message bridge for background telemetry</li>
+                    <li>Synchronous local persistence journal commit</li>
+                    <li>Web Worker message bridge for background work</li>
                   </ul>
                 </div>
 
                 <div className="arch-card">
-                  <h4>UI Component Hierarchy</h4>
+                  <h4>UI Component Hierarchy <span className="blueprint-tag">Blueprint</span></h4>
                   <ul className="arch-list">
                     <li>AppShell &gt; TopBar &middot; Sidebar &middot; MainCanvas</li>
                     <li>DAGCanvas &gt; GraphNodes &middot; EdgeRenderers</li>
@@ -217,11 +210,11 @@ export const AppsWorkspace: React.FC = () => {
                 </div>
 
                 <div className="arch-card">
-                  <h4>Security &amp; Sandboxing</h4>
+                  <h4>Security &amp; Sandboxing <span className="blueprint-tag">Blueprint</span></h4>
                   <ul className="arch-list">
-                    <li>Zero-eval execution sandbox</li>
-                    <li>Client-side cryptographic key storage</li>
-                    <li>Local-only network access policy</li>
+                    <li>Planned: restricted execution sandbox</li>
+                    <li>Planned: local-only data handling policy</li>
+                    <li>Planned: provider-scoped credential handling</li>
                   </ul>
                 </div>
               </div>
@@ -230,7 +223,7 @@ export const AppsWorkspace: React.FC = () => {
                 <div className="file-tree-sidebar">
                   <div className="tree-header">
                     <FolderTree size={13} />
-                    <span>Project Tree</span>
+                    <span>Project Tree (example)</span>
                   </div>
                   <div className="tree-items">
                     <div className="tree-leaf active">src/engine/dag.ts</div>
@@ -244,6 +237,7 @@ export const AppsWorkspace: React.FC = () => {
                 <div className="code-editor-mock">
                   <div className="editor-tab-bar">
                     <span className="tab-pill active">dag.ts</span>
+                    <span className="example-mock-tag">Illustrative example — not generated code</span>
                   </div>
                   <pre className="code-block">
 {`export interface TaskNode {
@@ -326,9 +320,17 @@ export class TaskDAG {
             <button
               type="button"
               className="gold-primary-btn"
+              disabled={!appName.trim()}
               onClick={() => {
+                if (!appName.trim()) {
+                  showToast('Enter an application name', { type: 'warning' });
+                  return;
+                }
                 setIsNewAppOpen(false);
-                showToast(`Initialized application workspace: ${appName}`, { type: 'success' });
+                showToast(
+                  `App blueprint draft "${appName}" prepared. Persistence and code generation are not connected yet.`,
+                  { type: 'gold' }
+                );
               }}
             >
               Create Workspace

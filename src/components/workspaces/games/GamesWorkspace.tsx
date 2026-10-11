@@ -6,18 +6,10 @@ import {
   Pause,
   Box,
   Layers,
-  Sparkles,
   Sliders,
   Folder,
-  Eye,
-  CheckCircle2,
-  RotateCcw,
-  AlertCircle,
-  FileCode,
 } from 'lucide-react';
 import { WorkspaceHeader } from '../../common/WorkspaceHeader';
-import { Dialog } from '../../common/Dialog';
-import { useWorkspace } from '../../../context/WorkspaceContext';
 import { useToast } from '../../../context/ToastContext';
 
 interface GameAsset {
@@ -38,7 +30,7 @@ export const GamesWorkspace: React.FC = () => {
     'A cinematic exploration game set on an obsidian world where players navigate ancient spires and planetary gravity anomalies.'
   );
 
-  const [assets, setAssets] = useState<GameAsset[]>([
+  const [assets] = useState<GameAsset[]>([
     { id: 'a-1', name: 'Obsidian Spire Mesh (LOD 0)', category: 'Environment', format: '.glb' },
     { id: 'a-2', name: 'Atmospheric Fog Volumetric Shader', category: 'Shader', format: '.wgsl' },
     { id: 'a-3', name: 'Celestial Planetary Skybox Texture', category: 'Environment', format: '.hdr' },
@@ -49,8 +41,8 @@ export const GamesWorkspace: React.FC = () => {
     setIsPlaying(!isPlaying);
     showToast(
       !isPlaying
-        ? 'Simulation viewport active: 60 FPS WebGPU Canvas loop running'
-        : 'Simulation paused',
+        ? 'Scene preview mode: wireframe placeholder only. No game engine or runtime is connected.'
+        : 'Preview paused',
       { type: 'gold' }
     );
   };
@@ -59,9 +51,9 @@ export const GamesWorkspace: React.FC = () => {
     <div className="workspace-page-container">
       <WorkspaceHeader
         title="Games Studio"
-        description="Procedural world synthesis, WebGPU game mechanics, and interactive simulation engine"
+        description="Game concept planning, scene and level outlines, and an asset browser foundation"
         icon={Gamepad2}
-        badge="Engine Viewport"
+        badge="Design Foundation"
         actions={
           <div className="header-action-cluster">
             <button
@@ -70,12 +62,12 @@ export const GamesWorkspace: React.FC = () => {
               onClick={handleToggleSimulation}
             >
               {isPlaying ? <Pause size={14} /> : <Play size={14} />}
-              <span>{isPlaying ? 'Pause Simulation' : 'Run Viewport'}</span>
+              <span>{isPlaying ? 'Hide Wireframe' : 'Show Wireframe'}</span>
             </button>
             <button
               type="button"
               className="gold-primary-btn"
-              onClick={() => showToast('New game project wizard initialized', { type: 'gold' })}
+              onClick={() => showToast('Game project creation is not connected yet. This is a UI placeholder.', { type: 'info' })}
             >
               <Plus size={15} />
               <span>New Game Project</span>
@@ -130,15 +122,15 @@ export const GamesWorkspace: React.FC = () => {
             <div className="build-status-box">
               <div className="build-row">
                 <span>Renderer:</span>
-                <strong className="status-val ok">WebGPU Active</strong>
+                <strong className="status-val standby">Not implemented</strong>
               </div>
               <div className="build-row">
                 <span>Physics Worker:</span>
-                <strong className="status-val ok">Rapier Wasm</strong>
+                <strong className="status-val standby">Not connected</strong>
               </div>
               <div className="build-row">
                 <span>Shader Compiler:</span>
-                <strong className="status-val ok">WGSL Ready</strong>
+                <strong className="status-val standby">Not connected</strong>
               </div>
             </div>
           </div>
@@ -151,7 +143,7 @@ export const GamesWorkspace: React.FC = () => {
             <div className="viewport-overlay-bar">
               <div className="viewport-status-tag">
                 <span className={`sim-dot ${isPlaying ? 'running' : 'idle'}`} />
-                <span>{isPlaying ? 'Simulation Running &middot; 60 FPS' : 'Viewport Standby'}</span>
+                <span>{isPlaying ? 'Wireframe placeholder (no engine)' : 'Viewport Standby'}</span>
               </div>
               <div className="viewport-camera-tag">Camera: Perspective (FOV 75)</div>
             </div>

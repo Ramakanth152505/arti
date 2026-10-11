@@ -61,25 +61,25 @@ export const PRIMARY_NAV_ITEMS: NavItemDef[] = [
   { id: 'home', label: 'Home', icon: Home, category: 'primary', description: 'Central command canvas & quick composer' },
   { id: 'chats', label: 'Chats', icon: MessageSquare, category: 'primary', description: 'Intelligent multi-model conversation workspace' },
   { id: 'projects', label: 'Projects', icon: Folder, category: 'primary', description: 'Universal project management and artifact hub' },
-  { id: 'websites', label: 'Websites', icon: Globe, category: 'primary', description: 'Next-gen website creation and responsive studio' },
-  { id: 'apps', label: 'Apps', icon: LayoutGrid, category: 'primary', description: 'Full-stack application synthesis and architecture' },
-  { id: 'games', label: 'Games', icon: Gamepad2, category: 'primary', description: 'Interactive game development and asset studio' },
-  { id: 'images', label: 'Images', icon: Image, category: 'primary', description: 'High-fidelity cinematic image creation studio' },
-  { id: 'videos', label: 'Videos', icon: Video, category: 'primary', description: 'Cinematic video production and shot planning' },
-  { id: 'music', label: 'Music', icon: Music, category: 'primary', description: 'Algorithmic soundtrack & audio synthesis' },
+  { id: 'websites', label: 'Websites', icon: Globe, category: 'primary', description: 'Website brief and responsive preview foundation' },
+  { id: 'apps', label: 'Apps', icon: LayoutGrid, category: 'primary', description: 'Application architecture workspace' },
+  { id: 'games', label: 'Games', icon: Gamepad2, category: 'primary', description: 'Game concept and level planning studio' },
+  { id: 'images', label: 'Images', icon: Image, category: 'primary', description: 'Image prompt studio (no provider connected)' },
+  { id: 'videos', label: 'Videos', icon: Video, category: 'primary', description: 'Storyboard and shot planning (no renderer connected)' },
+  { id: 'music', label: 'Music', icon: Music, category: 'primary', description: 'Track composition studio (no audio provider connected)' },
   { id: 'documents', label: 'Documents', icon: FileText, category: 'primary', description: 'Technical whitepapers and executive writing' },
   { id: 'research', label: 'Research', icon: Compass, category: 'primary', description: 'Deep academic synthesis and evidence provenance' },
   { id: 'learning', label: 'Learning', icon: GraduationCap, category: 'primary', description: 'Interactive curriculum and cognitive study paths' },
-  { id: 'agents', label: 'Agents', icon: Bot, category: 'primary', description: 'Autonomous specialist agent fleet directory' },
+  { id: 'agents', label: 'Agents', icon: Bot, category: 'primary', description: 'Agent directory and capability overview' },
   { id: 'tools', label: 'Tools', icon: Wrench, category: 'primary', description: 'Modular tool catalog & execution integrations' },
-  { id: 'knowledge-base', label: 'Knowledge Base', icon: Database, category: 'primary', description: 'Private vector knowledge and encrypted memory' },
-  { id: 'marketplace', label: 'Marketplace', icon: ShoppingBag, category: 'primary', description: 'Capabilities, extension packs and connectors' },
+  { id: 'knowledge-base', label: 'Knowledge Base', icon: Database, category: 'primary', description: 'Local knowledge items and source provenance' },
+  { id: 'marketplace', label: 'Marketplace', icon: ShoppingBag, category: 'primary', description: 'Planned capabilities, extension packs and connectors' },
 ];
 
 export const SECONDARY_NAV_ITEMS: NavItemDef[] = [
-  { id: 'task-control-center', label: 'Task Control Center', icon: CheckSquare, category: 'secondary', description: 'Real-time task scheduler and execution tracker' },
-  { id: 'system-status', label: 'System Status', icon: Activity, category: 'secondary', description: 'Diagnostic telemetry and service connectivity' },
-  { id: 'ai-command-center', label: 'AI Command Center', icon: Terminal, category: 'secondary', description: 'Mission-control orchestration and agent telemetry' },
+  { id: 'task-control-center', label: 'Task Control Center', icon: CheckSquare, category: 'secondary', description: 'Task planning, status, and checkpoint workspace' },
+  { id: 'system-status', label: 'System Status', icon: Activity, category: 'secondary', description: 'Runtime health and configured service status' },
+  { id: 'ai-command-center', label: 'AI Command Center', icon: Terminal, category: 'secondary', description: 'Orchestration planning canvas (workflow engine not connected)' },
 ];
 
 export const UTILITY_NAV_ITEMS: NavItemDef[] = [

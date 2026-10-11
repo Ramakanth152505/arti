@@ -4596,3 +4596,115 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   Demonstration Content Notice
+   ========================================================================== */
+.demo-data-notice {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  background: rgba(201, 168, 78, 0.06);
+  border: 1px solid var(--gold-border-subtle);
+  font-size: 11.5px;
+  color: #cdb877;
+  line-height: 1.4;
+}
+
+.demo-notice-icon {
+  flex-shrink: 0;
+  color: var(--gold-accent);
+}
+
+.demo-notice-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.demo-notice-text strong {
+  color: #f0dca0;
+  font-weight: 600;
+}
+
+.demo-notice-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  letter-spacing: 0.03em;
+  color: #cdb877;
+  background: rgba(201, 168, 78, 0.08);
+  border: 1px solid var(--gold-border-subtle);
+  transition: all 0.16s ease;
+}
+
+.demo-notice-clear:hover {
+  color: #faecc0;
+  border-color: var(--gold-border);
+  background: rgba(201, 168, 78, 0.16);
+}
+
+.chats-demo-notice-wrap {
+  padding: 6px 10px 2px;
+}
+
+.demo-notice-span {
+  grid-column: 1 / -1;
+}
+.player-no-audio-note {
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-top: 6px;
+  display: block;
+}
+
+.plan-step-meta {
+  display: block;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.stream-line.muted {
+  color: var(--text-muted, #8a8f9c);
+  opacity: 0.8;
+}
+
+.log-line.muted { color: var(--text-muted, #8a8f9c); opacity: 0.8; }
+
+.approval-demo-tag {
+  display: inline-block;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #d8b26a;
+  margin-bottom: 8px;
+}
+.approval-row-card.demo {
+  opacity: 0.92;
+  border-style: dashed;
+}
+
+.blueprint-tag {
+  margin-left: 8px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #d8b26a;
+  border: 1px solid rgba(216,178,106,0.35);
+  border-radius: 3px;
+  padding: 1px 5px;
+  vertical-align: middle;
+}
+.example-mock-tag {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text-muted, #8a8f9c);
+  font-style: italic;
+}

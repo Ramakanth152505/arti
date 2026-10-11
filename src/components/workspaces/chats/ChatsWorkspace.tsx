@@ -9,7 +9,6 @@ import {
   Paperclip,
   Archive,
   Edit2,
-  Trash2,
   Sparkles,
   Bot,
   User,
@@ -19,8 +18,9 @@ import {
   ShieldCheck,
   FileCode,
 } from 'lucide-react';
-import { useWorkspace } from '../../context/WorkspaceContext';
-import { useToast } from '../../context/ToastContext';
+import { useWorkspace } from '../../../context/WorkspaceContext';
+import { useToast } from '../../../context/ToastContext';
+import { DemoDataNotice } from '../../common/DemoDataNotice';
 
 interface ChatMessage {
   id: string;
@@ -39,7 +39,7 @@ interface ChatConversation {
   model: string;
 }
 
-const INITIAL_CONVERSATIONS: ChatConversation[] = [
+const DEMO_CONVERSATIONS: ChatConversation[] = [
   {
     id: 'conv-1',
     title: 'Universal AI Operating Architecture',
@@ -88,23 +88,23 @@ const INITIAL_CONVERSATIONS: ChatConversation[] = [
   },
   {
     id: 'conv-3',
-    title: 'Zero-Telemetry Client Encryption',
+    title: 'Where Is My Data Stored?',
     isPinned: false,
     dateGroup: 'previous7',
     updatedAt: '3 days ago',
-    model: 'Security Core',
+    model: 'ARTI Engine (Standby)',
     messages: [
       {
         id: 'msg-5',
         sender: 'user',
-        content: 'Verify client-side encryption isolation protocol.',
+        content: 'Where does ARTI store my conversations?',
         timestamp: '3 days ago',
       },
       {
         id: 'msg-6',
         sender: 'assistant',
         content:
-          'Session memory is locked into local browser IndexedDB storage with AES-256 GCM client encryption.',
+          'In this build, records you create are saved to your browser\u2019s localStorage on this device. They persist across reloads in this browser only. No encryption layer is applied and nothing is sent to a server.',
         timestamp: '3 days ago',
       },
     ],
@@ -115,107 +115,127 @@ export const ChatsWorkspace: React.FC = () => {
   const { initialChatPrompt, setInitialChatPrompt, routeParams, navigate } = useWorkspace();
   const { showToast } = useToast();
 
-  const [conversations, setConversations] = useState<ChatConversation[]>(INITIAL_CONVERSATIONS);
-  const [activeConvId, setActiveConvId] = useState<string>('conv-1');
+  const demoConversations = DEMO_CONVERSATIONS;
+  const [conversations, setConversations] = useState<ChatConversation[]>(() => {
+    try {
+      const stored = localStorage.getItem('arti_ws_chats');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed as ChatConversation[];
+      }
+    } catch {
+      // ignore malformed storage
+    }
+    return demoConversations;
+  });
+  const [isDemo, setIsDemo] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('arti_ws_chats') === null && demoConversations.length > 0;
+    } catch {
+      return demoConversations.length > 0;
+    }
+  });
+  const [activeConvId, setActiveConvId] = useState<string>(
+    () => conversations[0]?.id ?? ''
+  );
   const [searchQuery, setSearchQuery] = useState('');
   const [inputMessage, setInputMessage] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
-  // Handle passed initial prompt from Home
+  const commitConversations = (next: ChatConversation[]) => {
+    setConversations(next);
+    setIsDemo(false);
+    try {
+      localStorage.setItem('arti_ws_chats', JSON.stringify(next));
+    } catch {
+      // storage unavailable
+    }
+  };
+
+  const handleCreateNewChat = () => {
+    const newConv: ChatConversation = {
+      id: 'conv_' + Date.now(),
+      title: 'New Conversation',
+      isPinned: false,
+      dateGroup: 'today',
+      updatedAt: 'Just now',
+      model: 'ARTI Engine (Standby)',
+      messages: [],
+    };
+    commitConversations([newConv, ...conversations]);
+    setActiveConvId(newConv.id);
+    showToast('New conversation initialized', { type: 'gold' });
+  };
+
+  // Handle passed initial prompt from Home. This synchronizes React state with an
+  // external system (navigation params / context), which is the intended use of an effect.
+  /* oxlint-disable react/set-state-in-effect */
   useEffect(() => {
-    const passedPrompt = routeParams.prompt ? decodeURIComponent(routeParams.prompt) : initialChatPrompt;
+    const passedPrompt = routeParams.prompt
+      ? decodeURIComponent(routeParams.prompt)
+      : initialChatPrompt;
     if (passedPrompt) {
       const newId = 'conv_' + Date.now();
+      const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       const newConv: ChatConversation = {
         id: newId,
         title: passedPrompt.slice(0, 36) + (passedPrompt.length > 36 ? '...' : ''),
         isPinned: false,
         dateGroup: 'today',
         updatedAt: 'Just now',
-        model: 'ARTI Hybrid Engine (Standby)',
+        model: 'ARTI Engine (Standby)',
         messages: [
-          {
-            id: 'msg_' + Date.now(),
-            sender: 'user',
-            content: passedPrompt,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          },
-          {
-            id: 'msg_' + (Date.now() + 1),
-            sender: 'assistant',
-            content:
-              'Inference engine is in Standby mode. Connect an API provider (Google Gemini, Anthropic, OpenAI, or Ollama) in Settings > Connected Services to receive live model responses.',
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          },
+          { id: 'msg_' + Date.now(), sender: 'user', content: passedPrompt, timestamp: now },
         ],
       };
-      setConversations((prev) => [newConv, ...prev]);
+      setConversations((prev) => {
+        const next = [newConv, ...prev];
+        try {
+          localStorage.setItem('arti_ws_chats', JSON.stringify(next));
+        } catch {
+          // storage unavailable
+        }
+        return next;
+      });
+      setIsDemo(false);
       setActiveConvId(newId);
       setInitialChatPrompt('');
     }
   }, [initialChatPrompt, routeParams.prompt, setInitialChatPrompt]);
+  /* oxlint-enable react/set-state-in-effect */
 
   const activeConv = conversations.find((c) => c.id === activeConvId);
-
-  const handleCreateNewChat = () => {
-    const newId = 'conv_' + Date.now();
-    const newConv: ChatConversation = {
-      id: newId,
-      title: 'New Conversation',
-      isPinned: false,
-      dateGroup: 'today',
-      updatedAt: 'Just now',
-      model: 'ARTI Hybrid Engine (Standby)',
-      messages: [],
-    };
-    setConversations((prev) => [newConv, ...prev]);
-    setActiveConvId(newId);
-    showToast('New conversation initialized', { type: 'gold' });
-  };
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputMessage.trim() || !activeConv) return;
 
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const userMsg: ChatMessage = {
       id: 'msg_' + Date.now(),
       sender: 'user',
       content: inputMessage.trim(),
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: now,
     };
 
-    const honestSystemResponse: ChatMessage = {
-      id: 'msg_' + (Date.now() + 1),
-      sender: 'assistant',
-      content:
-        'Inference service is disconnected. To chat with a live model, add your API key in Settings > Connected Services.',
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-
-    setConversations((prev) =>
-      prev.map((c) => {
-        if (c.id === activeConvId) {
-          const updatedMessages = [...c.messages, userMsg, honestSystemResponse];
-          const newTitle = c.title === 'New Conversation' ? userMsg.content.slice(0, 32) : c.title;
-          return {
-            ...c,
-            title: newTitle,
-            updatedAt: 'Just now',
-            messages: updatedMessages,
-          };
-        }
-        return c;
-      })
-    );
-
+    const next = conversations.map((c) => {
+      if (c.id !== activeConvId) return c;
+      return {
+        ...c,
+        title: c.title === 'New Conversation' ? userMsg.content.slice(0, 32) : c.title,
+        updatedAt: 'Just now',
+        messages: [...c.messages, userMsg],
+      };
+    });
+    commitConversations(next);
     setInputMessage('');
   };
 
   const handleTogglePin = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setConversations((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, isPinned: !c.isPinned } : c))
+    commitConversations(
+      conversations.map((c) => (c.id === id ? { ...c, isPinned: !c.isPinned } : c))
     );
     setActiveMenuId(null);
     showToast('Pin status updated', { type: 'info' });
@@ -223,12 +243,10 @@ export const ChatsWorkspace: React.FC = () => {
 
   const handleArchive = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setConversations((prev) => prev.filter((c) => c.id !== id));
+    const remaining = conversations.filter((c) => c.id !== id);
+    commitConversations(remaining);
     setActiveMenuId(null);
-    if (activeConvId === id) {
-      const remaining = conversations.filter((c) => c.id !== id);
-      if (remaining.length > 0) setActiveConvId(remaining[0].id);
-    }
+    if (activeConvId === id && remaining.length > 0) setActiveConvId(remaining[0].id);
     showToast('Conversation archived', { type: 'info' });
   };
 
@@ -237,15 +255,14 @@ export const ChatsWorkspace: React.FC = () => {
     const conv = conversations.find((c) => c.id === id);
     const newTitle = window.prompt('Rename conversation:', conv?.title);
     if (newTitle && newTitle.trim()) {
-      setConversations((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, title: newTitle.trim() } : c))
+      commitConversations(
+        conversations.map((c) => (c.id === id ? { ...c, title: newTitle.trim() } : c))
       );
       showToast('Conversation renamed', { type: 'success' });
     }
     setActiveMenuId(null);
   };
 
-  // Filtered by search
   const filtered = conversations.filter((c) =>
     c.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -290,6 +307,18 @@ export const ChatsWorkspace: React.FC = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+
+        {isDemo && (
+          <div className="chats-demo-notice-wrap">
+            <DemoDataNotice
+              message="These example conversations are not real chat history. Start a new chat to create your own."
+              onClear={() => {
+                commitConversations([]);
+                setActiveConvId('');
+              }}
+            />
+          </div>
+        )}
 
         {/* Conversation List Groups */}
         <div className="chats-list-scroll">
@@ -371,7 +400,7 @@ export const ChatsWorkspace: React.FC = () => {
                 </span>
                 <span className="chat-private-pill">
                   <ShieldCheck size={11} />
-                  Private &amp; Encrypted
+                  Local Browser Only
                 </span>
               </div>
             </div>
@@ -415,10 +444,10 @@ export const ChatsWorkspace: React.FC = () => {
                   type="button"
                   className="prompt-starter-pill"
                   onClick={() =>
-                    setInputMessage('Design a zero-telemetry client encryption strategy')
+                    setInputMessage('Outline a plan for a private local-first workspace')
                   }
                 >
-                  &ldquo;Design a zero-telemetry client encryption strategy&rdquo;
+                  &ldquo;Outline a plan for a private local-first workspace&rdquo;
                 </button>
               </div>
             </div>

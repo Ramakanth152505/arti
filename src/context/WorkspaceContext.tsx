@@ -1,32 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { RouteId } from '../types/navigation';
 import { router, type RouteState } from '../services/router';
+import { WorkspaceContext, type AppTheme } from './useWorkspace';
 
-export type AppTheme = 'midnight-navy' | 'deep-obsidian' | 'cyber-steel';
-
-interface WorkspaceContextValue {
-  currentRoute: RouteId;
-  routeParams: Record<string, string>;
-  navigate: (route: RouteId, params?: Record<string, string>) => void;
-  isSidebarCollapsed: boolean;
-  toggleSidebar: () => void;
-  setSidebarCollapsed: (collapsed: boolean) => void;
-  isSearchOpen: boolean;
-  setIsSearchOpen: (open: boolean) => void;
-  isNotificationsOpen: boolean;
-  setIsNotificationsOpen: (open: boolean) => void;
-  isProfileMenuOpen: boolean;
-  setIsProfileMenuOpen: (open: boolean) => void;
-  theme: AppTheme;
-  setTheme: (theme: AppTheme) => void;
-  cycleTheme: () => void;
-  isPrivateMode: boolean;
-  togglePrivateMode: () => void;
-  initialChatPrompt: string;
-  setInitialChatPrompt: (prompt: string) => void;
-}
-
-const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
+export { useWorkspace } from './useWorkspace';
+export type { AppTheme, WorkspaceContextValue } from './useWorkspace';
 
 export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [routeState, setRouteState] = useState<RouteState>(() => router.getCurrentState());
@@ -166,12 +144,4 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       {children}
     </WorkspaceContext.Provider>
   );
-};
-
-export const useWorkspace = (): WorkspaceContextValue => {
-  const context = useContext(WorkspaceContext);
-  if (!context) {
-    throw new Error('useWorkspace must be used within a WorkspaceProvider');
-  }
-  return context;
 };

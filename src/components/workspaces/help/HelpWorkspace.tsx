@@ -2,14 +2,10 @@ import React, { useState } from 'react';
 import {
   HelpCircle,
   Search,
-  BookOpen,
   Navigation,
-  ShieldCheck,
-  Cpu,
   ChevronDown,
   ChevronUp,
   Download,
-  Terminal,
 } from 'lucide-react';
 import { WorkspaceHeader } from '../../common/WorkspaceHeader';
 import { ALL_NAV_ITEMS } from '../../../types/navigation';
@@ -25,30 +21,30 @@ interface FAQItem {
 const FAQ_LIST: FAQItem[] = [
   {
     id: 'faq-1',
-    question: 'How is ARTI AI different from typical AI chat SaaS websites?',
+    question: 'What is ARTI AI?',
     answer:
-      'ARTI AI is a private autonomous command center built around deterministic task graphs (DAG), decoupled specialist agents, local client encryption (AES-256 GCM), and zero-telemetry architecture.',
+      'ARTI AI is a premium universal workspace front end. This build provides navigation, module landing interfaces, and a graphical Magic Mode canvas. AI generation and agent execution backends are not connected in this phase.',
     category: 'Architecture',
   },
   {
     id: 'faq-2',
-    question: 'Where is my conversation and project data stored?',
+    question: 'Where is my data stored?',
     answer:
-      'In Phase 1, data is stored 100% inside your local browser storage (IndexedDB and LocalStorage). Nothing is stored on centralized tracking databases.',
+      'Records you create (projects, documents, chats, knowledge references) are saved in your browser\u2019s localStorage on this device. They persist across reloads in this browser only. No data is sent to a server, and no encryption layer is applied.',
     category: 'Privacy',
   },
   {
     id: 'faq-3',
-    question: 'How do I activate live model responses for Chats and Generation?',
+    question: 'How do I connect a model provider?',
     answer:
-      'Navigate to Settings > Connected Services and paste your preferred API key (Google Gemini, OpenAI, or Anthropic), or connect your local Ollama endpoint (http://localhost:11434).',
+      'Open Settings and use the Connected Services section to store a provider key. Stored keys are kept in this browser only. Wiring a key to live inference is a future integration and is not active in this build.',
     category: 'Setup',
   },
   {
     id: 'faq-4',
     question: 'What is Magic Mode?',
     answer:
-      'Magic Mode is ARTI’s signature multi-agent graphical orchestration workspace. Rather than a basic chat prompt, it renders an interactive workflow canvas connecting specialist agents, tool execution nodes, and quality checks.',
+      'Magic Mode is ARTI\u2019s graphical orchestration canvas. It visualises how a goal would be decomposed into workflow nodes, agent lanes, tools, and verification stages. Until the orchestration engine is connected, it shows a designed initial state and does not run tasks.',
     category: 'Magic Mode',
   },
 ];
@@ -66,11 +62,21 @@ export const HelpWorkspace: React.FC = () => {
   );
 
   const handleExportDiagnostics = () => {
+    let storageWritable = false;
+    try {
+      const probe = '__arti_probe__';
+      window.localStorage.setItem(probe, '1');
+      window.localStorage.removeItem(probe);
+      storageWritable = true;
+    } catch {
+      storageWritable = false;
+    }
     const report = {
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
-      storageState: 'IndexedDB / LocalStorage verified',
-      privacyMode: 'Zero-Telemetry Active',
+      localStorageWritable: storageWritable,
+      modelProviderConfigured: false,
+      encryptionImplemented: false,
     };
     const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -78,7 +84,8 @@ export const HelpWorkspace: React.FC = () => {
     a.href = url;
     a.download = `arti_diagnostics_${Date.now()}.json`;
     a.click();
-    showToast('Offline diagnostic report exported', { type: 'gold' });
+    URL.revokeObjectURL(url);
+    showToast('Diagnostic report exported', { type: 'gold' });
   };
 
   return (
@@ -144,7 +151,7 @@ export const HelpWorkspace: React.FC = () => {
           <div className="spec-card">
             <div className="spec-card-header-row">
               <Navigation size={14} />
-              <h3 className="spec-card-heading">Workspace Map (21 Destinations)</h3>
+              <h3 className="spec-card-heading">Workspace Map (22 Destinations)</h3>
             </div>
             <div className="sitemap-list">
               {ALL_NAV_ITEMS.map((item, idx) => (

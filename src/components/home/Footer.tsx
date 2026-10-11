@@ -7,7 +7,7 @@ export const Footer: React.FC = () => {
       <div className="footer-microcopy">
         <span className="footer-brand-title">ARTI AI</span>
         <span className="footer-dot-sep" />
-        <span>Private &amp; Encrypted</span>
+        <span>Private &amp; Local-First</span>
         <span className="footer-dot-sep" />
         <span>Autonomous Intelligence</span>
         <span className="footer-dot-sep" />

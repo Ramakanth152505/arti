@@ -3,92 +3,83 @@ import {
   Wrench,
   Search,
   Filter,
-  Code,
-  Database,
-  Film,
-  Globe,
   Shield,
   Cpu,
-  CheckCircle2,
   AlertCircle,
-  Sliders,
-  ExternalLink,
 } from 'lucide-react';
 import { WorkspaceHeader } from '../../common/WorkspaceHeader';
 import { Dialog } from '../../common/Dialog';
 import { useWorkspace } from '../../../context/WorkspaceContext';
-import { useToast } from '../../../context/ToastContext';
 
 interface ToolDef {
   id: string;
   name: string;
   category: 'Code & Dev' | 'Data & Storage' | 'Media Processing' | 'Search & Web' | 'Security';
   description: string;
-  status: 'Available Locally' | 'Configured' | 'Configuration Required' | 'Planned';
+  status: 'Available Locally' | 'Configuration Required' | 'Planned';
   executionModel: 'Synchronous Client' | 'Async Worker' | 'Remote API';
   permissions: string;
 }
 
 const TOOL_CATALOG: ToolDef[] = [
   {
-    id: 'tool-1',
-    name: 'Topological DAG Planner',
-    category: 'Code & Dev',
-    description: 'Computes dependency order, node in-degree, and cycle detection for multi-agent tasks.',
+    id: 'tool-2',
+    name: 'Browser Local Storage',
+    category: 'Data & Storage',
+    description: 'Persists workspace records (projects, chats, documents) in this browser on this device.',
     status: 'Available Locally',
     executionModel: 'Synchronous Client',
-    permissions: 'Local Memory Only',
-  },
-  {
-    id: 'tool-2',
-    name: 'Client IndexedDB Vault',
-    category: 'Data & Storage',
-    description: 'High-capacity private browser persistence for artifacts, code files, and projects.',
-    status: 'Available Locally',
-    executionModel: 'Async Worker',
     permissions: 'Client Storage',
   },
   {
-    id: 'tool-3',
-    name: 'AES-256 GCM Session Cipher',
-    category: 'Security',
-    description: 'Client-side symmetric cryptography engine for zero-telemetry private workspaces.',
-    status: 'Available Locally',
+    id: 'tool-1',
+    name: 'Topological DAG Planner',
+    category: 'Code & Dev',
+    description: 'Planned: compute dependency order and cycle detection for multi-agent tasks.',
+    status: 'Planned',
     executionModel: 'Synchronous Client',
-    permissions: 'Cryptographic Subsystem',
+    permissions: 'Not implemented',
+  },
+  {
+    id: 'tool-3',
+    name: 'Planned Encrypted Storage',
+    category: 'Security',
+    description: 'Planned: client-side encryption for local workspace data. No encryption is implemented today.',
+    status: 'Planned',
+    executionModel: 'Synchronous Client',
+    permissions: 'Not implemented',
   },
   {
     id: 'tool-4',
-    name: 'WebGPU Shader Previewer',
+    name: 'Media Shader Previewer',
     category: 'Media Processing',
-    description: 'Real-time 60fps canvas shader simulation for visual materials and terrain.',
-    status: 'Available Locally',
+    description: 'Planned: canvas-based shader preview for visual materials and terrain.',
+    status: 'Planned',
     executionModel: 'Async Worker',
-    permissions: 'GPU Canvas Viewport',
+    permissions: 'Not implemented',
   },
   {
     id: 'tool-5',
     name: 'Remote LLM Inference Connector',
     category: 'Code & Dev',
-    description: 'Secure streaming API bridge for OpenAI, Anthropic, Gemini, or local Ollama endpoints.',
+    description: 'Planned: streaming bridge for OpenAI, Anthropic, Gemini, or local Ollama endpoints.',
     status: 'Configuration Required',
     executionModel: 'Remote API',
-    permissions: 'Network Egress (Authorized Endpoints)',
+    permissions: 'Provider key not stored',
   },
   {
     id: 'tool-6',
-    name: 'HNSW Vector Embedding Index',
+    name: 'Vector Embedding Index',
     category: 'Data & Storage',
-    description: 'Vector cosine similarity search across local documents and conversation memory.',
+    description: 'Planned: similarity search across local documents and conversation memory.',
     status: 'Planned',
     executionModel: 'Async Worker',
-    permissions: 'In-Memory Float32 Vectors',
+    permissions: 'Not implemented',
   },
 ];
 
 export const ToolsWorkspace: React.FC = () => {
   const { navigate } = useWorkspace();
-  const { showToast } = useToast();
 
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState<string>('All');
@@ -106,7 +97,7 @@ export const ToolsWorkspace: React.FC = () => {
     <div className="workspace-page-container">
       <WorkspaceHeader
         title="Tools &amp; Capabilities Directory"
-        description="Modular execution tools, sandboxed system utilities, and verified capability adapters"
+        description="Tool catalog with integration status. No tool execution service is connected in this phase."
         icon={Wrench}
         badge={`${TOOL_CATALOG.length} Tools Cataloged`}
       />

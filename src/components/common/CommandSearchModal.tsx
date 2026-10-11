@@ -16,7 +16,12 @@ interface SearchResultItem {
 }
 
 export const CommandSearchModal: React.FC = () => {
-  const { isSearchOpen, setIsSearchOpen, navigate, toggleSidebar, cycleTheme, togglePrivateMode } = useWorkspace();
+  const { isSearchOpen } = useWorkspace();
+  return isSearchOpen ? <CommandSearchModalInner /> : null;
+};
+
+const CommandSearchModalInner: React.FC = () => {
+  const { setIsSearchOpen, navigate, toggleSidebar, cycleTheme, togglePrivateMode } = useWorkspace();
   const { showToast } = useToast();
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -24,12 +29,9 @@ export const CommandSearchModal: React.FC = () => {
   const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isSearchOpen) {
-      setQuery('');
-      setSelectedIndex(0);
-      setTimeout(() => inputRef.current?.focus(), 50);
-    }
-  }, [isSearchOpen]);
+    const timer = setTimeout(() => inputRef.current?.focus(), 50);
+    return () => clearTimeout(timer);
+  }, []);
 
   const allItems: SearchResultItem[] = useMemo(() => {
     const navItems: SearchResultItem[] = ALL_NAV_ITEMS.map((item) => ({
@@ -92,11 +94,11 @@ export const CommandSearchModal: React.FC = () => {
       {
         id: 'act-toggle-private',
         title: 'Toggle Private Mode State',
-        subtitle: 'Manage local zero-cloud encryption isolation',
+        subtitle: 'Toggle the local private-session indicator',
         category: 'Action',
         action: () => {
           togglePrivateMode();
-          showToast('Session encryption profile updated', { type: 'info' });
+          showToast('Private session indicator updated', { type: 'info' });
         },
         status: 'available',
       },
@@ -113,7 +115,7 @@ export const CommandSearchModal: React.FC = () => {
       },
       {
         id: 'src-cloud-vector',
-        title: 'Cloud Vector Embeddings Store',
+        title: 'Cloud Vector Embeddings Store (Planned)',
         subtitle: 'Pinecone / Qdrant cluster index (Currently utilizing local in-memory store)',
         category: 'Knowledge Source (Planned)',
         status: 'disconnected',
@@ -137,9 +139,10 @@ export const CommandSearchModal: React.FC = () => {
     );
   }, [allItems, query]);
 
-  useEffect(() => {
+  const handleQueryChange = (value: string) => {
+    setQuery(value);
     setSelectedIndex(0);
-  }, [query]);
+  };
 
   const handleSelect = (item: SearchResultItem) => {
     setIsSearchOpen(false);
@@ -167,8 +170,6 @@ export const CommandSearchModal: React.FC = () => {
     }
   };
 
-  if (!isSearchOpen) return null;
-
   return (
     <div className="command-palette-backdrop" onClick={() => setIsSearchOpen(false)}>
       <div
@@ -187,7 +188,7 @@ export const CommandSearchModal: React.FC = () => {
             className="command-input"
             placeholder="Search anything... (chats, projects, tools, workspaces, commands)"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => handleQueryChange(e.target.value)}
             onKeyDown={handleKeyDown}
             aria-label="Search prompt"
           />

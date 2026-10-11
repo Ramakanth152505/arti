@@ -38,7 +38,7 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = ({
         <span className="breadcrumb-current">{title}</span>
 
         {isPrivateMode && (
-          <div className="workspace-privacy-tag" title="Client-side session encrypted">
+          <div className="workspace-privacy-tag" title="Private session indicator (no encryption implemented)">
             <ShieldCheck size={11} />
             <span>Private Session</span>
           </div>

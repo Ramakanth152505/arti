@@ -11,13 +11,11 @@ import {
   Quote,
   Code,
   Download,
-  History,
-  Clock,
-  Sparkles,
 } from 'lucide-react';
 import { WorkspaceHeader } from '../../common/WorkspaceHeader';
-import { Dialog } from '../../common/Dialog';
-import { useWorkspace } from '../../../context/WorkspaceContext';
+import { EmptyState } from '../../common/EmptyState';
+import { DemoDataNotice } from '../../common/DemoDataNotice';
+import { useWorkspaceData } from '../../../hooks/useWorkspaceData';
 import { useToast } from '../../../context/ToastContext';
 
 interface DocumentItem {
@@ -30,53 +28,59 @@ interface DocumentItem {
   version: string;
 }
 
-const DEFAULT_DOCUMENTS: DocumentItem[] = [
+const DEMO_DOCUMENTS: DocumentItem[] = [
   {
     id: 'doc-1',
-    title: 'ARTI AI Architecture Whitepaper',
+    title: 'ARTI AI Architecture Notes',
     template: 'Technical Whitepaper',
     updatedAt: 'Today, 11:20 AM',
     version: 'v1.4',
     wordCount: 840,
-    content: `# ARTI AI: High-Performance Universal Autonomous Workspace
+    content: `# ARTI AI: Universal Workspace Foundation
 
-## 1. System Abstract
-ARTI AI is engineered as an ultra-luxury, zero-telemetry command environment combining cinematic aesthetics with deterministic multi-agent execution.
+## 1. Overview
+ARTI AI is a premium universal workspace front end combining a cinematic interface with a modular module system.
 
 ## 2. Decoupled Architecture
-The system enforces strict separation between:
-- Interactive Client Canvas (React 19 / Vite)
-- Orchestration DAG & Task Scheduling Loop
-- Independent Model Providers and Synthesis Workers
+The system separates concerns between:
+- Interactive Client Canvas (React + Vite)
+- Navigation and workspace shell
+- Planned orchestration and model integration boundaries
 
-## 3. Cryptographic Session Protocol
-Session state resides exclusively in local IndexedDB storage with AES-256 client encryption, guaranteeing privacy.`,
+## 3. Storage
+Records you create are stored in this browser\u2019s local storage on this device. No encryption layer is applied and nothing is sent to a server.`,
   },
   {
     id: 'doc-2',
-    title: 'Zero-Telemetry Privacy Manifesto',
+    title: 'Privacy & Data Handling Notes',
     template: 'Creative Manifesto',
     updatedAt: 'Yesterday',
     version: 'v1.0',
     wordCount: 320,
-    content: `# The Sovereign Intelligence Manifesto
+    content: `# Privacy & Data Handling Notes
 
-*This AI is only for me. Simple on the surface. Extremely powerful underneath.*
+*Local-first and honest by default.*
 
-We believe intelligence tools must respect computational sovereignty:
-1. No telemetry without explicit user configuration.
-2. Local-first persistence.
-3. Deterministic verification over fabricated results.`,
+Principles for this build:
+1. No telemetry is collected.
+2. Data stays in this browser on this device.
+3. No result is presented as real unless it was actually produced.`,
   },
 ];
 
 export const DocumentsWorkspace: React.FC = () => {
   const { showToast } = useToast();
 
-  const [documents, setDocuments] = useState<DocumentItem[]>(DEFAULT_DOCUMENTS);
-  const [activeDocId, setActiveDocId] = useState('doc-1');
+  const {
+    items: documents,
+    isDemo,
+    addItem,
+    updateItem,
+    clear,
+  } = useWorkspaceData<DocumentItem>('documents', () => DEMO_DOCUMENTS);
+
+  const [activeDocId, setActiveDocId] = useState<string>('doc-1');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isVersionDrawerOpen, setIsVersionDrawerOpen] = useState(false);
 
   const activeDoc = documents.find((d) => d.id === activeDocId) || documents[0];
 
@@ -90,22 +94,39 @@ export const DocumentsWorkspace: React.FC = () => {
       wordCount: 12,
       content: `# Untitled Executive Brief\n\nOutline the primary objectives and key initiatives here.`,
     };
-    setDocuments([newDoc, ...documents]);
+    addItem(newDoc);
     setActiveDocId(newDoc.id);
     showToast('New document created', { type: 'gold' });
   };
 
   const handleUpdateContent = (newContent: string) => {
+    if (!activeDoc) return;
     const words = newContent.trim().split(/\s+/).filter(Boolean).length;
-    setDocuments((prev) =>
-      prev.map((d) =>
-        d.id === activeDocId ? { ...d, content: newContent, wordCount: words, updatedAt: 'Just now' } : d
-      )
-    );
+    updateItem(activeDoc.id, (d) => ({
+      ...d,
+      content: newContent,
+      wordCount: words,
+      updatedAt: 'Just now',
+    }));
   };
 
-  const handleExport = (format: string) => {
-    showToast(`Exported document as ${format}`, { type: 'gold' });
+  const handleExport = () => {
+    if (!activeDoc) {
+      showToast('No document selected to export.', { type: 'warning' });
+      return;
+    }
+    if (activeDoc.content.trim().length === 0) {
+      showToast('Nothing to export: the document is empty.', { type: 'warning' });
+      return;
+    }
+    const blob = new Blob([activeDoc.content], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${activeDoc.title.replace(/\s+/g, '_')}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast(`Exported ${activeDoc.title} as Markdown`, { type: 'gold' });
   };
 
   return (
@@ -120,16 +141,7 @@ export const DocumentsWorkspace: React.FC = () => {
             <button
               type="button"
               className="gold-ghost-btn"
-              onClick={() => setIsVersionDrawerOpen(!isVersionDrawerOpen)}
-              title="View revision snapshots"
-            >
-              <History size={14} />
-              <span>Revisions ({activeDoc.version})</span>
-            </button>
-            <button
-              type="button"
-              className="gold-ghost-btn"
-              onClick={() => handleExport('Markdown (.md)')}
+              onClick={handleExport}
               title="Download file"
             >
               <Download size={14} />
@@ -148,6 +160,17 @@ export const DocumentsWorkspace: React.FC = () => {
       />
 
       <div className="documents-studio-grid">
+        {isDemo && (
+          <div className="demo-notice-span">
+            <DemoDataNotice
+              message="These example documents are illustrative only and are not real saved work."
+              onClear={() => {
+                clear();
+                setActiveDocId('');
+              }}
+            />
+          </div>
+        )}
         {/* Left Column: Documents Directory */}
         <aside className="documents-sidebar-column">
           <div className="doc-search-box">
@@ -187,6 +210,16 @@ export const DocumentsWorkspace: React.FC = () => {
 
         {/* Center/Right: Markdown Editor & Preview */}
         <main className="documents-main-column">
+          {!activeDoc ? (
+            <EmptyState
+              icon={FileText}
+              title="No documents yet"
+              description="Create your first document to start writing whitepapers, briefs, or notes. Documents are saved in your browser."
+              actionLabel="New Document"
+              onAction={handleCreateDocument}
+            />
+          ) : (
+          <>
           {/* Document Editor Toolbar */}
           <div className="doc-toolbar-bar">
             <div className="doc-format-group">
@@ -264,6 +297,8 @@ export const DocumentsWorkspace: React.FC = () => {
               placeholder="Begin writing document..."
             />
           </div>
+          </>
+          )}
         </main>
       </div>
     </div>
