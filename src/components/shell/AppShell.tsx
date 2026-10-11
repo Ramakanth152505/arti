@@ -10,6 +10,7 @@ import { useIsMobileNav } from '../../hooks/useMediaQuery';
 
 // Workspaces
 import { ChatsWorkspace } from '../workspaces/chats/ChatsWorkspace';
+import { ConversationWorkspace } from '../workspaces/conversation/ConversationWorkspace';
 import { ProjectsWorkspace } from '../workspaces/projects/ProjectsWorkspace';
 import { WebsitesWorkspace } from '../workspaces/websites/WebsitesWorkspace';
 import { AppsWorkspace } from '../workspaces/apps/AppsWorkspace';
@@ -50,6 +51,8 @@ export const AppShell: React.FC = () => {
     switch (currentRoute) {
       case 'home':
         return <HomePage />;
+      case 'conversation':
+        return <ConversationWorkspace />;
       case 'chats':
         return <ChatsWorkspace />;
       case 'projects':

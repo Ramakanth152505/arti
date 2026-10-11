@@ -1,0 +1,233 @@
+/* ==========================================================================
+   ARTI AI — Dedicated Conversation Workspace & speakerless message feed
+   Loaded after workspaces.css so it refines the shared chat surfaces.
+   Typography stays on the global Ronaldson Gothic tokens.
+   ========================================================================== */
+
+/* ---- Workspace shell ----------------------------------------------------- */
+
+.conversation-workspace {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  /* A calm conversation surface that keeps the brand without repeating the
+     Home landscape behind every message. */
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(201, 168, 78, 0.05), transparent 60%),
+    linear-gradient(180deg, #070b14 0%, #04060c 100%);
+}
+
+.conversation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px clamp(14px, 4vw, 24px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(7, 11, 20, 0.6);
+}
+
+.conversation-title-group {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.conversation-title-group .chat-active-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: min(60vw, 640px);
+}
+
+.conversation-header .chat-canvas-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ---- Speakerless message feed ------------------------------------------- */
+
+/* The shared container already scrolls; keep the last turn clear of the
+   composer by reserving bottom scroll space. */
+.conversation-workspace .chat-messages-container,
+.chats-main-canvas .chat-messages-container {
+  scroll-padding-bottom: 24px;
+}
+
+.chat-messages-list {
+  gap: 18px;
+}
+
+/* Rows convey ownership by alignment alone — no avatars, names or headings. */
+.chat-message-row {
+  display: flex;
+  width: 100%;
+}
+
+.chat-message-row.user {
+  justify-content: flex-end;
+}
+
+.chat-message-row.assistant {
+  justify-content: flex-start;
+}
+
+.chat-message-row .chat-message-bubble {
+  flex: 0 1 auto;
+  width: fit-content;
+  max-width: 78%;
+  border-radius: 14px;
+  padding: 12px 16px;
+}
+
+/* Assistant: clean, spacious response surface on the left. */
+.chat-message-row.assistant .chat-message-bubble {
+  background: rgba(12, 17, 28, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 2px solid var(--gold-border-subtle);
+  border-top-left-radius: 4px;
+}
+
+/* User: compact, distinct surface on the right. */
+.chat-message-row.user .chat-message-bubble {
+  background: rgba(201, 168, 78, 0.09);
+  border: 1px solid var(--gold-border-subtle);
+  border-top-right-radius: 4px;
+}
+
+.chat-message-row .chat-msg-time {
+  display: block;
+  margin-top: 6px;
+  text-align: right;
+  opacity: 0.7;
+}
+
+.chat-message-row.user .chat-msg-time {
+  text-align: right;
+}
+
+/* ---- Waiting, failure and retry states ---------------------------------- */
+
+.chat-typing {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 2px;
+}
+
+.chat-typing span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold-accent);
+  opacity: 0.4;
+  animation: arti-typing 1.2s infinite ease-in-out;
+}
+
+.chat-typing span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.chat-typing span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes arti-typing {
+  0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+  40% { opacity: 0.9; transform: translateY(-3px); }
+}
+
+.chat-message-row.failed .chat-message-bubble {
+  background: rgba(120, 30, 30, 0.14);
+  border-color: rgba(248, 113, 113, 0.35);
+}
+
+.chat-message-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #fca5a5;
+}
+
+.chat-message-error svg {
+  flex-shrink: 0;
+}
+
+.chat-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  color: #faecc0;
+  background: rgba(201, 168, 78, 0.14);
+  border: 1px solid var(--gold-border-subtle);
+  transition: background 0.15s ease;
+}
+
+.chat-retry-btn:hover {
+  background: rgba(201, 168, 78, 0.26);
+}
+
+/* Stop control shown while a reply is generating. */
+.chat-stop-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(201, 168, 78, 0.14);
+  border: 1px solid var(--gold-border-subtle);
+  color: #faecc0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.chat-stop-btn:hover {
+  background: rgba(201, 168, 78, 0.26);
+}
+
+/* ---- Responsive refinements --------------------------------------------- */
+
+@media (max-width: 767.98px) {
+  .conversation-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .conversation-title-group .chat-active-title {
+    max-width: 100%;
+    font-size: 14px;
+  }
+
+  .chat-message-row .chat-message-bubble {
+    max-width: 88%;
+    padding: 10px 13px;
+  }
+
+  .conversation-workspace .chat-composer-container {
+    padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (min-width: 1600px) {
+  .chat-message-row .chat-message-bubble {
+    max-width: 70%;
+  }
+}
+
+@media (min-width: 1920px) {
+  .chat-messages-list {
+    max-width: 1040px;
+  }
+}

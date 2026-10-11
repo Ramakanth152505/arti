@@ -38,7 +38,6 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   });
 
-  const [initialChatPrompt, setInitialChatPrompt] = useState<string>('');
 
   useEffect(() => {
     const unsubscribe = router.subscribe((newRouteState) => {
@@ -137,8 +136,6 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         cycleTheme,
         isPrivateMode,
         togglePrivateMode,
-        initialChatPrompt,
-        setInitialChatPrompt,
       }}
     >
       {children}
