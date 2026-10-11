@@ -51,6 +51,16 @@ export const SettingsWorkspace: React.FC = () => {
     () => localStorage.getItem('arti_endpoint_ollama') || 'http://localhost:11434'
   );
 
+  // Image-generation provider. The Images workspace reads these same keys.
+  const [imageProvider, setImageProvider] = useState<'openai' | 'custom-server'>(
+    () => (localStorage.getItem('arti_image_provider') === 'custom-server' ? 'custom-server' : 'openai')
+  );
+  const [imageEndpoint, setImageEndpoint] = useState(
+    () => localStorage.getItem('arti_endpoint_image') || ''
+  );
+  const [imageKey, setImageKey] = useState(() => localStorage.getItem('arti_key_image') || '');
+  const [imageModel, setImageModel] = useState(() => localStorage.getItem('arti_image_model') || '');
+
   // Notification toggles
   const [notifBanners, setNotifBanners] = useState(true);
 
@@ -64,6 +74,10 @@ export const SettingsWorkspace: React.FC = () => {
       localStorage.setItem('arti_key_anthropic', anthropicKey);
       localStorage.setItem('arti_key_openai', openaiKey);
       localStorage.setItem('arti_endpoint_ollama', ollamaEndpoint);
+      localStorage.setItem('arti_image_provider', imageProvider);
+      localStorage.setItem('arti_endpoint_image', imageEndpoint.trim());
+      localStorage.setItem('arti_key_image', imageKey);
+      localStorage.setItem('arti_image_model', imageModel.trim());
       showToast('Credentials saved to this browser only', { type: 'success' });
     } catch {
       showToast('Failed to save to local storage', { type: 'error' });
@@ -343,6 +357,66 @@ export const SettingsWorkspace: React.FC = () => {
                     onChange={(e) => setOllamaEndpoint(e.target.value)}
                   />
                 </div>
+
+                <div className="settings-section-divider">
+                  <span>Image Generation</span>
+                </div>
+                <p className="section-desc">
+                  The Images workspace generates images through one of these paths. The OpenAI path reuses
+                  your OpenAI key above. The custom bridge keeps provider credentials on your own server —
+                  recommended for production. Nothing is uploaded to an ARTI server.
+                </p>
+
+                <div className="form-field">
+                  <label className="form-label">Image provider</label>
+                  <select
+                    className="form-select"
+                    value={imageProvider}
+                    onChange={(e) => setImageProvider(e.target.value as 'openai' | 'custom-server')}
+                  >
+                    <option value="openai">OpenAI Images (uses the OpenAI key above)</option>
+                    <option value="custom-server">Custom image bridge (server-side)</option>
+                  </select>
+                </div>
+
+                {imageProvider === 'custom-server' && (
+                  <>
+                    <div className="form-field">
+                      <label className="form-label">Image bridge endpoint URL</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="https://your-server.example.com/generate"
+                        value={imageEndpoint}
+                        onChange={(e) => setImageEndpoint(e.target.value)}
+                      />
+                      <p className="form-hint">
+                        ARTI POSTs JSON and expects <code className="settings-code">{'{ images: [{ b64_json | url }] }'}</code>.
+                        Only http/https endpoints are accepted.
+                      </p>
+                    </div>
+                    <div className="form-field">
+                      <label className="form-label">Image bridge key (optional)</label>
+                      <input
+                        type="password"
+                        className="form-input"
+                        placeholder="Bearer token for your bridge"
+                        value={imageKey}
+                        onChange={(e) => setImageKey(e.target.value)}
+                      />
+                    </div>
+                    <div className="form-field">
+                      <label className="form-label">Model id (optional)</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="e.g. flux-1.1-pro"
+                        value={imageModel}
+                        onChange={(e) => setImageModel(e.target.value)}
+                      />
+                    </div>
+                  </>
+                )}
 
                 <button type="submit" className="gold-primary-btn" style={{ alignSelf: 'flex-start' }}>
                   <Save size={14} />

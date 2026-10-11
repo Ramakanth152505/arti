@@ -7,6 +7,12 @@ interface MessageListProps {
   /** Rendered instead of the list when there are no messages. */
   emptyState?: React.ReactNode;
   onRetry?: () => void;
+  /**
+   * Optional content rendered inside the same scroll container, after the
+   * message list — used by the Images workspace to keep generated results
+   * scrolling together with the conversation.
+   */
+  footer?: React.ReactNode;
 }
 
 /**
@@ -17,7 +23,7 @@ interface MessageListProps {
  * No names, avatars, role badges or speaker headings are rendered, and the
  * markup exposes each turn to assistive tech as a labelled list item instead.
  */
-export const MessageList: React.FC<MessageListProps> = ({ messages, emptyState, onRetry }) => {
+export const MessageList: React.FC<MessageListProps> = ({ messages, emptyState, onRetry, footer }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const nearBottom = useRef(true);
@@ -87,6 +93,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, emptyState, 
           <div ref={endRef} aria-hidden="true" />
         </div>
       )}
+      {footer}
     </div>
   );
 };

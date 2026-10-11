@@ -186,11 +186,59 @@ ring, at the container level — never a nested second rectangle from the inner
   pointer is inside the workspace. Route changes always reset focus state so the
   shell can never be stranded collapsed.
 
+## Images workspace (image-linked conversations)
+
+- Images is its own conversation workspace, **not** a project. Every Images
+  conversation is tagged `workspace: 'images'` on the shared `chatStore` record
+  (via `chatStore.createWorkspaceConversation('images', …)`) and carries an
+  optional `imageMeta` blob (`styleId`, `settings`, `results[]`,
+  `pendingGeneration`). Chats list only `general` conversations, so Images chats
+  never leak into Chats/Projects/Games — and vice versa. An image conversation is
+  never moved into Projects automatically.
+- `src/services/imageStyles.ts` is the single source for the style library:
+  12 categories and 167 data-driven `IMAGE_STYLES`, each with real
+  `promptGuidance` (and optional `negativeGuidance`). Select a style →
+  `handleSelectStyle` records `styleId` and appends the style's *guidance* to the
+  composer (never the bare style name) **and never auto-submits**.
+- `src/services/imageService.ts` is the single generation boundary. Two honest
+  paths: `openai` (direct browser call using the OpenAI key already in
+  `arti_key_openai`, opt-in) and `custom-server` (owner-run bridge at
+  `arti_endpoint_image` — recommended; provider credentials stay server-side).
+  `resolveSize` maps an aspect ratio to a size token the model actually accepts.
+  Capability data (`IMAGE_PROVIDERS`) drives which settings controls render; a
+  model-unsupported control is shown as "not supported", never as a working
+  toggle. No 16K native generation is claimed — resolution is whatever the
+  provider returns, and upscaling is only reported when a real step produced it.
+- `src/services/imageClarify.ts` is the intelligent clarification engine. With a
+  language model connected it uses `aiService`; otherwise a transparent
+  rule-based analyser (labelled as such in the UI). It only asks genuinely
+  unresolved details and previews the final prepared prompt before submitting.
+- `src/services/imageDownload.ts` performs a genuine client-side download. The
+  file is never uploaded to ARTI or any other service; a failed remote fetch is
+  reported honestly, not faked as success.
+- `src/components/workspaces/images/ImagesWorkspace.tsx` is the workspace (route
+  `images`): collapsible conversation disclosure + New Chat, the shared
+  `Composer`/`MessageList` (speakerless), `Choose Style` in the upper right, a
+  `Settings` panel, a `Gallery` dialog, and `focus-reveal-pill` distraction-free
+  mode via `useConversationFocus`. Sub-components live in
+  `src/components/images/`. Styles in `src/styles/images.css` (imported between
+  `workspaces.css` and `conversation.css`).
+- Configure the image provider in Settings > Connected Services
+  (`arti_image_provider`, `arti_endpoint_image`, `arti_key_image`,
+  `arti_image_model`). When nothing is configured the workspace states the real
+  setup requirement and never fabricates an image.
+
 ## Verification
 
 - `npm run test:games [baseUrl]` — headless-Chromium (CDP, no extra deps)
   functional suite: Games/Projects/Apps isolation, focus mode, multi-chat
   binding, per-chat delete, taxonomy counts, platform honesty, font loading and
   the integrated-input policy. Currently 31 checks.
+- `npm run test:images [baseUrl]` — headless-Chromium Images suite: workspace
+  shell, style library (12 categories, 167 tiles), style → guidance injection
+  without submit, rule-based clarification and prepared-prompt preview,
+  not-connected honesty, workspace isolation from Chats/Projects/Games,
+  New Chat / persistence / collapse / rename / delete, genuine client-side
+  download with no upload, font loading and input policy. Currently 42 checks.
 
 
