@@ -61,6 +61,13 @@ export const SettingsWorkspace: React.FC = () => {
   const [imageKey, setImageKey] = useState(() => localStorage.getItem('arti_key_image') || '');
   const [imageModel, setImageModel] = useState(() => localStorage.getItem('arti_image_model') || '');
 
+  // Video-generation provider. The Videos workspace reads these same keys.
+  const [videoEndpoint, setVideoEndpoint] = useState(
+    () => localStorage.getItem('arti_endpoint_video') || ''
+  );
+  const [videoKey, setVideoKey] = useState(() => localStorage.getItem('arti_key_video') || '');
+  const [videoModel, setVideoModel] = useState(() => localStorage.getItem('arti_video_model') || '');
+
   // Notification toggles
   const [notifBanners, setNotifBanners] = useState(true);
 
@@ -78,6 +85,9 @@ export const SettingsWorkspace: React.FC = () => {
       localStorage.setItem('arti_endpoint_image', imageEndpoint.trim());
       localStorage.setItem('arti_key_image', imageKey);
       localStorage.setItem('arti_image_model', imageModel.trim());
+      localStorage.setItem('arti_endpoint_video', videoEndpoint.trim());
+      localStorage.setItem('arti_key_video', videoKey);
+      localStorage.setItem('arti_video_model', videoModel.trim());
       showToast('Credentials saved to this browser only', { type: 'success' });
     } catch {
       showToast('Failed to save to local storage', { type: 'error' });
@@ -417,6 +427,53 @@ export const SettingsWorkspace: React.FC = () => {
                     </div>
                   </>
                 )}
+
+                <div className="settings-section-divider">
+                  <span>Video Generation</span>
+                </div>
+                <p className="section-desc">
+                  The Videos workspace renders through your own video bridge. The bridge holds the real engine
+                  credential on your server, so no engine key lives in this browser. Nothing is uploaded to an
+                  ARTI server, and no video is generated until an endpoint is configured here.
+                </p>
+
+                <div className="form-field">
+                  <label className="form-label">Video bridge endpoint URL</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="https://your-server.example.com/generate-video"
+                    value={videoEndpoint}
+                    onChange={(e) => setVideoEndpoint(e.target.value)}
+                  />
+                  <p className="form-hint">
+                    ARTI POSTs JSON (prompt, duration, aspect ratio, resolution, fps, optional seed /
+                    negative prompt / reference image) and expects{' '}
+                    <code className="settings-code">{'{ videos: [{ url | b64_json, width?, height?, duration?, format? }] }'}</code>.
+                    Only http/https endpoints are accepted. Asynchronous job responses (a bare{' '}
+                    <code className="settings-code">jobId</code>) are reported honestly as not polled here.
+                  </p>
+                </div>
+                <div className="form-field">
+                  <label className="form-label">Video bridge key (optional)</label>
+                  <input
+                    type="password"
+                    className="form-input"
+                    placeholder="Bearer token for your bridge"
+                    value={videoKey}
+                    onChange={(e) => setVideoKey(e.target.value)}
+                  />
+                </div>
+                <div className="form-field">
+                  <label className="form-label">Model id (optional)</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="e.g. your-engine-model"
+                    value={videoModel}
+                    onChange={(e) => setVideoModel(e.target.value)}
+                  />
+                </div>
 
                 <button type="submit" className="gold-primary-btn" style={{ alignSelf: 'flex-start' }}>
                   <Save size={14} />
