@@ -305,4 +305,27 @@ ring, at the container level — never a nested second rectangle from the inner
   isolation, collapse, a genuine download with no upload, fonts and the
   integrated-input policy. Currently 53 checks.
 
+## Premium UI refinement (non-Home)
+
+- `src/styles/premium.css` is the premium refinement layer for every workspace
+  **except** the approved Home screen. It is imported **last** in `src/index.css`
+  (after `responsive.css`) so its refinements win at equal specificity.
+- Isolation contract: the file never targets Home-only selectors
+  (`.home-page`, `.home-center-group`, `.hero-*`, `.prompt-box*`,
+  `.quick-action*`, `.home-footer`, `.footer-*`, `.cinematic-*`) and guards
+  every shell-level rule with `.app-shell:not(.route-home)`. It changes only
+  visual properties (surfaces, borders, radii, shadows, accents, motion) and
+  never structural sizing owned by `responsive.css`.
+- Per-workspace identity is driven by one `--prem-accent` custom property set on
+  the route class (`route-chats`, `route-projects`, …). Add a new room by adding
+  a route class in that block; keep the accent restrained (never for body text).
+- Motion is transform/opacity only, honours `prefers-reduced-motion` (all
+  non-Home animation/transition is neutralised there) and disables hover
+  translation on `@media (hover: none)`.
+- `npm run test:redesign [baseUrl]` — headless-Chromium (CDP, no extra deps)
+  guard: proves the Home content, background, prompt bar and shell material are
+  unchanged (no premium entrance animation, sidebar material or card border on
+  Home) and that every non-Home route renders with the premium shell refinement
+  and no console errors. Currently 15 checks.
+
 

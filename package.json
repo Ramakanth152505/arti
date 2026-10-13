@@ -12,6 +12,7 @@
     "test:games": "node scripts/verify-games.mjs",
     "test:images": "node scripts/verify-images.mjs",
     "test:videos": "node scripts/verify-videos.mjs",
+    "test:redesign": "node scripts/verify-redesign.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

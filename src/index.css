@@ -8,3 +8,7 @@
 @import './styles/videos.css';
 @import './styles/conversation.css';
 @import './styles/responsive.css';
+/* Premium refinement layer — non-Home surfaces only. Loaded last so it wins on
+   equal specificity; it never targets Home-only selectors and guards shell rules
+   with `.app-shell:not(.route-home)`. */
+@import './styles/premium.css';
