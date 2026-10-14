@@ -13,16 +13,14 @@
     "test:images": "node scripts/verify-images.mjs",
     "test:videos": "node scripts/verify-videos.mjs",
     "test:redesign": "node scripts/verify-redesign.mjs",
+    "test:music": "node scripts/verify-music.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@react-three/drei": "^10.7.9",
-    "@react-three/fiber": "^9.8.1",
     "lucide-react": "^1.55.0",
     "motion": "^14.2.0",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "three": "^0.186.1"
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",

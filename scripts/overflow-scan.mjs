@@ -41,6 +41,7 @@ const ROUTES = [
   'games',
   'images',
   'videos',
+  'music',
   'websites',
   'tools',
   'settings',

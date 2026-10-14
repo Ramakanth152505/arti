@@ -4,11 +4,9 @@
    The visual surfaces introduced by the motion system:
 
      - the route-level page transition container,
-     - the real Three.js intelligence-core backdrop and its WebGL fallback,
      - the live execution timeline,
      - the shared state indicators (status dots, processing indicator),
-     - the one-time boot sequence,
-     - CSS ambient motion that complements (never replaces) the 3D scene.
+     - CSS ambient motion that complements the interface.
 
    Isolation contract: like premium.css, this file must never target a Home-only
    selector (`.home-page`, `.home-center-group`, `.hero-*`, `.prompt-box*`,
@@ -55,145 +53,6 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-/* ==========================================================================
-   3. The AI intelligence core
-   ========================================================================== */
-
-/* Ambient backdrop host: sits above the star field (z1) and below content (z10). */
-.app-shell:not(.route-home) .ai-core-backdrop {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  /* Bias the core toward the upper-right so it reads as an object in the room
-     rather than a logo behind the text, and fade it toward the content edges. */
-  opacity: 0.9;
-}
-
-.ai-core-mount {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-.ai-core-canvas {
-  position: absolute !important;
-  inset: 0;
-  width: 100% !important;
-  height: 100% !important;
-  /* Never intercept a pointer: the composer, buttons and messages own input. */
-  pointer-events: none !important;
-}
-
-/* A soft radial bloom behind the core keeps it legible over the grid. */
-.ai-core-backdrop::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 62%;
-  width: min(60vw, 720px);
-  aspect-ratio: 1;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(
-    circle at 50% 50%,
-    rgba(94, 200, 230, 0.1) 0%,
-    rgba(201, 168, 78, 0.05) 38%,
-    rgba(0, 0, 0, 0) 70%
-  );
-  pointer-events: none;
-}
-
-/* Live state readout next to the core in the top bar. */
-.ai-core-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 26px;
-  padding: 0 10px;
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(10, 15, 26, 0.6);
-  backdrop-filter: blur(10px);
-  font-size: 10.5px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  white-space: nowrap;
-  transition: border-color var(--mo-dur-base) var(--mo-ease),
-    color var(--mo-dur-base) var(--mo-ease);
-}
-
-.ai-core-status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--mo-state-idle);
-  transition: background var(--mo-dur-base) var(--mo-ease);
-}
-
-.ai-core-status[data-core-state='listening'] { color: #bde9f7; border-color: rgba(122, 214, 240, 0.3); }
-.ai-core-status[data-core-state='listening'] .ai-core-status-dot { background: #7ad6f0; }
-.ai-core-status[data-core-state='processing'] { color: #d9f2fb; border-color: rgba(143, 228, 255, 0.42); }
-.ai-core-status[data-core-state='processing'] .ai-core-status-dot {
-  background: var(--mo-state-running);
-  animation: moPulse 1.1s ease-in-out infinite;
-}
-.ai-core-status[data-core-state='streaming'] { color: #ffeec2; border-color: rgba(255, 217, 121, 0.42); }
-.ai-core-status[data-core-state='streaming'] .ai-core-status-dot { background: #ffd979; }
-.ai-core-status[data-core-state='tool'] { color: #ffe0b8; border-color: rgba(255, 157, 77, 0.42); }
-.ai-core-status[data-core-state='tool'] .ai-core-status-dot {
-  background: #ff9d4d;
-  animation: moPulse 1.4s ease-in-out infinite;
-}
-.ai-core-status[data-core-state='error'] { color: #ffc9c5; border-color: rgba(226, 112, 106, 0.45); }
-.ai-core-status[data-core-state='error'] .ai-core-status-dot { background: var(--mo-state-failed); }
-
-@keyframes moPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.78); }
-}
-
-/* ---- WebGL fallback: a static, honest emblem (no fake animation) --------- */
-.ai-core-fallback {
-  position: absolute;
-  top: 50%;
-  left: 62%;
-  width: min(42vw, 420px);
-  aspect-ratio: 1;
-  transform: translate(-50%, -50%);
-  display: grid;
-  place-items: center;
-  pointer-events: none;
-}
-
-.ai-core-fallback-ring {
-  position: absolute;
-  border-radius: 50%;
-  border: 1px solid rgba(201, 168, 78, 0.28);
-}
-.ai-core-fallback-ring.ring-outer { inset: 0; }
-.ai-core-fallback-ring.ring-inner { inset: 22%; border-color: rgba(143, 180, 217, 0.3); }
-
-.ai-core-fallback-core {
-  width: 26%;
-  aspect-ratio: 1;
-  border-radius: 18%;
-  background: radial-gradient(circle at 34% 30%, #d9f4ff 0%, #4fb0d0 42%, #12303c 100%);
-  box-shadow: 0 0 44px rgba(94, 200, 230, 0.32);
-}
-
-.ai-core-state-tag {
-  position: absolute;
-  bottom: 4px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  white-space: nowrap;
 }
 
 /* ==========================================================================
@@ -538,152 +397,6 @@
 }
 
 /* ==========================================================================
-   6. Boot / ignition sequence
-   ========================================================================== */
-.boot-sequence {
-  position: fixed;
-  inset: 0;
-  z-index: 300;
-  display: grid;
-  place-items: center;
-  background:
-    radial-gradient(90% 70% at 50% 30%, rgba(20, 32, 56, 0.9) 0%, rgba(4, 6, 12, 0.98) 62%, #02040a 100%);
-  overflow: hidden;
-  /* Purely visual: it must never swallow a pointer event or a keystroke, not
-     even during its exit fade, so the app stays usable the instant it paints. */
-  pointer-events: none;
-}
-
-.boot-grid {
-  position: absolute;
-  inset: -20%;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(60% 60% at 50% 50%, #000 0%, transparent 78%);
-  -webkit-mask-image: radial-gradient(60% 60% at 50% 50%, #000 0%, transparent 78%);
-  animation: bootGridDrift 18s linear infinite;
-  pointer-events: none;
-}
-
-@keyframes bootGridDrift {
-  from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(-56px, -56px, 0); }
-}
-
-.boot-scan {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 160px;
-  background: linear-gradient(180deg, rgba(94, 200, 230, 0) 0%, rgba(94, 200, 230, 0.07) 50%, rgba(94, 200, 230, 0) 100%);
-  animation: bootScan 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  pointer-events: none;
-}
-
-@keyframes bootScan {
-  0% { top: -160px; opacity: 0; }
-  20% { opacity: 1; }
-  100% { top: 100%; opacity: 0; }
-}
-
-.boot-center {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 24px;
-  text-align: center;
-  max-width: 420px;
-}
-
-.boot-emblem {
-  width: 68px;
-  height: 68px;
-  border-radius: 12px;
-  object-fit: cover;
-  border: 1px solid var(--gold-border-subtle, rgba(201, 168, 78, 0.15));
-  box-shadow: 0 0 40px rgba(201, 168, 78, 0.22);
-}
-
-.boot-wordmark {
-  font-family: var(--font-brand);
-  font-size: 26px;
-  font-weight: var(--fw-semibold);
-  letter-spacing: 0.3em;
-  text-indent: 0.3em;
-  color: #faecc0;
-  text-shadow: 0 0 24px rgba(212, 175, 55, 0.35);
-}
-
-.boot-tagline {
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.boot-progress {
-  margin-top: 10px;
-  width: min(280px, 70vw);
-  height: 2px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.08);
-  overflow: hidden;
-}
-
-.boot-progress-bar {
-  display: block;
-  height: 100%;
-  width: 100%;
-  border-radius: 9999px;
-  transform-origin: left center;
-  background: linear-gradient(90deg, var(--gold-primary, #c9a84e), #f3df9b);
-}
-
-.boot-steps {
-  list-style: none;
-  margin-top: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  width: min(280px, 70vw);
-}
-
-.boot-step {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 10.5px;
-  color: var(--text-muted);
-  opacity: 0.45;
-  transition: opacity var(--mo-dur-base) var(--mo-ease), color var(--mo-dur-base) var(--mo-ease);
-}
-
-.boot-step.active { opacity: 1; color: var(--text-secondary); }
-.boot-step.done { opacity: 0.85; color: var(--mo-state-complete); }
-
-.boot-step-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: currentColor;
-  flex-shrink: 0;
-}
-
-.boot-step-label { flex-shrink: 0; }
-.boot-step-detail {
-  margin-left: auto;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--text-muted);
-  font-size: 10px;
-}
-
-/* ==========================================================================
    7. Ambient depth — slow parallax and aurora drift for non-Home workspaces.
    Transform/opacity only; disabled entirely under reduced motion.
    ========================================================================== */
@@ -700,10 +413,7 @@
    8. Reduced motion — neutralise everything added by this layer
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
-  .boot-grid,
-  .boot-scan,
-  .app-shell:not(.route-home) .workspace-ambient-backdrop,
-  .ai-core-status-dot {
+  .app-shell:not(.route-home) .workspace-ambient-backdrop {
     animation: none !important;
   }
 
@@ -720,18 +430,8 @@
 }
 
 /* ==========================================================================
-   9. Small screens — keep the core and the timeline out of the way
+   9. Small screens — keep the execution timeline out of the way
    ========================================================================== */
-@media (max-width: 1023.98px) {
-  .app-shell:not(.route-home) .ai-core-backdrop {
-    opacity: 0.55;
-  }
-  .ai-core-fallback {
-    left: 50%;
-    width: min(58vw, 320px);
-  }
-}
-
 @media (max-width: 767.98px) {
   /* Keep the timeline under the top bar (never over the composer) and keep the
      collapsed pill compact so it does not crowd the workspace header. */
@@ -743,14 +443,6 @@
 
   .timeline-list {
     max-height: 32vh;
-  }
-
-  .ai-core-status-label {
-    display: none;
-  }
-
-  .ai-core-status {
-    padding: 0 7px;
   }
 }
 

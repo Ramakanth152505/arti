@@ -36,7 +36,7 @@ export type DateGroup = 'today' | 'yesterday' | 'previous7' | 'older';
  * conversation created by the Images workspace. Projects and Games keep using
  * `projectId`, which is orthogonal to this flag.
  */
-export type WorkspaceKind = 'general' | 'images' | 'videos';
+export type WorkspaceKind = 'general' | 'images' | 'videos' | 'music';
 
 /** A single image returned by a real provider. The URL is the provider's own
  * temporary output URL (or a data URL); ARTI never copies it to its own
@@ -216,6 +216,71 @@ export interface VideoConversationMeta {
   productionId?: string;
 }
 
+/* ==========================================================================
+   Music-workspace types. The Music Studio owns conversations tagged
+   `workspace: 'music'`, carrying the creation mode, lyrics, the extracted
+   settings, the generated track records and their transformation history. A
+   track is only ever `complete` when a real, playable audio asset was received;
+   otherwise it is `blocked` with the honest reason.
+   ========================================================================== */
+
+export type TrackStatus = 'complete' | 'blocked' | 'failed';
+
+export type TrackProvenance =
+  | 'ai-vocals-and-music'
+  | 'ai-instrumental'
+  | 'user-audio'
+  | 'processed-from-ai'
+  | 'licensed-external';
+
+/** One generated (or processed) track. Audio is never fabricated. */
+export interface GeneratedTrackRecord {
+  id: string;
+  createdAt: string;
+  title: string;
+  /** Creation mode id (`MusicModeId`). */
+  mode: string;
+  providerId: string;
+  model: string;
+  originalPrompt: string;
+  preparedPrompt: string;
+  lyrics?: string;
+  language: string;
+  genre: string;
+  instrumental: boolean;
+  vocalType?: string;
+  durationSeconds: number;
+  format: string;
+  /** Set only when a real, playable asset exists. */
+  audioUrl?: string;
+  provenance: TrackProvenance;
+  favorite: boolean;
+  status: TrackStatus;
+  error?: string;
+  /** The source track when this is a variation/transformation. */
+  sourceTrackId?: string;
+  /** How a tempo transform was realized, when applicable. */
+  transformMethod?: string;
+  /** The transform id applied, when applicable. */
+  transformId?: string;
+  /** Honest note about what a transformation actually did. */
+  transformNote?: string;
+}
+
+export interface MusicConversationMeta {
+  mode: string;
+  language: string;
+  genre: string;
+  vocalType: string;
+  lyrics: string;
+  /** The extracted settings shown for review before generation. */
+  settings: Record<string, string>;
+  results: GeneratedTrackRecord[];
+  pendingGeneration: boolean;
+  /** Stage of the in-flight generation, for the in-component indicator. */
+  pendingStage?: string;
+}
+
 export interface ChatConversation {
   id: string;
   title: string;
@@ -232,6 +297,8 @@ export interface ChatConversation {
   imageMeta?: ImageConversationMeta;
   /** Videos-only metadata (category, type, style, settings, results). */
   videoMeta?: VideoConversationMeta;
+  /** Music-only metadata (mode, lyrics, settings, track records). */
+  musicMeta?: MusicConversationMeta;
   /** Production-type category for a video chat (mirrors `videoMeta.category`). */
   category?: VideoChatCategoryId;
   /** Archived chats stay stored and can be restored; they are hidden from the list. */
@@ -593,6 +660,107 @@ class ChatStore {
         videoMeta: {
           ...c.videoMeta,
           results: c.videoMeta.results.filter((r) => r.id !== resultId),
+        },
+      };
+    });
+  }
+
+  /* ======================================================================
+     Music Studio. Music conversations are tagged `workspace: 'music'`, carry a
+     `musicMeta` blob and never appear in Chats, Images, Videos, Projects or
+     Games — and vice versa.
+     ====================================================================== */
+
+  /** Music conversations only, newest first. */
+  getMusicConversations(): ChatConversation[] {
+    return this.state.conversations.filter((c) => !c.projectId && c.workspace === 'music');
+  }
+
+  /** Create a real music conversation owned by the Music Studio. */
+  createMusicConversation(
+    title = 'New Music Conversation',
+    musicMeta?: MusicConversationMeta
+  ): ChatConversation {
+    const conv: ChatConversation = {
+      id: 'conv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+      title,
+      isPinned: false,
+      dateGroup: 'today',
+      updatedAt: 'Just now',
+      model: 'ARTI Music Studio',
+      messages: [],
+      workspace: 'music',
+      musicMeta,
+    };
+    this.setState({
+      conversations: [conv, ...this.state.conversations],
+      activeId: conv.id,
+      isDemo: false,
+    });
+    return conv;
+  }
+
+  /** Patch the Music metadata for one conversation, creating it if absent. */
+  patchMusicMeta(id: string, patch: Partial<MusicConversationMeta>) {
+    this.replaceConversation(id, (c) => {
+      const base: MusicConversationMeta = c.musicMeta ?? {
+        mode: 'full-song-vocals',
+        language: 'en',
+        genre: '',
+        vocalType: 'female',
+        lyrics: '',
+        settings: {},
+        results: [],
+        pendingGeneration: false,
+      };
+      return { ...c, musicMeta: { ...base, ...patch }, updatedAt: 'Just now' };
+    });
+  }
+
+  /** Append a generated/failed/blocked track record to a conversation. */
+  addMusicResult(id: string, result: GeneratedTrackRecord) {
+    this.replaceConversation(id, (c) => {
+      const base: MusicConversationMeta = c.musicMeta ?? {
+        mode: 'full-song-vocals',
+        language: 'en',
+        genre: '',
+        vocalType: 'female',
+        lyrics: '',
+        settings: {},
+        results: [],
+        pendingGeneration: false,
+      };
+      return {
+        ...c,
+        musicMeta: { ...base, results: [result, ...base.results] },
+        updatedAt: 'Just now',
+      };
+    });
+  }
+
+  /** Patch a single stored track record (rename, favorite, etc.). */
+  updateMusicResult(conversationId: string, resultId: string, patch: Partial<GeneratedTrackRecord>) {
+    this.replaceConversation(conversationId, (c) => {
+      if (!c.musicMeta) return c;
+      return {
+        ...c,
+        musicMeta: {
+          ...c.musicMeta,
+          results: c.musicMeta.results.map((r) => (r.id === resultId ? { ...r, ...patch } : r)),
+        },
+      };
+    });
+  }
+
+  /** Remove one track record from a conversation (does not touch the parent). */
+  removeMusicResult(id: string, resultId: string) {
+    this.replaceConversation(id, (c) => {
+      if (!c.musicMeta) return c;
+      return {
+        ...c,
+        musicMeta: {
+          ...c.musicMeta,
+          results: c.musicMeta.results.filter((r) => r.id !== resultId),
         },
       };
     });

@@ -1,5 +1,4 @@
-import React, { useCallback, useState } from 'react';
-import { AnimatePresence } from 'motion/react';
+import React, { useState } from 'react';
 import { Sidebar } from '../sidebar/Sidebar';
 import { TopBar } from '../topbar/TopBar';
 import { HomePage } from '../home/HomePage';
@@ -7,8 +6,6 @@ import { CommandSearchModal } from '../common/CommandSearchModal';
 import { NotificationsDrawer } from '../common/NotificationsDrawer';
 import { ToastContainer } from '../common/ToastContainer';
 import { ExecutionTimeline } from '../common/ExecutionTimeline';
-import { AiCoreBackdrop } from './AiCoreHost';
-import { AppBootSequence } from './AppBootSequence';
 import { PageTransition } from '../../motion/primitives';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useIsMobileNav } from '../../hooks/useMediaQuery';
@@ -39,24 +36,16 @@ import { HelpWorkspace } from '../workspaces/help/HelpWorkspace';
 import { MagicModeWorkspace } from '../workspaces/magicMode/MagicModeWorkspace';
 
 /**
- * `AppBootSequence` plays once per page load. It is intentionally module-scoped
- * (not component state) so a client-side route change — or a React StrictMode
- * remount in development — can never replay the ignition sequence.
+ * `AppShell` is the single application shell. It renders the navigation rail,
+ * the top bar, the live execution timeline and the active workspace, plus the
+ * global modals and drawers. It carries no decorative background scene.
  */
-let bootPlayed = false;
-
 export const AppShell: React.FC = () => {
   const { currentRoute, navigate, isSidebarCollapsed, toggleSidebar, isFocusMode, isFocusChromeRevealed } =
     useWorkspace();
   const isMobileNav = useIsMobileNav();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [wasMobileNav, setWasMobileNav] = useState(isMobileNav);
-  const [booting, setBooting] = useState(() => !bootPlayed);
-
-  const finishBoot = useCallback(() => {
-    bootPlayed = true;
-    setBooting(false);
-  }, []);
 
   // Reset the drawer whenever the layout crosses the drawer breakpoint. Adjusted
   // during render (not in an effect) so there is no extra commit.
@@ -158,9 +147,6 @@ export const AppShell: React.FC = () => {
         ) : (
           <>
             <div className="workspace-ambient-backdrop" />
-            {/* Real Three.js signature scene. Background layer only: it never
-                receives pointer events and never overlaps the composer. */}
-            <AiCoreBackdrop />
           </>
         )}
 
@@ -180,11 +166,6 @@ export const AppShell: React.FC = () => {
       <CommandSearchModal />
       <NotificationsDrawer />
       <ToastContainer />
-
-      {/* One-time ignition sequence, on top of everything until it settles. */}
-      <AnimatePresence>
-        {booting && <AppBootSequence key="boot" onDone={finishBoot} />}
-      </AnimatePresence>
     </div>
   );
 };

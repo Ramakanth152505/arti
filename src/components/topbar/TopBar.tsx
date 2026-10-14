@@ -4,7 +4,6 @@ import { SearchBar } from './SearchBar';
 import { MagicModeButton } from './MagicModeButton';
 import { UserProfile } from './UserProfile';
 import { UserProfileMenu } from '../common/UserProfileMenu';
-import { AiCoreStatus } from '../shell/AiCoreHost';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { getNavItemById } from '../../types/navigation';
 
@@ -112,9 +111,6 @@ export const TopBar: React.FC<TopBarProps> = ({ isSidebarCollapsed, onOpenMobile
 
       {/* Right section: compact search, theme, notifications, Magic Mode, overflow, profile */}
       <div className="topbar-right">
-        {/* Live AI core state (real request lifecycle, never simulated) */}
-        {currentRoute !== 'home' && <AiCoreStatus />}
-
         {/* Compact search launcher (narrow screens) */}
         <button
           type="button"

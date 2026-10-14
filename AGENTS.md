@@ -284,6 +284,51 @@ ring, at the container level — never a nested second rectangle from the inner
   fabricates a video. No engine, SDK, renderer or FFmpeg pipeline is connected:
   the UI never claims a generated/compiled/playable render it did not receive.
 
+## Music Studio (music-linked conversations)
+
+- Music is its own conversation + generation workspace, **not** a project. A
+  music conversation is tagged `workspace: 'music'` on the shared `chatStore`
+  and carries a `musicMeta` blob (`mode`, `language`, `genre`, `vocalType`,
+  `lyrics`, `settings`, `results[]`, `pendingGeneration`, `pendingStage`).
+  Chats/Projects/Games/Images/Videos never list music conversations, and music
+  never lists theirs. Route `music` renders `MusicWorkspace` with four tabs —
+  Create, Chat, Library, Gallery.
+- `src/services/musicTypes.ts` is the single source for the mode taxonomy: 12
+  creation modes in 5 families, plus transform, brief and track-meta types.
+- `src/services/musicProvider.ts` is the single generation boundary and the
+  honest capability registry. Only `custom-server` (an owner-run bridge at
+  `arti_endpoint_music`) is genuinely integrated; commercial engines are listed
+  with their real state and an undeclared capability is reported `unverified`.
+  The bridge key stays on the owner's server — no engine key lives in the
+  browser.
+- `src/services/musicStyles.ts` (95 discoverable genre/style chips) and
+  `src/services/musicLanguages.ts` (57 languages with native-script names) are
+  the style/language catalogues. Provider-declared vocal languages are shown as
+  supported; every other language is shown `unverified`, never silently swapped.
+- `src/services/musicPrompt.ts` builds the structured prompt, `musicLyrics.ts`
+  writes original lyrics (never copyrighted material), `musicClarify.ts`
+  interprets a natural-language brief into reviewable settings, and
+  `musicGeneration.ts` maps a real bridge response into a persisted track; a
+  failure yields a `failed` record with the real error and no engine yields a
+  `blocked` record. `musicDownload.ts` performs a genuine client-side download
+  (the file is never uploaded).
+- The in-component generation indicator (`src/components/music/GenerationIndicator.tsx`)
+  reuses the removed boot animation's visual language but lives **inside** the
+  music workspace and renders only while a real request is running — never as a
+  background or full-screen layer, never blocking the composer or controls.
+  It is driven by real stages (preparing / writing-lyrics / generating /
+  processing) and shows an honest indeterminate state; no fabricated percentage.
+- Tempo transforms distinguish three distinct operations: playback-speed (real,
+  local, Web Audio `playbackRate`), tempo-preserving time stretch (needs a real
+  DSP service — reported not connected) and AI rearrangement (calls the real
+  provider). Every variation is stored as a separate track linked to its source
+  (`sourceTrackId`); the original is never overwritten.
+- Configure the music bridge in Settings > Connected Services
+  (`arti_endpoint_music`, `arti_key_music`, `arti_music_model`). When nothing is
+  configured the workspace states the real setup requirement and never
+  fabricates audio. No engine, SDK or renderer is connected: the UI never claims
+  a generated/playable render it did not receive.
+
 ## Verification
 
 - `npm run test:games [baseUrl]` — headless-Chromium (CDP, no extra deps)
@@ -304,6 +349,17 @@ ring, at the container level — never a nested second rectangle from the inner
   16K honesty, provider capability honesty, category grouping / persistence /
   isolation, collapse, a genuine download with no upload, fonts and the
   integrated-input policy. Currently 53 checks.
+- `npm run test:music [baseUrl]` — headless-Chromium Music Studio suite: four
+  tabs, 12 creation modes in 5 families, the 57-language and 95-style
+  catalogues, honest not-connected state (no request, no fabricated track), the
+  in-component generation indicator appearing only during a real request and
+  disappearing on completion, duplicate-request protection, a real provider
+  response becoming a playable track, a provider failure becoming an honest
+  failed record, the track library metadata + provenance, real playback, a
+  genuine client-side download with no upload, the three distinct tempo
+  transform methods (playback-speed real vs time-stretch not connected),
+  language/vocal capability honesty, workspace isolation, fonts and the
+  integrated-input policy. Currently 40 checks.
 
 ## Premium UI refinement (non-Home)
 
@@ -328,7 +384,7 @@ ring, at the container level — never a nested second rectangle from the inner
   Home) and that every non-Home route renders with the premium shell refinement
   and no console errors. Currently 15 checks.
 
-## Motion design system + 3D AI core (shared)
+## Motion design system (shared)
 
 - `src/motion/tokens.ts` is the single source of truth for durations (`DUR`),
   easings (`EASE`), springs (`SPRING`), stagger steps (`STAGGER`) and the shared
@@ -339,22 +395,18 @@ ring, at the container level — never a nested second rectangle from the inner
   mounts `<MotionConfig reducedMotion="user">`, so the OS reduce-motion setting
   is honoured globally (Motion's default is `never`). `styles/motion.css` holds
   the CSS-level layer and the `prefers-reduced-motion` neutralisers.
-- The 3D signature is `src/components/three/AiCoreScene.tsx` (React Three Fiber
-  + Drei), mounted through `src/components/shell/AiCoreHost.tsx` and rendered on
-  **non-Home routes only** (`AiCoreStatus` in the top bar). It is a real WebGL
-  scene — geometry, materials, lighting, camera drift — not a CSS/emoji fake. It
-  is dynamically imported (`AiCoreScene-*.js` chunk) so it never blocks first
-  paint, keeps `pointer-events: none`, and has a CSS fallback when WebGL is
-  unavailable.
-- `src/hooks/useCoreState.ts` derives the core's visual state from the real
-  request lifecycle in `chatStore` + `activityStore` (`idle` → `listening` →
-  `processing` → `streaming` → `idle`, plus `error`). It never simulates a state:
-  no success flash on cancel/stop, and a non-retryable failure (e.g. 401) hides
-  the Retry control rather than offering a dead one.
+- There is **no decorative 3D background scene** and **no full-screen loading
+  animation**. The former Three.js "AI core" (a faceted sphere in orbital rings)
+  and the one-time boot overlay were removed along with `@react-three/fiber`,
+  `@react-three/drei` and `three`. Do not reintroduce a globe, planet, sphere,
+  floating orb, animated background object or full-screen loading layer unless
+  explicitly requested. The removed boot animation's visual language is reused
+  *inside* the Music Studio as an in-component generation indicator only.
 - `src/services/activityStore.ts` is the single observable activity log
-  (`useSyncExternalStore`) behind the execution timeline; `chatStore` publishes
-  `begin`/`settle` for genuine in-flight work. `progress` stays `null`
-  (indeterminate) because the provider cannot report fractional progress.
+  (`useSyncExternalStore`) behind the execution timeline; `chatStore` and
+  `musicGeneration` publish `begin`/`settle` for genuine in-flight work.
+  `progress` stays `null` (indeterminate) because the provider cannot report
+  fractional progress.
 - Shared-element indicators: the sidebar active rail (`sidebar-active-indicator`)
   and the settings section rail (`settings-nav-indicator`) each use one
   `layoutId`, so the accent slides between items instead of blinking. Modal,

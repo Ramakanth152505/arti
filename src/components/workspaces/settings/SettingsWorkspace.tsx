@@ -86,6 +86,15 @@ export const SettingsWorkspace: React.FC = () => {
   const [videoKey, setVideoKey] = useState(() => localStorage.getItem('arti_key_video') || '');
   const [videoModel, setVideoModel] = useState(() => localStorage.getItem('arti_video_model') || '');
 
+  // Music-generation provider. The Music Studio reads these same keys. Only the
+  // custom bridge is integrated; the real engine credential stays on the
+  // owner's server, so no engine key lives in this browser.
+  const [musicEndpoint, setMusicEndpoint] = useState(
+    () => localStorage.getItem('arti_endpoint_music') || ''
+  );
+  const [musicKey, setMusicKey] = useState(() => localStorage.getItem('arti_key_music') || '');
+  const [musicModel, setMusicModel] = useState(() => localStorage.getItem('arti_music_model') || '');
+
   // Notification toggles
   const [notifBanners, setNotifBanners] = useState(true);
 
@@ -106,6 +115,9 @@ export const SettingsWorkspace: React.FC = () => {
       localStorage.setItem('arti_endpoint_video', videoEndpoint.trim());
       localStorage.setItem('arti_key_video', videoKey);
       localStorage.setItem('arti_video_model', videoModel.trim());
+      localStorage.setItem('arti_endpoint_music', musicEndpoint.trim());
+      localStorage.setItem('arti_key_music', musicKey);
+      localStorage.setItem('arti_music_model', musicModel.trim());
       showToast('Credentials saved to this browser only', { type: 'success' });
     } catch {
       showToast('Failed to save to local storage', { type: 'error' });
@@ -454,6 +466,53 @@ export const SettingsWorkspace: React.FC = () => {
                     placeholder="e.g. your-engine-model"
                     value={videoModel}
                     onChange={(e) => setVideoModel(e.target.value)}
+                  />
+                </div>
+
+                <div className="settings-section-divider">
+                  <span>Music Generation</span>
+                </div>
+                <p className="section-desc">
+                  The Music Studio generates through your own music bridge. The bridge holds the real engine
+                  credential on your server, so no engine key lives in this browser. Lyrics can additionally use the
+                  language model configured above. No audio is generated until an endpoint is configured here.
+                </p>
+
+                <div className="form-field">
+                  <label className="form-label">Music bridge endpoint URL</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="https://your-server.example.com/generate-music"
+                    value={musicEndpoint}
+                    onChange={(e) => setMusicEndpoint(e.target.value)}
+                  />
+                  <p className="form-hint">
+                    ARTI POSTs JSON (prompt, instrumental, duration, model, and optional lyrics, vocal_type,
+                    language, genre, mood, negative_prompt, seed) and expects{' '}
+                    <code className="settings-code">{'{ tracks: [{ url | b64_json, duration?, format?, title? }] }'}</code>.
+                    Only http/https endpoints are accepted. Asynchronous job responses (a bare{' '}
+                    <code className="settings-code">jobId</code>) are reported honestly as not polled here.
+                  </p>
+                </div>
+                <div className="form-field">
+                  <label className="form-label">Music bridge key (optional)</label>
+                  <input
+                    type="password"
+                    className="form-input"
+                    placeholder="Bearer token for your bridge"
+                    value={musicKey}
+                    onChange={(e) => setMusicKey(e.target.value)}
+                  />
+                </div>
+                <div className="form-field">
+                  <label className="form-label">Model id (optional)</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="e.g. your-music-engine-model"
+                    value={musicModel}
+                    onChange={(e) => setMusicModel(e.target.value)}
                   />
                 </div>
 
