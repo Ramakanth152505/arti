@@ -22,6 +22,8 @@
  * real evidence and testing, which this environment cannot supply.
  */
 
+import { activityStore } from './activityStore';
+
 export type VideoProviderId = 'custom-server';
 
 export type VideoProviderState =
@@ -462,23 +464,33 @@ export async function generateVideo(
   signal: AbortSignal
 ): Promise<VideoGenerationResponse> {
   const conn = getVideoConnection();
+  const activityId = activityStore.begin('video', 'Video generation');
   if (!conn) {
-    throw new VideoServiceError(
-      'not-configured',
-      'No video bridge is configured. Add a video bridge endpoint in Settings > Connected Services, then try again.',
-      false
-    );
+    const message =
+      'No video bridge is configured. Add a video bridge endpoint in Settings > Connected Services, then try again.';
+    activityStore.settle(activityId, 'blocked', message);
+    throw new VideoServiceError('not-configured', message, false);
   }
 
   const { signal: linked, done } = withTimeout(signal, REQUEST_TIMEOUT_MS);
   try {
-    return await requestBridge(conn, req, signal && linked ? linked : signal);
+    const response = await requestBridge(conn, req, signal && linked ? linked : signal);
+    activityStore.settle(activityId, 'complete');
+    return response;
   } catch (err) {
-    if (err instanceof VideoServiceError) throw err;
+    if (err instanceof VideoServiceError) {
+      activityStore.settle(activityId, err.code === 'not-configured' ? 'blocked' : 'failed', err.message);
+      throw err;
+    }
     if (isAbort(err)) {
-      if (signal.aborted) throw err;
+      if (signal.aborted) {
+        activityStore.settle(activityId, 'cancelled', 'Stopped by the operator.');
+        throw err;
+      }
+      activityStore.settle(activityId, 'failed', 'The video engine timed out before returning a result.');
       throw new VideoServiceError('timeout', 'The video engine timed out before returning a result.', true);
     }
+    activityStore.settle(activityId, 'failed', 'Could not reach the video bridge.');
     throw new VideoServiceError('network', 'Could not reach the video bridge. Check your network and endpoint.', true);
   } finally {
     done();

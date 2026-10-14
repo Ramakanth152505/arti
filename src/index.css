@@ -12,3 +12,7 @@
    equal specificity; it never targets Home-only selectors and guards shell rules
    with `.app-shell:not(.route-home)`. */
 @import './styles/premium.css';
+/* Motion layer — the 3D signature scene, boot sequence, execution timeline and
+   the shared animation primitives. Loaded after premium.css so it owns the new
+   surfaces it introduces; it never restates a premium rule. */
+@import './styles/motion.css';

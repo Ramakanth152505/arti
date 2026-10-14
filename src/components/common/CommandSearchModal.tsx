@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Search, X, Sparkles, ArrowRight, CornerDownLeft, Lock } from 'lucide-react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { ALL_NAV_ITEMS, type RouteId } from '../../types/navigation';
 import { useToast } from '../../context/ToastContext';
+import { SPRING, dialogVariants } from '../../motion/tokens';
 
 interface SearchResultItem {
   id: string;
@@ -17,7 +19,11 @@ interface SearchResultItem {
 
 export const CommandSearchModal: React.FC = () => {
   const { isSearchOpen } = useWorkspace();
-  return isSearchOpen ? <CommandSearchModalInner /> : null;
+  return (
+    <AnimatePresence>
+      {isSearchOpen && <CommandSearchModalInner key="command-search" />}
+    </AnimatePresence>
+  );
 };
 
 const CommandSearchModalInner: React.FC = () => {
@@ -172,12 +178,16 @@ const CommandSearchModalInner: React.FC = () => {
 
   return (
     <div className="command-palette-backdrop" onClick={() => setIsSearchOpen(false)}>
-      <div
+      <motion.div
         className="command-palette-modal"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label="Global Search and Commands"
+        variants={dialogVariants}
+        initial="hidden"
+        animate="show"
+        exit="exit"
       >
         {/* Search Input Bar */}
         <div className="command-input-bar">
@@ -225,13 +235,17 @@ const CommandSearchModalInner: React.FC = () => {
               const Icon = item.icon || ArrowRight;
 
               return (
-                <div
+                <motion.div
                   key={item.id}
                   className={`command-item ${isSelected ? 'selected' : ''}`}
                   onClick={() => handleSelect(item)}
                   onMouseEnter={() => setSelectedIndex(index)}
                   role="option"
                   aria-selected={isSelected}
+                  layout="position"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ ...SPRING.snappy, delay: Math.min(index * 0.02, 0.15) }}
                 >
                   <div className="command-item-icon-box">
                     <Icon size={16} />
@@ -246,11 +260,15 @@ const CommandSearchModalInner: React.FC = () => {
                     <span className="command-item-subtitle">{item.subtitle}</span>
                   </div>
                   {isSelected && (
-                    <div className="command-item-enter-hint">
+                    <motion.div
+                      className="command-item-enter-hint"
+                      layoutId="command-enter-hint"
+                      transition={SPRING.snappy}
+                    >
                       <CornerDownLeft size={13} />
-                    </div>
+                    </motion.div>
                   )}
-                </div>
+                </motion.div>
               );
             })
           )}
@@ -265,7 +283,7 @@ const CommandSearchModalInner: React.FC = () => {
           </div>
           <span className="command-footer-brand">ARTI AI Universal Command</span>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

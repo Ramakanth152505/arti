@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
+import { AnimatePresence } from 'motion/react';
 import { Sidebar } from '../sidebar/Sidebar';
 import { TopBar } from '../topbar/TopBar';
 import { HomePage } from '../home/HomePage';
 import { CommandSearchModal } from '../common/CommandSearchModal';
 import { NotificationsDrawer } from '../common/NotificationsDrawer';
 import { ToastContainer } from '../common/ToastContainer';
+import { ExecutionTimeline } from '../common/ExecutionTimeline';
+import { AiCoreBackdrop } from './AiCoreHost';
+import { AppBootSequence } from './AppBootSequence';
+import { PageTransition } from '../../motion/primitives';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useIsMobileNav } from '../../hooks/useMediaQuery';
 
@@ -33,12 +38,25 @@ import { SettingsWorkspace } from '../workspaces/settings/SettingsWorkspace';
 import { HelpWorkspace } from '../workspaces/help/HelpWorkspace';
 import { MagicModeWorkspace } from '../workspaces/magicMode/MagicModeWorkspace';
 
+/**
+ * `AppBootSequence` plays once per page load. It is intentionally module-scoped
+ * (not component state) so a client-side route change — or a React StrictMode
+ * remount in development — can never replay the ignition sequence.
+ */
+let bootPlayed = false;
+
 export const AppShell: React.FC = () => {
   const { currentRoute, navigate, isSidebarCollapsed, toggleSidebar, isFocusMode, isFocusChromeRevealed } =
     useWorkspace();
   const isMobileNav = useIsMobileNav();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [wasMobileNav, setWasMobileNav] = useState(isMobileNav);
+  const [booting, setBooting] = useState(() => !bootPlayed);
+
+  const finishBoot = useCallback(() => {
+    bootPlayed = true;
+    setBooting(false);
+  }, []);
 
   // Reset the drawer whenever the layout crosses the drawer breakpoint. Adjusted
   // during render (not in an effect) so there is no extra commit.
@@ -138,15 +156,23 @@ export const AppShell: React.FC = () => {
             <div className="cinematic-overlay-gradient" />
           </>
         ) : (
-          <div className="workspace-ambient-backdrop" />
+          <>
+            <div className="workspace-ambient-backdrop" />
+            {/* Real Three.js signature scene. Background layer only: it never
+                receives pointer events and never overlaps the composer. */}
+            <AiCoreBackdrop />
+          </>
         )}
 
         {/* Top Navigation & Search Bar */}
         <TopBar isSidebarCollapsed={isSidebarCollapsed} onOpenMobileNav={() => setIsMobileNavOpen(true)} />
 
-        {/* Dedicated Active Workspace */}
-        <div className="active-workspace-mount" key={currentRoute}>
-          {renderActiveWorkspace()}
+        {/* Live execution timeline (real operations only) */}
+        {currentRoute !== 'home' && <ExecutionTimeline />}
+
+        {/* Dedicated Active Workspace, with a route-level transition */}
+        <div className="active-workspace-mount">
+          <PageTransition routeKey={currentRoute}>{renderActiveWorkspace()}</PageTransition>
         </div>
       </div>
 
@@ -154,6 +180,11 @@ export const AppShell: React.FC = () => {
       <CommandSearchModal />
       <NotificationsDrawer />
       <ToastContainer />
+
+      {/* One-time ignition sequence, on top of everything until it settles. */}
+      <AnimatePresence>
+        {booting && <AppBootSequence key="boot" onDone={finishBoot} />}
+      </AnimatePresence>
     </div>
   );
 };

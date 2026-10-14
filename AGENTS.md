@@ -328,4 +328,37 @@ ring, at the container level — never a nested second rectangle from the inner
   Home) and that every non-Home route renders with the premium shell refinement
   and no console errors. Currently 15 checks.
 
+## Motion design system + 3D AI core (shared)
+
+- `src/motion/tokens.ts` is the single source of truth for durations (`DUR`),
+  easings (`EASE`), springs (`SPRING`), stagger steps (`STAGGER`) and the shared
+  `Variants` (`fade`, `rise`, `riseScale`, `slideIn`, `staggerContainer`,
+  `overlayVariants`, `dialogVariants`, `drawerVariants`, `sheetUpVariants`,
+  `menuVariants`). Components reference these tokens; never invent local timings.
+- Motion for React (`motion/react`) is the one animation library. `main.tsx`
+  mounts `<MotionConfig reducedMotion="user">`, so the OS reduce-motion setting
+  is honoured globally (Motion's default is `never`). `styles/motion.css` holds
+  the CSS-level layer and the `prefers-reduced-motion` neutralisers.
+- The 3D signature is `src/components/three/AiCoreScene.tsx` (React Three Fiber
+  + Drei), mounted through `src/components/shell/AiCoreHost.tsx` and rendered on
+  **non-Home routes only** (`AiCoreStatus` in the top bar). It is a real WebGL
+  scene — geometry, materials, lighting, camera drift — not a CSS/emoji fake. It
+  is dynamically imported (`AiCoreScene-*.js` chunk) so it never blocks first
+  paint, keeps `pointer-events: none`, and has a CSS fallback when WebGL is
+  unavailable.
+- `src/hooks/useCoreState.ts` derives the core's visual state from the real
+  request lifecycle in `chatStore` + `activityStore` (`idle` → `listening` →
+  `processing` → `streaming` → `idle`, plus `error`). It never simulates a state:
+  no success flash on cancel/stop, and a non-retryable failure (e.g. 401) hides
+  the Retry control rather than offering a dead one.
+- `src/services/activityStore.ts` is the single observable activity log
+  (`useSyncExternalStore`) behind the execution timeline; `chatStore` publishes
+  `begin`/`settle` for genuine in-flight work. `progress` stays `null`
+  (indeterminate) because the provider cannot report fractional progress.
+- Shared-element indicators: the sidebar active rail (`sidebar-active-indicator`)
+  and the settings section rail (`settings-nav-indicator`) each use one
+  `layoutId`, so the accent slides between items instead of blinking. Modal,
+  drawer, command-palette and settings-section enter/exit are owned by Motion
+  variants — do not re-add a competing CSS `animation` on those surfaces.
+
 

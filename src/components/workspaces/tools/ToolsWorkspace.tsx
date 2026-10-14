@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import {
   Wrench,
   Search,
@@ -10,6 +11,7 @@ import {
 import { WorkspaceHeader } from '../../common/WorkspaceHeader';
 import { Dialog } from '../../common/Dialog';
 import { useWorkspace } from '../../../context/WorkspaceContext';
+import { SPRING, STAGGER, riseScale, staggerContainer } from '../../../motion/tokens';
 
 interface ToolDef {
   id: string;
@@ -134,12 +136,21 @@ export const ToolsWorkspace: React.FC = () => {
       </div>
 
       {/* Tool Cards Grid */}
-      <div className="tools-catalog-grid">
+      <motion.div
+        className="tools-catalog-grid"
+        variants={staggerContainer(STAGGER.tight)}
+        initial="hidden"
+        animate="show"
+      >
         {filteredTools.map((tool) => (
-          <div
+          <motion.div
             key={tool.id}
             className="tool-card"
             onClick={() => setSelectedTool(tool)}
+            variants={riseScale}
+            layout="position"
+            whileHover={{ y: -3 }}
+            transition={SPRING.gentle}
           >
             <div className="tool-card-header">
               <span className="tool-cat-tag">{tool.category}</span>
@@ -161,9 +172,9 @@ export const ToolsWorkspace: React.FC = () => {
                 <span>{tool.permissions}</span>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Tool Details Modal */}
       {selectedTool && (

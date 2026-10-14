@@ -12,6 +12,7 @@
  */
 import { useSyncExternalStore } from 'react';
 import { sendChatCompletion, type ChatTurn } from '../services/aiService';
+import { activityStore } from '../services/activityStore';
 
 export type MessageSender = 'user' | 'assistant';
 export type MessageStatus = 'complete' | 'sending' | 'failed';
@@ -743,6 +744,12 @@ class ChatStore {
     this.pendingControllers.set(conversationId, controller);
     this.setState({ pendingIds: [...this.pendingControllers.keys()] });
 
+    // Publish the real request into the shared activity store so the execution
+    // timeline and the AI core reflect genuine in-flight work. The provider
+    // cannot report fractional progress, so progress stays `null` (rendered as
+    // indeterminate) rather than a fabricated percentage.
+    const activityId = activityStore.begin('chat', `Language model · ${conv.title}`);
+
     // Show a pending assistant placeholder so the UI has a real "waiting" state.
     const pendingId = 'msg_' + Date.now() + '_a';
     this.replaceConversation(conversationId, (c) => ({
@@ -761,6 +768,7 @@ class ChatStore {
           m.id === pendingId ? { ...m, content: reply, status: 'complete' } : m
         ),
       }));
+      activityStore.settle(activityId, 'complete');
     } catch (err) {
       const aborted = err instanceof DOMException && err.name === 'AbortError';
       if (aborted) {
@@ -769,6 +777,7 @@ class ChatStore {
           ...c,
           messages: c.messages.filter((m) => m.id !== pendingId),
         }));
+        activityStore.settle(activityId, 'cancelled', 'Stopped by the operator.');
       } else {
         const message = err instanceof Error ? err.message : 'The AI request failed.';
         const retryable = (err as { retryable?: boolean }).retryable !== false;
@@ -780,6 +789,8 @@ class ChatStore {
               : m
           ),
         }));
+        const notConfigured = (err as { code?: string }).code === 'not-configured';
+        activityStore.settle(activityId, notConfigured ? 'blocked' : 'failed', message);
       }
     } finally {
       this.pendingControllers.delete(conversationId);
