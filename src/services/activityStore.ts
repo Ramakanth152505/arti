@@ -18,7 +18,7 @@
  */
 import { useSyncExternalStore } from 'react';
 
-export type ActivityKind = 'chat' | 'image' | 'video' | 'tool';
+export type ActivityKind = 'chat' | 'image' | 'video' | 'music' | 'tool';
 
 export type ActivityOutcome = 'running' | 'complete' | 'failed' | 'blocked' | 'cancelled';
 

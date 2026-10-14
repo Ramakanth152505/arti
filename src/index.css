@@ -6,6 +6,7 @@
 @import './styles/workspaces.css';
 @import './styles/images.css';
 @import './styles/videos.css';
+@import './styles/music.css';
 @import './styles/conversation.css';
 @import './styles/responsive.css';
 /* Premium refinement layer — non-Home surfaces only. Loaded last so it wins on
