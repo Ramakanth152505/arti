@@ -1,5 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { Paperclip, Send, Square } from 'lucide-react';
+import { SPRING } from '../../motion/tokens';
+import { ProcessingIndicator } from '../../motion/primitives';
 
 interface ComposerProps {
   value: string;
@@ -21,6 +24,11 @@ interface ComposerProps {
  * auto-growing up to a cap, with a real disabled state while a reply is in
  * flight. It is the same control in both the Chats workspace and the dedicated
  * conversation workspace.
+ *
+ * Motion is deliberately restrained: the send/stop control swaps with a short
+ * spring and the container lifts a fraction on focus. Nothing moves while the
+ * operator types, and the inner field keeps the `.field-integrated` contract so
+ * the single-border policy is preserved.
  */
 export const Composer: React.FC<ComposerProps> = ({
   value,
@@ -34,6 +42,7 @@ export const Composer: React.FC<ComposerProps> = ({
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const composing = useRef(false);
+  const [focused, setFocused] = useState(false);
   const canSend = value.trim().length > 0;
 
   // Grow with content up to the CSS max-height, then scroll.
@@ -59,12 +68,14 @@ export const Composer: React.FC<ComposerProps> = ({
 
   return (
     <div className="chat-composer-container">
-      <form
+      <motion.form
         className="chat-composer-box"
         onSubmit={(e) => {
           e.preventDefault();
           submit();
         }}
+        animate={{ y: focused && !pending ? -1 : 0 }}
+        transition={SPRING.snappy}
       >
         {onAttach && (
           <button
@@ -86,6 +97,8 @@ export const Composer: React.FC<ComposerProps> = ({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           onCompositionStart={() => {
             composing.current = true;
           }}
@@ -95,28 +108,57 @@ export const Composer: React.FC<ComposerProps> = ({
           aria-label="Message ARTI AI"
         />
 
-        {pending ? (
-          <button
-            type="button"
-            className="chat-stop-btn"
-            title="Stop generating"
-            aria-label="Stop generating"
-            onClick={onStop}
-          >
-            <Square size={13} aria-hidden="true" />
-          </button>
-        ) : (
-          <button
-            type="submit"
-            className="chat-send-btn"
-            disabled={!canSend}
-            title="Send Message"
-            aria-label="Send message"
-          >
-            <Send size={15} aria-hidden="true" />
-          </button>
-        )}
-      </form>
+        {/* Live processing indicator, driven by the real request lifecycle. */}
+        <AnimatePresence initial={false}>
+          {pending && (
+            <motion.span
+              className="chat-composer-pending"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={SPRING.snappy}
+            >
+              <ProcessingIndicator compact label="Generating response" />
+            </motion.span>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence mode="wait" initial={false}>
+          {pending ? (
+            <motion.button
+              key="stop"
+              type="button"
+              className="chat-stop-btn"
+              title="Stop generating"
+              aria-label="Stop generating"
+              onClick={onStop}
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.7 }}
+              whileTap={{ scale: 0.9 }}
+              transition={SPRING.snappy}
+            >
+              <Square size={13} aria-hidden="true" />
+            </motion.button>
+          ) : (
+            <motion.button
+              key="send"
+              type="submit"
+              className="chat-send-btn"
+              disabled={!canSend}
+              title="Send Message"
+              aria-label="Send message"
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.7 }}
+              whileTap={{ scale: 0.92 }}
+              transition={SPRING.snappy}
+            >
+              <Send size={15} aria-hidden="true" />
+            </motion.button>
+          )}
+        </AnimatePresence>
+      </motion.form>
 
       {notice && <div className="chat-composer-notice">{notice}</div>}
     </div>

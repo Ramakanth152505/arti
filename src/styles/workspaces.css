@@ -645,7 +645,7 @@
   border-radius: 12px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(201, 168, 78, 0.15);
   overflow: hidden;
-  animation: modalScale 0.2s ease-out;
+  /* Enter/exit is owned by Motion (`dialogVariants`). */
 }
 
 .command-input-bar {

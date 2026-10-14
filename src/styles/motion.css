@@ -1,0 +1,796 @@
+/* ==========================================================================
+   ARTI AI — MOTION LAYER
+   --------------------------------------------------------------------------
+   The visual surfaces introduced by the motion system:
+
+     - the route-level page transition container,
+     - the real Three.js intelligence-core backdrop and its WebGL fallback,
+     - the live execution timeline,
+     - the shared state indicators (status dots, processing indicator),
+     - the one-time boot sequence,
+     - CSS ambient motion that complements (never replaces) the 3D scene.
+
+   Isolation contract: like premium.css, this file must never target a Home-only
+   selector (`.home-page`, `.home-center-group`, `.hero-*`, `.prompt-box*`,
+   `.quick-action*`, `.home-footer`, `.footer-*`, `.cinematic-*`). The backdrop
+   rules are explicitly guarded with `.app-shell:not(.route-home)` so the
+   approved Home composition — including its cinematic background — is provably
+   untouched. All animation here is disabled under
+   `@media (prefers-reduced-motion: reduce)`.
+
+   Loaded last, after premium.css.
+   ========================================================================== */
+
+/* ==========================================================================
+   1. Motion tokens (mirror src/motion/tokens.ts)
+   ========================================================================== */
+:root {
+  --mo-dur-instant: 0.1s;
+  --mo-dur-fast: 0.18s;
+  --mo-dur-base: 0.3s;
+  --mo-dur-slow: 0.5s;
+  --mo-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --mo-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+  --mo-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Live-state accents (shared by the core, the timeline and the indicators) */
+  --mo-state-idle: #64748b;
+  --mo-state-running: #5ec8e6;
+  --mo-state-waiting: #dfbe68;
+  --mo-state-complete: #5fd39a;
+  --mo-state-failed: #e2706a;
+  --mo-state-blocked: #e0a35c;
+  --mo-state-cancelled: #64748b;
+}
+
+/* ==========================================================================
+   2. Page transition container
+   The outgoing workspace is removed before the incoming one mounts, so this
+   wrapper must own the flex sizing the mount used to provide directly.
+   ========================================================================== */
+.page-transition {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   3. The AI intelligence core
+   ========================================================================== */
+
+/* Ambient backdrop host: sits above the star field (z1) and below content (z10). */
+.app-shell:not(.route-home) .ai-core-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  /* Bias the core toward the upper-right so it reads as an object in the room
+     rather than a logo behind the text, and fade it toward the content edges. */
+  opacity: 0.9;
+}
+
+.ai-core-mount {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.ai-core-canvas {
+  position: absolute !important;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  /* Never intercept a pointer: the composer, buttons and messages own input. */
+  pointer-events: none !important;
+}
+
+/* A soft radial bloom behind the core keeps it legible over the grid. */
+.ai-core-backdrop::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 62%;
+  width: min(60vw, 720px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(94, 200, 230, 0.1) 0%,
+    rgba(201, 168, 78, 0.05) 38%,
+    rgba(0, 0, 0, 0) 70%
+  );
+  pointer-events: none;
+}
+
+/* Live state readout next to the core in the top bar. */
+.ai-core-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(10, 15, 26, 0.6);
+  backdrop-filter: blur(10px);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  transition: border-color var(--mo-dur-base) var(--mo-ease),
+    color var(--mo-dur-base) var(--mo-ease);
+}
+
+.ai-core-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--mo-state-idle);
+  transition: background var(--mo-dur-base) var(--mo-ease);
+}
+
+.ai-core-status[data-core-state='listening'] { color: #bde9f7; border-color: rgba(122, 214, 240, 0.3); }
+.ai-core-status[data-core-state='listening'] .ai-core-status-dot { background: #7ad6f0; }
+.ai-core-status[data-core-state='processing'] { color: #d9f2fb; border-color: rgba(143, 228, 255, 0.42); }
+.ai-core-status[data-core-state='processing'] .ai-core-status-dot {
+  background: var(--mo-state-running);
+  animation: moPulse 1.1s ease-in-out infinite;
+}
+.ai-core-status[data-core-state='streaming'] { color: #ffeec2; border-color: rgba(255, 217, 121, 0.42); }
+.ai-core-status[data-core-state='streaming'] .ai-core-status-dot { background: #ffd979; }
+.ai-core-status[data-core-state='tool'] { color: #ffe0b8; border-color: rgba(255, 157, 77, 0.42); }
+.ai-core-status[data-core-state='tool'] .ai-core-status-dot {
+  background: #ff9d4d;
+  animation: moPulse 1.4s ease-in-out infinite;
+}
+.ai-core-status[data-core-state='error'] { color: #ffc9c5; border-color: rgba(226, 112, 106, 0.45); }
+.ai-core-status[data-core-state='error'] .ai-core-status-dot { background: var(--mo-state-failed); }
+
+@keyframes moPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.78); }
+}
+
+/* ---- WebGL fallback: a static, honest emblem (no fake animation) --------- */
+.ai-core-fallback {
+  position: absolute;
+  top: 50%;
+  left: 62%;
+  width: min(42vw, 420px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.ai-core-fallback-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(201, 168, 78, 0.28);
+}
+.ai-core-fallback-ring.ring-outer { inset: 0; }
+.ai-core-fallback-ring.ring-inner { inset: 22%; border-color: rgba(143, 180, 217, 0.3); }
+
+.ai-core-fallback-core {
+  width: 26%;
+  aspect-ratio: 1;
+  border-radius: 18%;
+  background: radial-gradient(circle at 34% 30%, #d9f4ff 0%, #4fb0d0 42%, #12303c 100%);
+  box-shadow: 0 0 44px rgba(94, 200, 230, 0.32);
+}
+
+.ai-core-state-tag {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   4. Shared state indicators
+   ========================================================================== */
+
+/* ---- Animated active navigation indicator ---------------------------------
+   One shared element (`layoutId`) slides between destinations, replacing the
+   static per-item highlight. It is the *only* active surface: the static
+   backgrounds in base.css and premium.css are neutralised here so the two can
+   never stack or blink against each other. Colour and weight still come from
+   the existing `.sidebar-item.active` rules. */
+.app-shell .sidebar-item.active,
+.app-shell:not(.route-home) .sidebar-item.active {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.app-shell .sidebar-item.active::before,
+.app-shell:not(.route-home) .sidebar-item.active::before {
+  display: none;
+}
+
+.sidebar-active-indicator {
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--gold-pill, rgba(201, 168, 78, 0.14)) 0%, rgba(201, 168, 78, 0.06) 100%);
+  border: 1px solid var(--gold-border-subtle, rgba(201, 168, 78, 0.15));
+  box-shadow: inset 0 0 12px rgba(201, 168, 78, 0.08), 0 0 14px rgba(201, 168, 78, 0.06);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app-shell:not(.route-home) .sidebar-active-indicator {
+  border-color: var(--prem-gold-line-soft, rgba(201, 168, 78, 0.16));
+}
+
+.sidebar-item-icon,
+.sidebar-item-label {
+  position: relative;
+  z-index: 1;
+}
+
+.status-dot-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+.status-dot-core {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: block;
+}
+
+.status-dot-halo {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  pointer-events: none;
+}
+
+.processing-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.processing-orbit {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.processing-mote {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+.processing-mote::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: var(--mo-state-running);
+  box-shadow: 0 0 8px var(--mo-state-running);
+}
+.processing-mote.mote-2::before {
+  background: var(--gold-accent);
+  box-shadow: 0 0 8px var(--gold-accent);
+}
+
+.processing-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #e6f7ff, #4fb0d0);
+  box-shadow: 0 0 12px rgba(94, 200, 230, 0.6);
+}
+
+.processing-indicator.compact-static .processing-static-core {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--mo-state-running);
+}
+
+/* ==========================================================================
+   5. Live execution timeline
+   Floats under the top bar on the right. It lives inside `.main-canvas`
+   (position: relative; overflow: hidden), so it can never widen the document.
+   ========================================================================== */
+.execution-timeline {
+  position: absolute;
+  top: 62px;
+  right: var(--page-pad-x, 16px);
+  z-index: 22;
+  width: min(300px, calc(100% - 2 * var(--page-pad-x, 16px)));
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(8, 12, 22, 0.82);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--prem-shadow-1, 0 10px 28px -14px rgba(0, 0, 0, 0.72));
+  overflow: hidden;
+}
+
+.execution-timeline.empty {
+  opacity: 0.72;
+  background: rgba(8, 12, 22, 0.55);
+}
+
+.timeline-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  text-align: left;
+}
+
+.execution-timeline.empty .timeline-head {
+  cursor: default;
+}
+
+.timeline-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 10.5px;
+  color: var(--gold-accent);
+  flex-shrink: 0;
+}
+
+.timeline-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.timeline-chevron {
+  display: inline-flex;
+  color: var(--text-muted);
+}
+
+.timeline-body {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 6px 8px 8px;
+  overflow: hidden;
+}
+
+.timeline-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: min(46vh, 340px);
+  overflow-y: auto;
+}
+
+.timeline-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: var(--radius-md, 8px);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.timeline-row-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  color: var(--mo-state-idle);
+  background: rgba(255, 255, 255, 0.05);
+}
+.timeline-row-icon[data-state='running'] { color: var(--mo-state-running); background: rgba(94, 200, 230, 0.12); }
+.timeline-row-icon[data-state='complete'] { color: var(--mo-state-complete); background: rgba(95, 211, 154, 0.12); }
+.timeline-row-icon[data-state='failed'] { color: var(--mo-state-failed); background: rgba(226, 112, 106, 0.12); }
+.timeline-row-icon[data-state='blocked'] { color: var(--mo-state-blocked); background: rgba(224, 163, 92, 0.12); }
+.timeline-row-icon[data-state='cancelled'] { color: var(--mo-state-cancelled); background: rgba(255, 255, 255, 0.05); }
+
+.timeline-row-body {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.timeline-row-head {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.timeline-row-label {
+  font-size: 11.5px;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeline-row-kind {
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.timeline-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+.timeline-row-status { color: var(--text-secondary); }
+.timeline-row-time { margin-left: auto; }
+.timeline-row-elapsed {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+.timeline-row-detail {
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.timeline-progress {
+  position: relative;
+  height: 3px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+.timeline-progress-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #4fb0d0, #8fe4ff);
+}
+
+.timeline-progress-sweep {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, rgba(94, 200, 230, 0), rgba(143, 228, 255, 0.85), rgba(94, 200, 230, 0));
+}
+
+.timeline-row-dismiss {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  color: var(--text-muted);
+  transition: color var(--mo-dur-fast) var(--mo-ease), background var(--mo-dur-fast) var(--mo-ease);
+}
+.timeline-row-dismiss:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.timeline-clear-btn {
+  margin-top: 6px;
+  width: 100%;
+  padding: 5px;
+  border-radius: var(--radius-md, 8px);
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: color var(--mo-dur-fast) var(--mo-ease), border-color var(--mo-dur-fast) var(--mo-ease);
+}
+.timeline-clear-btn:hover {
+  color: var(--gold-accent);
+  border-color: var(--gold-border, rgba(201, 168, 78, 0.28));
+}
+
+/* ==========================================================================
+   6. Boot / ignition sequence
+   ========================================================================== */
+.boot-sequence {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(90% 70% at 50% 30%, rgba(20, 32, 56, 0.9) 0%, rgba(4, 6, 12, 0.98) 62%, #02040a 100%);
+  overflow: hidden;
+  /* Purely visual: it must never swallow a pointer event or a keystroke, not
+     even during its exit fade, so the app stays usable the instant it paints. */
+  pointer-events: none;
+}
+
+.boot-grid {
+  position: absolute;
+  inset: -20%;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(60% 60% at 50% 50%, #000 0%, transparent 78%);
+  -webkit-mask-image: radial-gradient(60% 60% at 50% 50%, #000 0%, transparent 78%);
+  animation: bootGridDrift 18s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes bootGridDrift {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-56px, -56px, 0); }
+}
+
+.boot-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 160px;
+  background: linear-gradient(180deg, rgba(94, 200, 230, 0) 0%, rgba(94, 200, 230, 0.07) 50%, rgba(94, 200, 230, 0) 100%);
+  animation: bootScan 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes bootScan {
+  0% { top: -160px; opacity: 0; }
+  20% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.boot-center {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px;
+  text-align: center;
+  max-width: 420px;
+}
+
+.boot-emblem {
+  width: 68px;
+  height: 68px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid var(--gold-border-subtle, rgba(201, 168, 78, 0.15));
+  box-shadow: 0 0 40px rgba(201, 168, 78, 0.22);
+}
+
+.boot-wordmark {
+  font-family: var(--font-brand);
+  font-size: 26px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  color: #faecc0;
+  text-shadow: 0 0 24px rgba(212, 175, 55, 0.35);
+}
+
+.boot-tagline {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.boot-progress {
+  margin-top: 10px;
+  width: min(280px, 70vw);
+  height: 2px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.boot-progress-bar {
+  display: block;
+  height: 100%;
+  width: 100%;
+  border-radius: 9999px;
+  transform-origin: left center;
+  background: linear-gradient(90deg, var(--gold-primary, #c9a84e), #f3df9b);
+}
+
+.boot-steps {
+  list-style: none;
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: min(280px, 70vw);
+}
+
+.boot-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  opacity: 0.45;
+  transition: opacity var(--mo-dur-base) var(--mo-ease), color var(--mo-dur-base) var(--mo-ease);
+}
+
+.boot-step.active { opacity: 1; color: var(--text-secondary); }
+.boot-step.done { opacity: 0.85; color: var(--mo-state-complete); }
+
+.boot-step-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.boot-step-label { flex-shrink: 0; }
+.boot-step-detail {
+  margin-left: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+/* ==========================================================================
+   7. Ambient depth — slow parallax and aurora drift for non-Home workspaces.
+   Transform/opacity only; disabled entirely under reduced motion.
+   ========================================================================== */
+.app-shell:not(.route-home) .workspace-ambient-backdrop {
+  animation: moAmbientDrift 42s linear infinite;
+}
+
+@keyframes moAmbientDrift {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-44px, -44px, 0); }
+}
+
+/* ==========================================================================
+   8. Reduced motion — neutralise everything added by this layer
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .boot-grid,
+  .boot-scan,
+  .app-shell:not(.route-home) .workspace-ambient-backdrop,
+  .ai-core-status-dot {
+    animation: none !important;
+  }
+
+  .execution-timeline,
+  .timeline-chevron,
+  .status-dot-core,
+  .status-dot-halo,
+  .timeline-progress-fill,
+  .timeline-progress-sweep {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* ==========================================================================
+   9. Small screens — keep the core and the timeline out of the way
+   ========================================================================== */
+@media (max-width: 1023.98px) {
+  .app-shell:not(.route-home) .ai-core-backdrop {
+    opacity: 0.55;
+  }
+  .ai-core-fallback {
+    left: 50%;
+    width: min(58vw, 320px);
+  }
+}
+
+@media (max-width: 767.98px) {
+  /* Keep the timeline under the top bar (never over the composer) and keep the
+     collapsed pill compact so it does not crowd the workspace header. */
+  .execution-timeline {
+    top: 58px;
+    right: var(--page-pad-x, 12px);
+    width: min(230px, calc(100% - 2 * var(--page-pad-x, 12px)));
+  }
+
+  .timeline-list {
+    max-height: 32vh;
+  }
+
+  .ai-core-status-label {
+    display: none;
+  }
+
+  .ai-core-status {
+    padding: 0 7px;
+  }
+}
+
+/* ==========================================================================
+   Settings section navigation — shared moving indicator + animated swap
+   ========================================================================== */
+.settings-nav-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.settings-nav-indicator {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--gold-pill, rgba(201, 168, 78, 0.14)) 0%, rgba(201, 168, 78, 0.05) 100%);
+  border: 1px solid var(--gold-border-subtle, rgba(201, 168, 78, 0.16));
+  pointer-events: none;
+  z-index: 0;
+}
+
+.settings-nav-item > svg,
+.settings-nav-item > span:not(.settings-nav-indicator) {
+  position: relative;
+  z-index: 1;
+}
+
+/* The Motion layer owns the active surface, so the static premium fill is
+   neutralised here to avoid a double rectangle behind the indicator. */
+.app-shell:not(.route-home) .settings-nav-item.active {
+  background: transparent;
+  border-color: transparent;
+}
+
+.settings-section-swap {
+  display: contents;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-nav-indicator {
+    transition: none;
+  }
+}

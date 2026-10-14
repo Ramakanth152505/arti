@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import {
   Settings as SettingsIcon,
   Palette,
@@ -15,6 +16,7 @@ import {
 import { WorkspaceHeader } from '../../common/WorkspaceHeader';
 import { useWorkspace, type AppTheme } from '../../../context/WorkspaceContext';
 import { useToast } from '../../../context/ToastContext';
+import { DUR, EASE, SPRING } from '../../../motion/tokens';
 
 type SettingsTab =
   | 'appearance'
@@ -25,6 +27,22 @@ type SettingsTab =
   | 'services'
   | 'security'
   | 'data';
+
+/** Section order and labels, single-sourced so the rail and content stay in step. */
+const SETTINGS_TABS: ReadonlyArray<{
+  id: SettingsTab;
+  label: string;
+  icon: React.ComponentType<{ size?: number }>;
+}> = [
+  { id: 'appearance', label: 'Appearance', icon: Palette },
+  { id: 'layout', label: 'Workspace Layout', icon: Layout },
+  { id: 'accessibility', label: 'Accessibility', icon: Eye },
+  { id: 'interaction', label: 'Interaction & Shortcuts', icon: Sliders },
+  { id: 'notifications', label: 'Notifications', icon: Bell },
+  { id: 'services', label: 'Connected Services', icon: Key },
+  { id: 'security', label: 'Privacy & Security', icon: Shield },
+  { id: 'data', label: 'Data Management', icon: HardDrive },
+];
 
 export const SettingsWorkspace: React.FC = () => {
   const {
@@ -122,81 +140,45 @@ export const SettingsWorkspace: React.FC = () => {
       <div className="settings-layout-grid">
         {/* Left Settings Tabs */}
         <aside className="settings-tabs-sidebar">
-          <button
-            type="button"
-            className={`settings-nav-item ${activeTab === 'appearance' ? 'active' : ''}`}
-            onClick={() => setActiveTab('appearance')}
-          >
-            <Palette size={15} />
-            <span>Appearance</span>
-          </button>
-
-          <button
-            type="button"
-            className={`settings-nav-item ${activeTab === 'layout' ? 'active' : ''}`}
-            onClick={() => setActiveTab('layout')}
-          >
-            <Layout size={15} />
-            <span>Workspace Layout</span>
-          </button>
-
-          <button
-            type="button"
-            className={`settings-nav-item ${activeTab === 'accessibility' ? 'active' : ''}`}
-            onClick={() => setActiveTab('accessibility')}
-          >
-            <Eye size={15} />
-            <span>Accessibility</span>
-          </button>
-
-          <button
-            type="button"
-            className={`settings-nav-item ${activeTab === 'interaction' ? 'active' : ''}`}
-            onClick={() => setActiveTab('interaction')}
-          >
-            <Sliders size={15} />
-            <span>Interaction &amp; Shortcuts</span>
-          </button>
-
-          <button
-            type="button"
-            className={`settings-nav-item ${activeTab === 'notifications' ? 'active' : ''}`}
-            onClick={() => setActiveTab('notifications')}
-          >
-            <Bell size={15} />
-            <span>Notifications</span>
-          </button>
-
-          <button
-            type="button"
-            className={`settings-nav-item ${activeTab === 'services' ? 'active' : ''}`}
-            onClick={() => setActiveTab('services')}
-          >
-            <Key size={15} />
-            <span>Connected Services</span>
-          </button>
-
-          <button
-            type="button"
-            className={`settings-nav-item ${activeTab === 'security' ? 'active' : ''}`}
-            onClick={() => setActiveTab('security')}
-          >
-            <Shield size={15} />
-            <span>Privacy &amp; Security</span>
-          </button>
-
-          <button
-            type="button"
-            className={`settings-nav-item ${activeTab === 'data' ? 'active' : ''}`}
-            onClick={() => setActiveTab('data')}
-          >
-            <HardDrive size={15} />
-            <span>Data Management</span>
-          </button>
+          {SETTINGS_TABS.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <motion.button
+                key={tab.id}
+                type="button"
+                className={`settings-nav-item ${isActive ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+                aria-current={isActive ? 'true' : undefined}
+                whileTap={{ scale: 0.99 }}
+                transition={SPRING.snappy}
+              >
+                {isActive && (
+                  <motion.span
+                    layoutId="settings-nav-indicator"
+                    className="settings-nav-indicator"
+                    transition={SPRING.gentle}
+                    aria-hidden="true"
+                  />
+                )}
+                <Icon size={15} />
+                <span>{tab.label}</span>
+              </motion.button>
+            );
+          })}
         </aside>
 
         {/* Center/Right Settings Content */}
         <main className="settings-content-column">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={activeTab}
+              className="settings-section-swap"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: DUR.base, ease: EASE.enter }}
+            >
           {activeTab === 'appearance' && (
             <div className="settings-section-card">
               <h3 className="section-title">Visual Language &amp; Themes</h3>
@@ -518,6 +500,8 @@ export const SettingsWorkspace: React.FC = () => {
               </div>
             </div>
           )}
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
     </div>

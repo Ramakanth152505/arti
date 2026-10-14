@@ -24,6 +24,7 @@
  */
 
 import type { GeneratedImage } from './chatStore';
+import { activityStore } from './activityStore';
 
 export type ImageProviderId = 'openai' | 'custom-server';
 
@@ -520,28 +521,42 @@ export async function generateImages(
   signal: AbortSignal
 ): Promise<GenerateImageResponse> {
   const conn = getImageConnection();
+  // Publish the attempt into the shared activity store so the execution
+  // timeline and the AI core reflect genuine in-flight work — including the
+  // honest "blocked" outcome when nothing is configured.
+  const activityId = activityStore.begin('image', 'Image generation');
   if (!conn) {
-    throw new ImageServiceError(
-      'not-configured',
+    const message =
       conn === null && getSelectedImageProvider() === 'custom-server'
         ? 'No image bridge endpoint is configured. Add one in Settings > Connected Services.'
-        : 'No image provider is connected. Add an OpenAI key or configure an image bridge in Settings > Connected Services.',
-      false
-    );
+        : 'No image provider is connected. Add an OpenAI key or configure an image bridge in Settings > Connected Services.';
+    activityStore.settle(activityId, 'blocked', message);
+    throw new ImageServiceError('not-configured', message, false);
   }
 
   const { signal: linked, done } = withTimeout(signal, REQUEST_TIMEOUT_MS);
   try {
-    return conn.providerId === 'custom-server'
-      ? await requestCustomServer(conn, req, linked)
-      : await requestOpenAI(conn, req, linked);
+    const response =
+      conn.providerId === 'custom-server'
+        ? await requestCustomServer(conn, req, linked)
+        : await requestOpenAI(conn, req, linked);
+    activityStore.settle(activityId, 'complete');
+    return response;
   } catch (err) {
-    if (err instanceof ImageServiceError) throw err;
+    if (err instanceof ImageServiceError) {
+      activityStore.settle(activityId, err.code === 'not-configured' ? 'blocked' : 'failed', err.message);
+      throw err;
+    }
     if (isAbort(err)) {
       // Distinguish a caller cancellation from our own timeout.
-      if (signal.aborted) throw err;
+      if (signal.aborted) {
+        activityStore.settle(activityId, 'cancelled', 'Stopped by the operator.');
+        throw err;
+      }
+      activityStore.settle(activityId, 'failed', 'The image provider timed out before returning a result.');
       throw new ImageServiceError('timeout', 'The image provider timed out before returning a result.', true);
     }
+    activityStore.settle(activityId, 'failed', 'Could not reach the image provider.');
     throw new ImageServiceError('network', 'Could not reach the image provider. Check your network and endpoint.', true);
   } finally {
     done();

@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { ChevronRight, ChevronLeft, X } from 'lucide-react';
 import type { SidebarProps } from './types';
 import { SidebarItem } from './SidebarItem';
+import { SPRING } from '../../motion/tokens';
 import {
   PRIMARY_NAV_ITEMS,
   UTILITY_NAV_ITEMS,
@@ -46,11 +48,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       {isMobileNav && (
-        <div
-          className={`sidebar-mobile-overlay ${isMobileOpen ? 'open' : ''}`}
-          onClick={onMobileClose}
-          aria-hidden="true"
-        />
+        <AnimatePresence>
+          {isMobileOpen && (
+            <motion.div
+              className="sidebar-mobile-overlay open"
+              onClick={onMobileClose}
+              aria-hidden="true"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            />
+          )}
+        </AnimatePresence>
       )}
 
     <aside
@@ -74,12 +84,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
             alt="ARTI AI Phoenix Emblem"
             className="sidebar-logo-img"
           />
-          {!renderCollapsed && (
-            <div className="sidebar-brand-text">
-              <span className="sidebar-brand-title">ARTI AI</span>
-              <span className="sidebar-brand-tagline">Infinite Possibilities</span>
-            </div>
-          )}
+          <AnimatePresence initial={false}>
+            {!renderCollapsed && (
+              <motion.div
+                className="sidebar-brand-text"
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -8 }}
+                transition={SPRING.snappy}
+              >
+                <span className="sidebar-brand-title">ARTI AI</span>
+                <span className="sidebar-brand-tagline">Infinite Possibilities</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </button>
 
         {/* Sidebar Collapse/Expand Toggle Button: '>' (desktop only) */}
@@ -142,12 +160,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       {/* Sidebar Bottom Micro-Branding */}
-      {!renderCollapsed && (
-        <div className="sidebar-footer">
-          <span className="sidebar-footer-brand">ARTI AI</span>
-          <span className="sidebar-footer-tagline">Autonomous Workspace</span>
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {!renderCollapsed && (
+          <motion.div
+            className="sidebar-footer"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 6 }}
+            transition={SPRING.snappy}
+          >
+            <span className="sidebar-footer-brand">ARTI AI</span>
+            <span className="sidebar-footer-tagline">Autonomous Workspace</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </aside>
     </>
   );

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { Bell, CheckCheck, Trash2, X, Shield, Cpu, HardDrive, Info } from 'lucide-react';
 import { useWorkspace } from '../../context/WorkspaceContext';
+import { drawerVariants, overlayVariants, rise, staggerContainer } from '../../motion/tokens';
 
 interface NotificationEntry {
   id: string;
@@ -16,8 +18,6 @@ const INITIAL_NOTIFICATIONS: NotificationEntry[] = [];
 export const NotificationsDrawer: React.FC = () => {
   const { isNotificationsOpen, setIsNotificationsOpen } = useWorkspace();
   const [notifications, setNotifications] = useState<NotificationEntry[]>(INITIAL_NOTIFICATIONS);
-
-  if (!isNotificationsOpen) return null;
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -50,13 +50,26 @@ export const NotificationsDrawer: React.FC = () => {
   };
 
   return (
-    <div className="drawer-overlay" onClick={() => setIsNotificationsOpen(false)}>
-      <aside
-        className="notifications-drawer"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-label="System Notifications"
-      >
+    <AnimatePresence>
+      {isNotificationsOpen && (
+        <motion.div
+          className="drawer-overlay"
+          onClick={() => setIsNotificationsOpen(false)}
+          variants={overlayVariants}
+          initial="hidden"
+          animate="show"
+          exit="exit"
+        >
+          <motion.aside
+            className="notifications-drawer"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-label="System Notifications"
+            variants={drawerVariants}
+            initial="hidden"
+            animate="show"
+            exit="exit"
+          >
         {/* Drawer Header */}
         <div className="drawer-header">
           <div className="drawer-title-group">
@@ -107,12 +120,19 @@ export const NotificationsDrawer: React.FC = () => {
               <span>System telemetry and security events will appear here</span>
             </div>
           ) : (
-            <div className="notifications-list">
+            <motion.div
+              className="notifications-list"
+              variants={staggerContainer()}
+              initial="hidden"
+              animate="show"
+            >
               {notifications.map((item) => (
-                <div
+                <motion.div
                   key={item.id}
                   className={`notif-card ${item.isRead ? 'read' : 'unread'}`}
                   onClick={() => handleToggleRead(item.id)}
+                  variants={rise}
+                  layout="position"
                 >
                   <div className="notif-card-header">
                     <div className="notif-card-title-row">
@@ -122,9 +142,9 @@ export const NotificationsDrawer: React.FC = () => {
                     <span className="notif-timestamp">{item.timestamp}</span>
                   </div>
                   <p className="notif-card-message">{item.message}</p>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
         </div>
 
@@ -134,7 +154,9 @@ export const NotificationsDrawer: React.FC = () => {
             Private Session &middot; Zero Cloud Telemetry
           </span>
         </div>
-      </aside>
-    </div>
+          </motion.aside>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };

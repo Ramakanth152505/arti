@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import {
   Bot,
   Plus,
@@ -10,6 +11,7 @@ import {
 import { WorkspaceHeader } from '../../common/WorkspaceHeader';
 import { useWorkspace } from '../../../context/WorkspaceContext';
 import { useToast } from '../../../context/ToastContext';
+import { SPRING } from '../../../motion/tokens';
 
 interface AgentProfile {
   id: string;
@@ -134,13 +136,28 @@ export const AgentsWorkspace: React.FC = () => {
         <aside className="agents-sidebar-column">
           <h3 className="section-title">Specialist Fleet Directory</h3>
           <div className="agents-list">
-            {agents.map((ag) => {
+            {agents.map((ag, i) => {
               const isSelected = ag.id === selectedAgentId;
               return (
-                <div
+                <motion.div
                   key={ag.id}
                   className={`agent-directory-card ${isSelected ? 'selected' : ''}`}
                   onClick={() => setSelectedAgentId(ag.id)}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={isSelected}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setSelectedAgentId(ag.id);
+                    }
+                  }}
+                  layout="position"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ ...SPRING.gentle, delay: Math.min(i * 0.045, 0.4) }}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.985 }}
                 >
                   <div className="agent-card-header">
                     <span className="agent-callsign">{ag.callsign}</span>
@@ -148,7 +165,15 @@ export const AgentsWorkspace: React.FC = () => {
                   </div>
                   <h4 className="agent-card-name">{ag.name}</h4>
                   <p className="agent-card-role">{ag.role}</p>
-                </div>
+                  {isSelected && (
+                    <motion.span
+                      className="agent-card-active-rail"
+                      layoutId="agent-active-rail"
+                      transition={SPRING.snappy}
+                      aria-hidden="true"
+                    />
+                  )}
+                </motion.div>
               );
             })}
           </div>

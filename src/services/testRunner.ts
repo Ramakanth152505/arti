@@ -17,6 +17,7 @@
  * fabricates coverage or security scores.
  */
 import type { Project, TestConfig, TestRun, TestStatus, TestSuiteResult } from './projectStore';
+import { activityStore } from './activityStore';
 
 export const EMPTY_TEST_CONFIG: TestConfig = {
   framework: '',
@@ -84,7 +85,13 @@ export async function performTests(project: Project, env: TestEnv = CURRENT_TEST
 
   const detected = CATEGORIES.filter((c) => config && config[c.key]);
 
+  // Publish the real workflow into the shared activity store so the execution
+  // timeline and the AI core reflect it — including the honest `blocked` and
+  // `not-configured` outcomes, which are not failures and must not be faked.
+  const activityId = activityStore.begin('tool', `Tests · ${project.name}`);
+
   if (!configured) {
+    activityStore.settle(activityId, 'blocked', 'No test configuration recorded for this project.');
     return {
       id: runId,
       projectId: project.id,
@@ -104,6 +111,7 @@ export async function performTests(project: Project, env: TestEnv = CURRENT_TEST
   }
 
   if (!env.canExecute) {
+    activityStore.settle(activityId, 'blocked', env.reason);
     return {
       id: runId,
       projectId: project.id,
@@ -135,6 +143,7 @@ export async function performTests(project: Project, env: TestEnv = CURRENT_TEST
   // results the moment one is.
   try {
     const result = await runCommand(config!.command.trim(), project);
+    activityStore.settle(activityId, result.exitCode === 0 ? 'complete' : 'failed', result.exitCode === 0 ? undefined : 'One or more checks failed.');
     return {
       id: runId,
       projectId: project.id,
@@ -155,6 +164,10 @@ export async function performTests(project: Project, env: TestEnv = CURRENT_TEST
     };
   } catch (err) {
     const status: TestStatus = 'blocked';
+    const detail = `Execution failed before any test result was produced: ${
+      err instanceof Error ? err.message : String(err)
+    }`;
+    activityStore.settle(activityId, 'blocked', detail);
     return {
       id: runId,
       projectId: project.id,
@@ -168,9 +181,7 @@ export async function performTests(project: Project, env: TestEnv = CURRENT_TEST
         status,
         detail: 'Infrastructure failure — the command could not be executed to completion.',
       })),
-      message: `Blocked — execution failed before any test result was produced: ${
-        err instanceof Error ? err.message : String(err)
-      }`,
+      message: `Blocked — ${detail}`,
     };
   }
 }

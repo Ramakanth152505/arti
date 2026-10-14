@@ -23,3 +23,14 @@ export function useMediaQuery(query: string): boolean {
 
 /** True when the layout uses the overlay navigation drawer instead of the rail. */
 export const useIsMobileNav = (): boolean => useMediaQuery('(max-width: 1023.98px)');
+
+/**
+ * Live reduced-motion preference.
+ *
+ * `motion`'s own `useReducedMotion` reads the preference once at mount and never
+ * updates (documented in its source). The 3D scene needs to react to a change
+ * mid-session, so it subscribes through the same `useSyncExternalStore` path the
+ * rest of the responsive behaviour uses.
+ */
+export const usePrefersReducedMotion = (): boolean =>
+  useMediaQuery('(prefers-reduced-motion: reduce)');

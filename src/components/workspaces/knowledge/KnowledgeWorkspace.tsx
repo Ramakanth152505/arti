@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { motion } from 'motion/react';
 import {
   Database,
   Search,
@@ -10,6 +11,7 @@ import { Dialog } from '../../common/Dialog';
 import { EmptyState } from '../../common/EmptyState';
 import { DemoDataNotice } from '../../common/DemoDataNotice';
 import { useWorkspaceData } from '../../../hooks/useWorkspaceData';
+import { STAGGER, riseScale, staggerContainer } from '../../../motion/tokens';
 import { useToast } from '../../../context/ToastContext';
 
 interface KnowledgeItem {
@@ -170,7 +172,12 @@ export const KnowledgeWorkspace: React.FC = () => {
       )}
 
       {/* Documents Table / Grid */}
-      <div className="knowledge-items-grid">
+      <motion.div
+        className="knowledge-items-grid"
+        variants={staggerContainer(STAGGER.tight)}
+        initial="hidden"
+        animate="show"
+      >
         {filteredItems.length === 0 ? (
           <div className="demo-notice-span">
             <EmptyState
@@ -183,7 +190,7 @@ export const KnowledgeWorkspace: React.FC = () => {
           </div>
         ) : (
         filteredItems.map((doc) => (
-          <div key={doc.id} className="knowledge-card">
+          <motion.div key={doc.id} className="knowledge-card" variants={riseScale} layout="position">
             <div className="knowledge-card-header">
               <span className="knowledge-space-tag">{doc.space}</span>
               <span className="knowledge-type-tag">{doc.fileType}</span>
@@ -204,10 +211,10 @@ export const KnowledgeWorkspace: React.FC = () => {
               <span>&middot;</span>
               <span>{doc.updatedAt}</span>
             </div>
-          </div>
+          </motion.div>
         ))
         )}
-      </div>
+      </motion.div>
 
       {/* Import Modal */}
       <Dialog
