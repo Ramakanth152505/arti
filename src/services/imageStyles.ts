@@ -65,16 +65,16 @@ type StyleSeed = [string, string, string, string, string?];
 
 /** Deterministic, muted swatch pairs drawn from the ARTI palette family. */
 const SWATCHES: Array<[string, string]> = [
-  ['#3b4a63', '#8e7a46'],
-  ['#243044', '#5b7ba6'],
-  ['#4a3b2a', '#c9a84e'],
-  ['#1f2a3d', '#7d8fa6'],
-  ['#5a4a63', '#b58ea6'],
-  ['#2a3b3a', '#6fae9f'],
-  ['#403040', '#a67c9e'],
-  ['#3a3f52', '#dfbe68'],
-  ['#2b2b33', '#9aa4b2'],
-  ['#4a2f33', '#c07a6a'],
+  ['#1F2A44', '#C6A75E'],
+  ['#1F2A44', '#1F2A44'],
+  ['#C6A75E', '#C6A75E'],
+  ['#1F2A44', '#E8DCC8'],
+  ['#1F2A44', '#E8DCC8'],
+  ['#1F2A44', '#C6A75E'],
+  ['#1F2A44', '#E8DCC8'],
+  ['#1F2A44', '#C6A75E'],
+  ['#1F2A44', '#E8DCC8'],
+  ['#1F2A44', '#C6A75E'],
 ];
 
 function build(category: StyleCategoryId, seeds: StyleSeed[]): ImageStyle[] {

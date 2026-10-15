@@ -178,14 +178,14 @@ export const MagicModeWorkspace: React.FC = () => {
                 markerHeight="6"
                 orient="auto-start-reverse"
               >
-                <path d="M 0 1 L 10 5 L 0 9 z" fill="#c9a84e" />
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#C6A75E" />
               </marker>
             </defs>
 
             {/* Edge 1 -> 2 */}
             <path
               d="M 280 130 L 320 130"
-              stroke="rgba(201, 168, 78, 0.45)"
+              stroke="#C6A75E"
               strokeWidth="2"
               fill="none"
               markerEnd="url(#arrow)"
@@ -194,7 +194,7 @@ export const MagicModeWorkspace: React.FC = () => {
             {/* Edge 2 -> 3 (Branch Top) */}
             <path
               d="M 560 110 C 580 110, 590 90, 620 90"
-              stroke="rgba(201, 168, 78, 0.45)"
+              stroke="#C6A75E"
               strokeWidth="2"
               fill="none"
               markerEnd="url(#arrow)"
@@ -203,7 +203,7 @@ export const MagicModeWorkspace: React.FC = () => {
             {/* Edge 2 -> 4 (Branch Bottom) */}
             <path
               d="M 560 140 C 580 140, 590 210, 620 210"
-              stroke="rgba(201, 168, 78, 0.45)"
+              stroke="#C6A75E"
               strokeWidth="2"
               fill="none"
               markerEnd="url(#arrow)"
@@ -212,7 +212,7 @@ export const MagicModeWorkspace: React.FC = () => {
             {/* Edge 3 -> 5 */}
             <path
               d="M 860 90 C 880 90, 890 140, 920 140"
-              stroke="rgba(201, 168, 78, 0.45)"
+              stroke="#C6A75E"
               strokeWidth="2"
               fill="none"
               markerEnd="url(#arrow)"
@@ -221,7 +221,7 @@ export const MagicModeWorkspace: React.FC = () => {
             {/* Edge 4 -> 5 */}
             <path
               d="M 860 210 C 880 210, 890 160, 920 160"
-              stroke="rgba(201, 168, 78, 0.45)"
+              stroke="#C6A75E"
               strokeWidth="2"
               fill="none"
               markerEnd="url(#arrow)"
@@ -230,7 +230,7 @@ export const MagicModeWorkspace: React.FC = () => {
             {/* Edge 5 -> 6 */}
             <path
               d="M 1160 150 L 1220 150"
-              stroke="rgba(201, 168, 78, 0.45)"
+              stroke="#C6A75E"
               strokeWidth="2"
               fill="none"
               markerEnd="url(#arrow)"

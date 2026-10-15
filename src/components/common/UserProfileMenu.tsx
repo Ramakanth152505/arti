@@ -71,7 +71,7 @@ export const UserProfileMenu: React.FC = () => {
           role="menuitem"
         >
           <div className="profile-menu-item-icon">
-            <ShieldCheck size={15} color="#c9a84e" />
+            <ShieldCheck size={15} color="#C6A75E" />
           </div>
           <div className="profile-menu-item-text">
             <span className="profile-menu-item-title">Private Mode</span>
@@ -92,7 +92,7 @@ export const UserProfileMenu: React.FC = () => {
           role="menuitem"
         >
           <div className="profile-menu-item-icon">
-            <Sparkles size={15} color="#dfbe68" />
+            <Sparkles size={15} color="#C6A75E" />
           </div>
           <div className="profile-menu-item-text">
             <span className="profile-menu-item-title">Magic Mode Canvas</span>

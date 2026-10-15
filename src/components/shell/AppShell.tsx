@@ -137,7 +137,7 @@ export const AppShell: React.FC = () => {
         {currentRoute === 'home' ? (
           <>
             <img
-              src="/assets/arti_cinematic_bg.jpg"
+              src="/assets/arti_cinematic_bg.png"
               alt="ARTI AI Cinematic Environment"
               className="cinematic-bg"
             />

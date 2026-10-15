@@ -1,5 +1,45 @@
 # ARTI AI — Project Instructions
 
+## Colour system (permanent, strict)
+
+**ARTI AI USES EXACTLY THREE COLOURS. No fourth colour is permitted anywhere
+in the product — not in CSS, not in inline styles, not in SVG, not in image
+assets, not in meta tags.**
+
+- **Navy `#1F2A44`** — backgrounds, shell, sidebar, primary surfaces. The base
+  canvas for every route.
+- **Warm Beige `#E8DCC8`** — light content surfaces and text. The primary
+  reading colour on navy.
+- **Soft Gold `#C6A75E`** — the single accent: focus rings, active indicators,
+  primary buttons, emphasis, dividers.
+
+Rules:
+- The canonical tokens live in `src/styles/base.css` `:root`
+  (`--arti-navy`, `--arti-beige`, `--arti-gold`, plus the derived
+  `--bg-*`, `--gold-*`, `--text-*`, `--border-*`). Reference those; do not
+  introduce a new token for a new hue — there is none.
+- Hierarchy comes from **type scale**, **weight**, **spacing** and **surface
+  elevation** — never from a new hue and never from translucency. The palette is
+  declared as solid hex only: no `rgba()`/`hsla()`, no `opacity`/`color-mix()`,
+  no filters, no blending and no extra hex values. A translucent wash resolves
+  either to `transparent` (so the navy shell shows through) or to one of the
+  three solid colours.
+- The palette is **fixed and not user-selectable**. There is no theme switcher:
+  `AppTheme` is the single token `'arti-approved'`, and Settings presents the
+  three colours as informational swatches. Do not reintroduce a theme picker,
+  a `data-theme` attribute or any alternate palette name.
+- Status is never carried by hue alone. `idle` / `running` / `failed` /
+  `blocked` are distinguished by surface, motion and the accompanying text label
+  (`--mo-state-*` in `motion.css`, `INDICATOR_ACCENT` in `motion/primitives.tsx`).
+- `transparent`, `currentColor`, `inherit` and `none` are keywords, not colours,
+  and remain permitted.
+- Image assets (`public/assets/*.png`) are quantised to the three colours; do
+  not add an asset that introduces an off-palette colour. The brand mark and
+  cinematic backdrop are intentionally palette-mapped PNGs.
+- Enforce with `npm run check:colors` (source-level, also runs as part of
+  `npm run lint`) and `npm run test:palette` (runtime CSSOM audit across every
+  route — catches gradients, shorthands and third-party components).
+
 ## Typography (permanent)
 
 **ARTI AI USES A THREE-FAMILY SYSTEM. All three are self-hosted under
@@ -331,6 +371,18 @@ ring, at the container level — never a nested second rectangle from the inner
 
 ## Verification
 
+- `npm run test:all [baseUrl]` — runs every suite below in sequence and forwards
+  one base URL to each (`scripts/run-all.mjs`).
+- `npm run check:colors` — source-level strict three-colour audit
+  (`scripts/check-colors.mjs`). Fails on any hex / rgb / hsl / named colour
+  outside Navy `#1F2A44`, Warm Beige `#E8DCC8`, Soft Gold `#C6A75E`. Also runs
+  as the last step of `npm run lint`.
+- `npm run test:palette [baseUrl]` — headless-Chromium runtime palette audit
+  (`scripts/verify-palette.mjs`). Walks every author CSS rule (all stylesheets,
+  including `@media`), every inline style and every SVG presentation attribute
+  on all 24 routes, and fails on any rgb triplet outside the three approved
+  colours. This catches what a text scan cannot: gradients, shorthands and
+  third-party component styles.
 - `npm run test:games [baseUrl]` — headless-Chromium (CDP, no extra deps)
   functional suite: Games/Projects/Apps isolation, focus mode, multi-chat
   binding, per-chat delete, taxonomy counts, platform honesty, font loading and
@@ -372,9 +424,10 @@ ring, at the container level — never a nested second rectangle from the inner
   every shell-level rule with `.app-shell:not(.route-home)`. It changes only
   visual properties (surfaces, borders, radii, shadows, accents, motion) and
   never structural sizing owned by `responsive.css`.
-- Per-workspace identity is driven by one `--prem-accent` custom property set on
-  the route class (`route-chats`, `route-projects`, …). Add a new room by adding
-  a route class in that block; keep the accent restrained (never for body text).
+- Per-route identity is driven by one `--prem-accent` custom property set on the
+  route class (`route-chats`, `route-projects`, …). Because the palette is
+  strictly three colours, every route resolves to the same Soft Gold accent —
+  workspace identity comes from surface and type, not from a fourth hue.
 - Motion is transform/opacity only, honours `prefers-reduced-motion` (all
   non-Home animation/transition is neutralised there) and disables hover
   translation on `@media (hover: none)`.

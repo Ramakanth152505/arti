@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Bell, Moon, Sun, Monitor, ChevronRight, Search, Menu, MoreVertical } from 'lucide-react';
+import { Bell, Moon, ChevronRight, Search, Menu, MoreVertical } from 'lucide-react';
 import { SearchBar } from './SearchBar';
 import { MagicModeButton } from './MagicModeButton';
 import { UserProfile } from './UserProfile';
@@ -16,8 +16,6 @@ export const TopBar: React.FC<TopBarProps> = ({ isSidebarCollapsed, onOpenMobile
   const {
     currentRoute,
     navigate,
-    theme,
-    cycleTheme,
     setIsNotificationsOpen,
     setIsSearchOpen,
     setIsProfileMenuOpen,
@@ -45,31 +43,7 @@ export const TopBar: React.FC<TopBarProps> = ({ isSidebarCollapsed, onOpenMobile
 
   const currentNav = getNavItemById(currentRoute);
 
-  const getThemeIcon = () => {
-    switch (theme) {
-      case 'midnight-navy':
-        return <Moon size={15} />;
-      case 'deep-obsidian':
-        return <Monitor size={15} />;
-      case 'cyber-steel':
-        return <Sun size={15} />;
-      default:
-        return <Moon size={15} />;
-    }
-  };
-
-  const getThemeLabel = () => {
-    switch (theme) {
-      case 'midnight-navy':
-        return 'Theme: Midnight Navy';
-      case 'deep-obsidian':
-        return 'Theme: Deep Obsidian';
-      case 'cyber-steel':
-        return 'Theme: Cyber Steel';
-      default:
-        return 'Display Theme';
-    }
-  };
+  const getThemeLabel = () => 'Approved palette — Navy · Warm Beige · Soft Gold';
 
   return (
     <header className="topbar" role="banner">
@@ -122,16 +96,15 @@ export const TopBar: React.FC<TopBarProps> = ({ isSidebarCollapsed, onOpenMobile
           <Search size={17} />
         </button>
 
-        {/* Theme control */}
-        <button
-          type="button"
-          onClick={cycleTheme}
-          className="topbar-icon-btn topbar-theme-btn"
-          title={`${getThemeLabel()} (Click to cycle)`}
+        {/* Palette indicator — the three-colour system is fixed, so this is
+            informational only and deliberately not a control. */}
+        <span
+          className="topbar-icon-btn topbar-theme-btn topbar-palette-badge"
+          title={getThemeLabel()}
           aria-label={getThemeLabel()}
         >
-          {getThemeIcon()}
-        </button>
+          <Moon size={15} />
+        </span>
 
         {/* Notifications button */}
         <button
@@ -187,18 +160,10 @@ export const TopBar: React.FC<TopBarProps> = ({ isSidebarCollapsed, onOpenMobile
                 <span>Workspace Settings</span>
               </button>
               <div className="topbar-overflow-divider" />
-              <button
-                type="button"
-                className="topbar-overflow-item"
-                role="menuitem"
-                onClick={() => {
-                  setIsOverflowOpen(false);
-                  cycleTheme();
-                }}
-              >
+              <div className="topbar-overflow-item topbar-overflow-info" role="note">
                 <span>{getThemeLabel()}</span>
-                <span className="overflow-item-meta">Switch</span>
-              </button>
+                <span className="overflow-item-meta">Fixed</span>
+              </div>
             </div>
           )}
         </div>
