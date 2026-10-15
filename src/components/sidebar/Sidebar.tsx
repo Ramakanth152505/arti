@@ -80,7 +80,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           title="ARTI AI Home"
         >
           <img
-            src="/assets/arti_phoenix_logo.jpg"
+            src="/assets/arti_phoenix_logo.png"
             alt="ARTI AI Phoenix Emblem"
             className="sidebar-logo-img"
           />

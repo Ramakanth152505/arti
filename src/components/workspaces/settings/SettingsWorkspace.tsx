@@ -11,10 +11,9 @@ import {
   Shield,
   HardDrive,
   Save,
-  Check,
 } from 'lucide-react';
 import { WorkspaceHeader } from '../../common/WorkspaceHeader';
-import { useWorkspace, type AppTheme } from '../../../context/WorkspaceContext';
+import { useWorkspace } from '../../../context/WorkspaceContext';
 import { useToast } from '../../../context/ToastContext';
 import { DUR, EASE, SPRING } from '../../../motion/tokens';
 
@@ -47,7 +46,6 @@ const SETTINGS_TABS: ReadonlyArray<{
 export const SettingsWorkspace: React.FC = () => {
   const {
     theme,
-    setTheme,
     isSidebarCollapsed,
     setSidebarCollapsed,
     isPrivateMode,
@@ -56,9 +54,6 @@ export const SettingsWorkspace: React.FC = () => {
   const { showToast } = useToast();
 
   const [activeTab, setActiveTab] = useState<SettingsTab>('appearance');
-
-  // Appearance settings
-  const [accentIntensity, setAccentIntensity] = useState('Standard Luxury (100%)');
 
   // Provider endpoint credentials. These are persisted in this browser's localStorage
   // only, unencrypted, and are never transmitted anywhere by the frontend.
@@ -193,46 +188,26 @@ export const SettingsWorkspace: React.FC = () => {
             >
           {activeTab === 'appearance' && (
             <div className="settings-section-card">
-              <h3 className="section-title">Visual Language &amp; Themes</h3>
+              <h3 className="section-title">Colour System</h3>
               <p className="section-desc">
-                Select your preferred midnight atmospheric aesthetic and gold illumination tokens.
+                ARTI AI is built on one fixed three-colour palette. It is not
+                user-selectable — every screen resolves to these values.
               </p>
 
               <div className="theme-selection-grid">
                 {[
-                  { id: 'midnight-navy', label: 'Midnight Navy (Default)', desc: 'Deep sapphire navy with rich champagne gold' },
-                  { id: 'deep-obsidian', label: 'Deep Obsidian', desc: 'Near-black reflective obsidian with subtle gold hairlines' },
-                  { id: 'cyber-steel', label: 'Cyber Steel', desc: 'Cool dark steel blue with warm gold accents' },
-                ].map((th) => (
-                  <button
-                    key={th.id}
-                    type="button"
-                    className={`theme-card-btn ${theme === th.id ? 'active' : ''}`}
-                    onClick={() => {
-                      setTheme(th.id as AppTheme);
-                      showToast(`Applied theme: ${th.label}`, { type: 'gold' });
-                    }}
-                  >
+                  { label: 'Navy', hex: '#1F2A44', role: 'Backgrounds, shell and primary surfaces' },
+                  { label: 'Warm Beige', hex: '#E8DCC8', role: 'Content surfaces and light text' },
+                  { label: 'Soft Gold', hex: '#C6A75E', role: 'Accents, focus and active states' },
+                ].map((swatch) => (
+                  <div key={swatch.label} className="theme-card-btn theme-card-static">
                     <div className="theme-card-top">
-                      <span className="theme-name">{th.label}</span>
-                      {theme === th.id && <Check size={14} className="theme-active-check" />}
+                      <span className="theme-name">{swatch.label}</span>
+                      <span className="theme-swatch-hex">{swatch.hex}</span>
                     </div>
-                    <p className="theme-desc">{th.desc}</p>
-                  </button>
+                    <p className="theme-desc">{swatch.role}</p>
+                  </div>
                 ))}
-              </div>
-
-              <div className="form-field" style={{ marginTop: '20px' }}>
-                <label className="form-label">Accent Illumination</label>
-                <select
-                  className="form-select"
-                  value={accentIntensity}
-                  onChange={(e) => setAccentIntensity(e.target.value)}
-                >
-                  <option value="Subtle (60%)">Subtle (60%)</option>
-                  <option value="Standard Luxury (100%)">Standard Luxury (100%)</option>
-                  <option value="High Luster (140%)">High Luster (140%)</option>
-                </select>
               </div>
             </div>
           )}

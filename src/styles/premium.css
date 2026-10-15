@@ -20,29 +20,29 @@
    ========================================================================== */
 :root {
   /* Canvas & surfaces — obsidian → midnight navy → deep steel */
-  --prem-canvas-0: #03050a;
-  --prem-canvas-1: #070b15;
-  --prem-surface-1: rgba(13, 19, 33, 0.72);
-  --prem-surface-2: rgba(18, 26, 44, 0.84);
-  --prem-surface-3: rgba(24, 34, 56, 0.94);
+  --prem-canvas-0: #1F2A44;
+  --prem-canvas-1: #1F2A44;
+  --prem-surface-1: #1F2A44;
+  --prem-surface-2: #1F2A44;
+  --prem-surface-3: #1F2A44;
 
   /* Hairlines */
-  --prem-line: rgba(255, 255, 255, 0.08);
-  --prem-line-strong: rgba(255, 255, 255, 0.15);
-  --prem-gold-line: rgba(201, 168, 78, 0.32);
-  --prem-gold-line-soft: rgba(201, 168, 78, 0.16);
+  --prem-line: #E8DCC8;
+  --prem-line-strong: #E8DCC8;
+  --prem-gold-line: #C6A75E;
+  --prem-gold-line-soft: #C6A75E;
 
   /* Materials */
-  --prem-gold: #c9a84e;
-  --prem-gold-light: #f3df9b;
-  --prem-ivory: #f6f7fb;
-  --prem-silver: #a9b4c4;
-  --prem-steel: #7c8aa0;
+  --prem-gold: #C6A75E;
+  --prem-gold-light: #C6A75E;
+  --prem-ivory: #E8DCC8;
+  --prem-silver: #E8DCC8;
+  --prem-steel: #E8DCC8;
 
   /* Elevation */
-  --prem-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -14px rgba(0, 0, 0, 0.72);
-  --prem-shadow-2: 0 2px 6px rgba(0, 0, 0, 0.45), 0 22px 54px -20px rgba(0, 0, 0, 0.88);
-  --prem-shadow-gold: 0 0 0 1px rgba(201, 168, 78, 0.16), 0 16px 44px -20px rgba(201, 168, 78, 0.3);
+  --prem-shadow-1: 0 1px 2px #1F2A44, 0 10px 28px -14px #1F2A44;
+  --prem-shadow-2: 0 2px 6px #1F2A44, 0 22px 54px -20px #1F2A44;
+  --prem-shadow-gold: 0 0 0 1px #C6A75E, 0 16px 44px -20px #C6A75E;
 
   /* Motion */
   --prem-ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -57,53 +57,45 @@
   --prem-z-overlay: 100;
 
   /* Per-workspace accent (defaults to champagne gold; overridden per route) */
-  --prem-accent: #c9a84e;
-  --prem-accent-soft: rgba(201, 168, 78, 0.16);
+  --prem-accent: #C6A75E;
+  --prem-accent-soft: #C6A75E;
 }
 
 /* Per-workspace identity accents. Each route keeps one coherent language but
    earns a restrained signature hue used only for the active indicator, the
    workspace gem and focus accents — never for body text. */
-.route-chats          { --prem-accent: #8fb4d9; --prem-accent-soft: rgba(143, 180, 217, 0.16); }
-.route-conversation   { --prem-accent: #8fb4d9; --prem-accent-soft: rgba(143, 180, 217, 0.16); }
-.route-projects       { --prem-accent: #c9a84e; --prem-accent-soft: rgba(201, 168, 78, 0.16); }
-.route-apps           { --prem-accent: #6fb6a6; --prem-accent-soft: rgba(111, 182, 166, 0.16); }
-.route-create-software{ --prem-accent: #6fb6a6; --prem-accent-soft: rgba(111, 182, 166, 0.16); }
-.route-games          { --prem-accent: #b98fd9; --prem-accent-soft: rgba(185, 143, 217, 0.16); }
-.route-images         { --prem-accent: #d99aa6; --prem-accent-soft: rgba(217, 154, 166, 0.16); }
-.route-videos         { --prem-accent: #d9b06f; --prem-accent-soft: rgba(217, 176, 111, 0.16); }
-.route-music          { --prem-accent: #8fb8d9; --prem-accent-soft: rgba(143, 184, 217, 0.16); }
-.route-documents      { --prem-accent: #c9c0a6; --prem-accent-soft: rgba(201, 192, 166, 0.16); }
-.route-research       { --prem-accent: #9ec4a6; --prem-accent-soft: rgba(158, 196, 166, 0.16); }
-.route-learning       { --prem-accent: #d9c07f; --prem-accent-soft: rgba(217, 192, 127, 0.16); }
-.route-agents         { --prem-accent: #8fd0c4; --prem-accent-soft: rgba(143, 208, 196, 0.16); }
-.route-tools          { --prem-accent: #b0a6d9; --prem-accent-soft: rgba(176, 166, 217, 0.16); }
-.route-magic-mode     { --prem-accent: #e0c46f; --prem-accent-soft: rgba(224, 196, 111, 0.18); }
-.route-settings       { --prem-accent: #a9b4c4; --prem-accent-soft: rgba(169, 180, 196, 0.16); }
-.route-help-support   { --prem-accent: #9ec4a6; --prem-accent-soft: rgba(158, 196, 166, 0.16); }
+.route-chats          { --prem-accent: #C6A75E; --prem-accent-soft: #C6A75E; }
+.route-conversation   { --prem-accent: #C6A75E; --prem-accent-soft: #C6A75E; }
+.route-projects       { --prem-accent: #C6A75E; --prem-accent-soft: #C6A75E; }
+.route-apps           { --prem-accent: #C6A75E; --prem-accent-soft: #C6A75E; }
+.route-create-software{ --prem-accent: #C6A75E; --prem-accent-soft: #C6A75E; }
+.route-games          { --prem-accent: #C6A75E; --prem-accent-soft: #C6A75E; }
+.route-images         { --prem-accent: #E8DCC8; --prem-accent-soft: #C6A75E; }
+.route-videos         { --prem-accent: #C6A75E; --prem-accent-soft: #C6A75E; }
+.route-music          { --prem-accent: #C6A75E; --prem-accent-soft: #C6A75E; }
+.route-documents      { --prem-accent: #C6A75E; --prem-accent-soft: #C6A75E; }
+.route-research       { --prem-accent: #E8DCC8; --prem-accent-soft: #C6A75E; }
+.route-learning       { --prem-accent: #C6A75E; --prem-accent-soft: #C6A75E; }
+.route-agents         { --prem-accent: #C6A75E; --prem-accent-soft: #C6A75E; }
+.route-tools          { --prem-accent: #E8DCC8; --prem-accent-soft: #C6A75E; }
+.route-magic-mode     { --prem-accent: #C6A75E; --prem-accent-soft: #C6A75E; }
+.route-settings       { --prem-accent: #E8DCC8; --prem-accent-soft: #C6A75E; }
+.route-help-support   { --prem-accent: #E8DCC8; --prem-accent-soft: #C6A75E; }
 
 /* ==========================================================================
    2. Workspace canvas — layered atmospheric environment (never Home)
    ========================================================================== */
 .app-shell:not(.route-home) .workspace-canvas-mode {
-  background:
-    radial-gradient(120% 80% at 12% -10%, rgba(31, 46, 78, 0.55) 0%, rgba(6, 9, 16, 0) 58%),
-    radial-gradient(90% 70% at 100% 0%, rgba(201, 168, 78, 0.08) 0%, rgba(6, 9, 16, 0) 46%),
-    linear-gradient(180deg, #070b15 0%, #050810 46%, #03050a 100%);
+  background: none;
 }
 
 /* Fine grid + aurora wash sits behind content, above the star field. */
 .app-shell:not(.route-home) .workspace-ambient-backdrop {
   opacity: 0.55;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px),
-    radial-gradient(1px 1px at 20px 30px, rgba(201, 168, 78, 0.28), rgba(0, 0, 0, 0)),
-    radial-gradient(1px 1px at 80px 140px, rgba(255, 255, 255, 0.16), rgba(0, 0, 0, 0)),
-    radial-gradient(1.4px 1.4px at 150px 220px, rgba(143, 180, 217, 0.2), rgba(0, 0, 0, 0));
+  background-image: none;
   background-size: 44px 44px, 44px 44px, 240px 240px, 240px 240px, 240px 240px;
-  mask-image: radial-gradient(140% 100% at 50% 0%, #000 30%, rgba(0, 0, 0, 0.35) 78%, transparent 100%);
-  -webkit-mask-image: radial-gradient(140% 100% at 50% 0%, #000 30%, rgba(0, 0, 0, 0.35) 78%, transparent 100%);
+  mask-image: radial-gradient(140% 100% at 50% 0%, #1F2A44 30%, #1F2A44 78%, transparent 100%);
+  -webkit-mask-image: radial-gradient(140% 100% at 50% 0%, #1F2A44 30%, #1F2A44 78%, transparent 100%);
 }
 
 /* Content reveal — a single, fast, non-blocking entrance per workspace mount.
@@ -124,9 +116,9 @@
 /* Sidebar — deeper material, gold seam, refined active indicator. */
 .app-shell:not(.route-home) .sidebar {
   background:
-    linear-gradient(180deg, rgba(12, 17, 28, 0.96) 0%, rgba(7, 10, 18, 0.97) 100%);
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 18px 0 44px -32px rgba(0, 0, 0, 0.9);
+    linear-gradient(180deg, #1F2A44 0%, #1F2A44 100%);
+  border-right: 1px solid #E8DCC8;
+  box-shadow: 18px 0 44px -32px #1F2A44;
 }
 
 .app-shell:not(.route-home) .sidebar::after {
@@ -136,7 +128,7 @@
   right: 0;
   width: 1px;
   height: 100%;
-  background: linear-gradient(180deg, transparent 0%, rgba(201, 168, 78, 0.28) 22%, rgba(201, 168, 78, 0.05) 60%, transparent 100%);
+  background: linear-gradient(180deg, transparent 0%, transparent 22%, transparent 60%, transparent 100%);
   pointer-events: none;
 }
 
@@ -149,16 +141,16 @@
 }
 
 .app-shell:not(.route-home) .sidebar-item:hover {
-  background: rgba(255, 255, 255, 0.045);
-  border-color: rgba(255, 255, 255, 0.06);
+  background: transparent;
+  border-color: #E8DCC8;
   transform: translateX(2px);
 }
 
 .app-shell:not(.route-home) .sidebar-item.active {
-  background: linear-gradient(90deg, var(--prem-accent-soft) 0%, rgba(201, 168, 78, 0.06) 100%);
+  background: #1F2A44;
   border-color: var(--prem-gold-line-soft);
-  color: #f3df9b;
-  box-shadow: inset 0 0 14px rgba(201, 168, 78, 0.07), 0 0 16px rgba(201, 168, 78, 0.06);
+  color: #C6A75E;
+  box-shadow: inset 0 0 14px #C6A75E, 0 0 16px #C6A75E;
 }
 
 /* Gold illuminated edge on the active destination — one indicator only. */
@@ -171,38 +163,38 @@
   width: 2px;
   height: 60%;
   border-radius: 2px;
-  background: linear-gradient(180deg, var(--prem-accent) 0%, rgba(201, 168, 78, 0.35) 100%);
+  background: #1F2A44;
   box-shadow: 0 0 10px var(--prem-accent-soft);
 }
 
 .app-shell:not(.route-home) .sidebar-group-heading {
-  color: rgba(169, 180, 196, 0.62);
+  color: #E8DCC8;
   letter-spacing: 0.14em;
 }
 
 /* Top bar — thinner seam, glassier, gold route tag. */
 .app-shell:not(.route-home) .topbar {
-  background: linear-gradient(180deg, rgba(9, 13, 22, 0.72) 0%, rgba(7, 10, 18, 0.6) 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
-  box-shadow: 0 12px 34px -26px rgba(0, 0, 0, 0.9);
+  background: linear-gradient(180deg, #1F2A44 0%, #1F2A44 100%);
+  border-bottom: 1px solid #E8DCC8;
+  box-shadow: 0 12px 34px -26px #1F2A44;
 }
 
 .app-shell:not(.route-home) .topbar-current-route-tag {
   border: 1px solid var(--prem-gold-line-soft);
-  background: rgba(201, 168, 78, 0.07);
+  background: transparent;
   border-radius: 9999px;
   padding: 3px 12px;
 }
 
 .app-shell:not(.route-home) .topbar-route-name {
-  color: #e6d69a;
+  color: #C6A75E;
   letter-spacing: 0.05em;
 }
 
 .app-shell:not(.route-home) .topbar-icon-btn:hover {
   border-color: var(--prem-gold-line);
   color: var(--prem-gold-light);
-  box-shadow: 0 0 14px rgba(201, 168, 78, 0.14);
+  box-shadow: 0 0 14px #C6A75E;
 }
 
 /* ==========================================================================
@@ -218,7 +210,7 @@
   border: 1px solid var(--prem-line);
   border-radius: 14px;
   background:
-    radial-gradient(120% 140% at 0% 0%, rgba(31, 46, 78, 0.4) 0%, rgba(10, 15, 26, 0.2) 52%),
+    radial-gradient(120% 140% at 0% 0%, #1F2A44 0%, #1F2A44 52%),
     var(--prem-surface-1);
   box-shadow: var(--prem-shadow-1);
   overflow: hidden;
@@ -230,21 +222,21 @@
   position: absolute;
   inset: 0 0 auto 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, var(--prem-accent) 22%, rgba(201, 168, 78, 0.25) 55%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, var(--prem-accent) 22%, transparent 55%, transparent 100%);
   opacity: 0.65;
   pointer-events: none;
 }
 
 .workspace-icon-gem {
-  background: linear-gradient(140deg, rgba(26, 36, 58, 0.95) 0%, rgba(10, 15, 26, 0.98) 100%);
+  background: linear-gradient(140deg, #1F2A44 0%, #1F2A44 100%);
   border: 1px solid var(--prem-gold-line);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55), inset 0 0 14px var(--prem-accent-soft);
+  box-shadow: 0 6px 20px #1F2A44, inset 0 0 14px var(--prem-accent-soft);
   transition: transform var(--prem-dur-2) var(--prem-ease), box-shadow var(--prem-dur-2) var(--prem-ease);
 }
 
 .workspace-icon-gem:hover {
   transform: translateY(-1px) rotate(-2deg);
-  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.6), inset 0 0 18px var(--prem-accent-soft), 0 0 20px var(--prem-accent-soft);
+  box-shadow: 0 8px 26px #1F2A44, inset 0 0 18px var(--prem-accent-soft), 0 0 20px var(--prem-accent-soft);
 }
 
 .workspace-gem-icon {
@@ -258,7 +250,7 @@
 
 .workspace-badge {
   color: var(--prem-gold-light);
-  background: linear-gradient(180deg, rgba(201, 168, 78, 0.16) 0%, rgba(201, 168, 78, 0.08) 100%);
+  background: linear-gradient(180deg, transparent 0%, transparent 100%);
   border: 1px solid var(--prem-gold-line-soft);
 }
 
@@ -277,7 +269,7 @@
 .toolbar-select,
 .view-toggle-group,
 .apps-filter-select {
-  background: rgba(10, 15, 26, 0.72);
+  background: #1F2A44;
   border-color: var(--prem-line);
   transition: border-color var(--prem-dur-1) var(--prem-ease-std), box-shadow var(--prem-dur-1) var(--prem-ease-std);
 }
@@ -287,7 +279,7 @@
 .doc-search-box:focus-within,
 .help-search-box:focus-within {
   border-color: var(--prem-gold-line);
-  box-shadow: 0 0 0 3px rgba(201, 168, 78, 0.09);
+  box-shadow: 0 0 0 3px #C6A75E;
 }
 
 /* ==========================================================================
@@ -306,8 +298,8 @@
   bottom: 10px;
   width: 3px;
   border-radius: 9999px;
-  background: linear-gradient(180deg, var(--prem-accent, #7ad6f0) 0%, rgba(255, 255, 255, 0.25) 100%);
-  box-shadow: 0 0 12px rgba(122, 214, 240, 0.45);
+  background: none;
+  box-shadow: 0 0 12px #C6A75E;
   pointer-events: none;
 }
 
@@ -345,7 +337,7 @@
 .approval-row-card,
 .artifact-item {
   background:
-    radial-gradient(120% 130% at 0% 0%, rgba(31, 46, 78, 0.28) 0%, rgba(10, 15, 26, 0.1) 55%),
+    radial-gradient(120% 130% at 0% 0%, #1F2A44 0%, #1F2A44 55%),
     var(--prem-surface-1);
   border: 1px solid var(--prem-line);
   border-radius: 14px;
@@ -440,7 +432,7 @@
 .subsystem-tab.active,
 .production-detail-tab.active,
 .tab-pill.active {
-  background: linear-gradient(90deg, var(--prem-accent-soft), rgba(201, 168, 78, 0.04));
+  background: #1F2A44;
   border-color: var(--prem-gold-line-soft);
   color: var(--prem-gold-light);
 }
@@ -449,14 +441,14 @@
    7. Buttons — premium material, clear hierarchy
    ========================================================================== */
 .gold-primary-btn {
-  background-image: linear-gradient(135deg, #fbeecb 0%, #c9a84e 52%, #9e7f2b 100%);
-  box-shadow: 0 2px 10px rgba(201, 168, 78, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  background-image: linear-gradient(135deg, #C6A75E 0%, #C6A75E 52%, #C6A75E 100%);
+  box-shadow: 0 2px 10px #C6A75E, inset 0 1px 0 #E8DCC8;
   transition: transform var(--prem-dur-1) var(--prem-ease), box-shadow var(--prem-dur-2) var(--prem-ease), filter var(--prem-dur-1) var(--prem-ease-std);
 }
 
 .gold-primary-btn:hover {
   filter: brightness(1.04);
-  box-shadow: 0 6px 20px rgba(201, 168, 78, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  box-shadow: 0 6px 20px #C6A75E, inset 0 1px 0 #E8DCC8;
 }
 
 .gold-primary-btn:active {
@@ -469,7 +461,7 @@
 
 .gold-ghost-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 0 0 1px var(--prem-gold-line-soft), 0 10px 24px -16px rgba(201, 168, 78, 0.4);
+  box-shadow: 0 0 0 1px var(--prem-gold-line-soft), 0 10px 24px -16px #C6A75E;
 }
 
 .chat-action-btn {
@@ -485,19 +477,19 @@
    8. Chats — AI conversation studio
    ========================================================================== */
 .route-chats .chats-sidebar {
-  background: linear-gradient(180deg, rgba(11, 16, 27, 0.92) 0%, rgba(7, 10, 18, 0.94) 100%);
+  background: linear-gradient(180deg, #1F2A44 0%, #1F2A44 100%);
   border-right: 1px solid var(--prem-line);
 }
 
 .route-chats .chats-main-canvas {
   background:
-    radial-gradient(90% 60% at 50% -10%, rgba(31, 46, 78, 0.35) 0%, rgba(5, 8, 15, 0) 60%),
+    radial-gradient(90% 60% at 50% -10%, #1F2A44 0%, transparent 60%),
     transparent;
 }
 
 .chat-canvas-header {
   border-bottom: 1px solid var(--prem-line);
-  background: linear-gradient(180deg, rgba(10, 15, 26, 0.6) 0%, rgba(10, 15, 26, 0.2) 100%);
+  background: linear-gradient(180deg, #1F2A44 0%, #1F2A44 100%);
 }
 
 .chat-active-title {
@@ -511,12 +503,12 @@
 }
 
 .chat-item-row:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.06);
+  background: transparent;
+  border-color: #E8DCC8;
 }
 
 .chat-item-row.active {
-  background: linear-gradient(90deg, var(--prem-accent-soft) 0%, rgba(201, 168, 78, 0.05) 100%);
+  background: #1F2A44;
   border-color: var(--prem-gold-line-soft);
 }
 
@@ -535,7 +527,7 @@
 .chat-composer-box:focus-within,
 .chat-composer-container:focus-within {
   border-color: var(--prem-gold-line);
-  box-shadow: 0 0 0 3px rgba(201, 168, 78, 0.08), 0 18px 44px -24px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 0 0 3px #C6A75E, 0 18px 44px -24px #1F2A44;
 }
 
 /* ==========================================================================
@@ -544,17 +536,15 @@
 .empty-state-wrapper {
   position: relative;
   border: 1px dashed var(--prem-gold-line-soft);
-  background:
-    radial-gradient(80% 120% at 50% 0%, rgba(201, 168, 78, 0.06) 0%, rgba(10, 15, 26, 0.35) 60%),
-    rgba(10, 15, 26, 0.4);
+  background: none;
   border-radius: 16px;
   overflow: hidden;
 }
 
 .empty-state-icon-box {
-  background: radial-gradient(120% 120% at 50% 0%, rgba(201, 168, 78, 0.14) 0%, rgba(201, 168, 78, 0.04) 100%);
+  background: radial-gradient(120% 120% at 50% 0%, transparent 0%, transparent 100%);
   border: 1px solid var(--prem-gold-line);
-  box-shadow: 0 0 26px -8px rgba(201, 168, 78, 0.3), inset 0 0 14px rgba(201, 168, 78, 0.08);
+  box-shadow: 0 0 26px -8px #C6A75E, inset 0 0 14px #C6A75E;
 }
 
 .empty-state-title {
@@ -567,10 +557,10 @@
 .dialog-container,
 .command-palette-modal {
   background:
-    radial-gradient(120% 120% at 50% -20%, rgba(31, 46, 78, 0.4) 0%, rgba(11, 16, 27, 0.2) 55%),
-    linear-gradient(180deg, rgba(16, 23, 38, 0.96) 0%, rgba(9, 13, 22, 0.97) 100%);
+    radial-gradient(120% 120% at 50% -20%, #1F2A44 0%, #1F2A44 55%),
+    linear-gradient(180deg, #1F2A44 0%, #1F2A44 100%);
   border: 1px solid var(--prem-gold-line-soft);
-  box-shadow: var(--prem-shadow-2), 0 0 0 1px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--prem-shadow-2), 0 0 0 1px #1F2A44;
   animation: premOverlayIn var(--prem-dur-2) var(--prem-ease) both;
 }
 
@@ -578,14 +568,14 @@
 .drawer-overlay,
 .command-palette-backdrop,
 .image-lightbox-backdrop {
-  background: rgba(2, 4, 9, 0.66);
+  background: #1F2A44;
   backdrop-filter: blur(8px);
 }
 
 .notifications-drawer {
-  background: linear-gradient(180deg, rgba(14, 20, 33, 0.97) 0%, rgba(8, 11, 19, 0.98) 100%);
+  background: linear-gradient(180deg, #1F2A44 0%, #1F2A44 100%);
   border-left: 1px solid var(--prem-gold-line-soft);
-  box-shadow: -24px 0 60px -30px rgba(0, 0, 0, 0.95);
+  box-shadow: -24px 0 60px -30px #1F2A44;
   /* Enter/exit is owned by Motion (`drawerVariants`), so there is no CSS
      keyframe here to fight the animated transform. */
 }
@@ -608,7 +598,7 @@
 }
 
 .command-item.selected {
-  background: linear-gradient(90deg, var(--prem-accent-soft) 0%, rgba(201, 168, 78, 0.05) 100%);
+  background: #1F2A44;
   border-color: var(--prem-gold-line-soft);
 }
 
@@ -657,14 +647,14 @@
 
 /* ---- Chats — conversation studio ---------------------------------------- */
 .route-chats .new-chat-btn {
-  background: linear-gradient(135deg, rgba(243, 223, 155, 0.16) 0%, rgba(201, 168, 78, 0.08) 100%);
+  background: linear-gradient(135deg, transparent 0%, transparent 100%);
   border: 1px solid var(--prem-gold-line-soft);
   transition: border-color var(--prem-dur-1) var(--prem-ease-std), box-shadow var(--prem-dur-2) var(--prem-ease);
 }
 
 .route-chats .new-chat-btn:hover {
   border-color: var(--prem-gold-line);
-  box-shadow: 0 0 18px rgba(201, 168, 78, 0.16);
+  box-shadow: 0 0 18px #C6A75E;
 }
 
 .chats-group-title {
@@ -672,7 +662,7 @@
 }
 
 .chat-empty-spark {
-  filter: drop-shadow(0 0 16px rgba(201, 168, 78, 0.35));
+  filter: drop-shadow(0 0 16px #C6A75E);
 }
 
 .chat-prompt-starters .prompt-starter-pill {
@@ -695,7 +685,7 @@
 .project-type-badge,
 .project-platform-badge {
   border: 1px solid var(--prem-gold-line-soft);
-  background: rgba(201, 168, 78, 0.08);
+  background: transparent;
 }
 
 .project-status-pill {
@@ -703,7 +693,7 @@
 }
 
 .projects-list-table .table-header-row {
-  background: linear-gradient(180deg, rgba(201, 168, 78, 0.07) 0%, rgba(201, 168, 78, 0.02) 100%);
+  background: linear-gradient(180deg, transparent 0%, transparent 100%);
   border-bottom: 1px solid var(--prem-gold-line-soft);
   letter-spacing: 0.08em;
 }
@@ -713,11 +703,11 @@
 }
 
 .projects-list-table .table-body-row:hover {
-  background: rgba(255, 255, 255, 0.035);
+  background: transparent;
 }
 
 .project-details-drawer {
-  background: linear-gradient(180deg, rgba(14, 20, 33, 0.97) 0%, rgba(8, 11, 19, 0.98) 100%);
+  background: linear-gradient(180deg, #1F2A44 0%, #1F2A44 100%);
   border-left: 1px solid var(--prem-gold-line-soft);
 }
 
@@ -728,8 +718,8 @@
 
 .apps-platform-pill {
   border: 1px solid var(--prem-gold-line-soft);
-  background: var(--prem-accent-soft);
-  color: #cfe8e2;
+  background: #1F2A44;
+  color: #E8DCC8;
 }
 
 .apps-project-card-head {
@@ -759,9 +749,7 @@
 
 .game-viewport-card,
 .game-canvas-mock {
-  background:
-    radial-gradient(120% 120% at 50% 0%, rgba(185, 143, 217, 0.12) 0%, rgba(10, 15, 26, 0.5) 60%),
-    rgba(8, 11, 19, 0.7);
+  background: none;
   border: 1px solid var(--prem-line);
   border-radius: 12px;
 }
@@ -773,7 +761,7 @@
 
 .image-studio-sidebar,
 .images-conversation-area {
-  background: linear-gradient(180deg, rgba(11, 16, 27, 0.55) 0%, rgba(7, 10, 18, 0.35) 100%);
+  background: linear-gradient(180deg, #1F2A44 0%, #1F2A44 100%);
   border-color: var(--prem-line);
 }
 
@@ -806,9 +794,9 @@
   box-shadow: 0 0 0 1px var(--prem-gold-line), 0 0 20px var(--prem-accent-soft);
 }
 
-.images-choose-style-btn {
+.images-choose-style-btn{
   border: 1px solid var(--prem-gold-line-soft);
-  background: linear-gradient(135deg, rgba(217, 154, 166, 0.14) 0%, rgba(201, 168, 78, 0.08) 100%);
+  background: linear-gradient(135deg, #C6A75E 0%, #C6A75E 100%);
 }
 
 .image-result,
@@ -830,7 +818,7 @@
 
 .images-setup-callout {
   border: 1px solid var(--prem-gold-line-soft);
-  background: rgba(201, 168, 78, 0.06);
+  background: transparent;
 }
 
 /* ---- Videos — cinematic production studio ------------------------------- */
@@ -856,7 +844,7 @@
 .episode-column {
   border: 1px solid var(--prem-line);
   border-radius: 12px;
-  background: rgba(10, 15, 26, 0.42);
+  background: #1F2A44;
 }
 
 .episode-item,
@@ -868,7 +856,7 @@
 
 .episode-item:hover,
 .season-item:hover {
-  background: rgba(255, 255, 255, 0.035);
+  background: transparent;
   border-color: var(--prem-line);
 }
 
@@ -909,32 +897,30 @@
 .video-quick-btn:hover,
 .video-quick-btn.active {
   border-color: var(--prem-gold-line);
-  background: rgba(201, 168, 78, 0.08);
+  background: transparent;
 }
 
 /* ---- Music — audio production studio ------------------------------------ */
 .audio-player-card {
   border: 1px solid var(--prem-gold-line-soft);
   border-radius: 16px;
-  background:
-    radial-gradient(120% 130% at 50% 0%, rgba(143, 184, 217, 0.14) 0%, rgba(10, 15, 26, 0.35) 60%),
-    var(--prem-surface-2);
+  background: none;
   box-shadow: var(--prem-shadow-2);
 }
 
 .player-waveform-bar .waveform-stripe {
-  background: linear-gradient(180deg, var(--prem-accent) 0%, rgba(201, 168, 78, 0.4) 100%);
+  background: linear-gradient(180deg, var(--prem-accent) 0%, transparent 100%);
 }
 
 .player-play-btn {
-  background: linear-gradient(135deg, #fbeecb 0%, #c9a84e 55%, #9e7f2b 100%);
-  box-shadow: 0 4px 16px rgba(201, 168, 78, 0.35);
+  background: linear-gradient(135deg, #C6A75E 0%, #C6A75E 55%, #C6A75E 100%);
+  box-shadow: 0 4px 16px #C6A75E;
   transition: transform var(--prem-dur-1) var(--prem-ease), box-shadow var(--prem-dur-2) var(--prem-ease);
 }
 
 .player-play-btn:hover {
   transform: scale(1.05);
-  box-shadow: 0 6px 22px rgba(201, 168, 78, 0.5);
+  box-shadow: 0 6px 22px #C6A75E;
 }
 
 .track-item-row {
@@ -945,7 +931,7 @@
 
 .track-item-row:hover,
 .track-item-row.active {
-  background: rgba(255, 255, 255, 0.035);
+  background: transparent;
   border-color: var(--prem-gold-line-soft);
 }
 
@@ -965,11 +951,11 @@
 }
 
 .doc-list-item:hover {
-  background: rgba(255, 255, 255, 0.035);
+  background: transparent;
 }
 
 .doc-list-item.active {
-  background: linear-gradient(90deg, rgba(201, 192, 166, 0.14) 0%, rgba(201, 168, 78, 0.05) 100%);
+  background: linear-gradient(90deg, transparent 0%, transparent 100%);
   border-color: var(--prem-gold-line-soft);
 }
 
@@ -985,14 +971,14 @@
 }
 
 .format-btn:hover {
-  background: rgba(201, 168, 78, 0.12);
+  background: transparent;
   color: var(--prem-gold-light);
 }
 
 .doc-markdown-textarea {
   border: 1px solid var(--prem-line);
   border-radius: 12px;
-  background: rgba(8, 11, 19, 0.6);
+  background: #1F2A44;
   line-height: 1.7;
 }
 
@@ -1000,7 +986,7 @@
 .provenance-pill,
 .provenance-legend-bar {
   border: 1px solid var(--prem-gold-line-soft);
-  background: rgba(201, 168, 78, 0.06);
+  background: transparent;
 }
 
 .source-item-card {
@@ -1020,7 +1006,7 @@
 .findings-textarea {
   border: 1px solid var(--prem-line);
   border-radius: 12px;
-  background: rgba(8, 11, 19, 0.6);
+  background: #1F2A44;
 }
 
 /* ---- Learning — knowledge studio ---------------------------------------- */
@@ -1031,11 +1017,11 @@
 .path-progress-bar {
   border-radius: 9999px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.06);
+  background: transparent;
 }
 
 .path-progress-fill {
-  background: linear-gradient(90deg, var(--prem-accent) 0%, rgba(201, 168, 78, 0.7) 100%);
+  background: linear-gradient(90deg, var(--prem-accent) 0%, transparent 100%);
   box-shadow: 0 0 12px var(--prem-accent-soft);
 }
 
@@ -1047,7 +1033,7 @@
 }
 
 .level-item:hover {
-  background: rgba(255, 255, 255, 0.035);
+  background: transparent;
   border-color: var(--prem-line);
 }
 
@@ -1063,7 +1049,7 @@
 
 .question-option-btn:hover {
   border-color: var(--prem-gold-line);
-  background: rgba(201, 168, 78, 0.06);
+  background: transparent;
 }
 
 /* ---- Agents — orchestration center -------------------------------------- */
@@ -1073,9 +1059,7 @@
 
 .agent-profile-header-card {
   border: 1px solid var(--prem-gold-line-soft);
-  background:
-    radial-gradient(120% 130% at 0% 0%, rgba(143, 208, 196, 0.12) 0%, rgba(10, 15, 26, 0.2) 55%),
-    var(--prem-surface-2);
+  background: none;
 }
 
 .agent-status-badge {
@@ -1117,12 +1101,12 @@
 .file-tree-sidebar {
   border: 1px solid var(--prem-line);
   border-radius: 12px;
-  background: rgba(7, 10, 18, 0.6);
+  background: #1F2A44;
 }
 
 .editor-tab-bar {
   border-bottom: 1px solid var(--prem-line);
-  background: linear-gradient(180deg, rgba(16, 23, 38, 0.7) 0%, rgba(9, 13, 22, 0.5) 100%);
+  background: linear-gradient(180deg, #1F2A44 0%, #1F2A44 100%);
 }
 
 .editor-tab-bar .tab-pill.active {
@@ -1133,7 +1117,7 @@
 .mock-code-viewer {
   border: 1px solid var(--prem-line);
   border-radius: 10px;
-  background: rgba(5, 8, 14, 0.72);
+  background: #1F2A44;
 }
 
 .software-existing-item {
@@ -1143,15 +1127,13 @@
 }
 
 .software-existing-item:hover {
-  background: rgba(255, 255, 255, 0.035);
+  background: transparent;
   border-color: var(--prem-line);
 }
 
 /* ---- Magic Mode — orchestration canvas ---------------------------------- */
 .magic-canvas-workspace {
-  background:
-    radial-gradient(90% 70% at 50% -10%, rgba(224, 196, 111, 0.1) 0%, rgba(5, 8, 15, 0) 58%),
-    transparent;
+  background: none;
 }
 
 .magic-goal-bar {
@@ -1163,7 +1145,7 @@
 
 .magic-inspector-sidebar {
   border-left: 1px solid var(--prem-line);
-  background: linear-gradient(180deg, rgba(11, 16, 27, 0.6) 0%, rgba(7, 10, 18, 0.4) 100%);
+  background: linear-gradient(180deg, #1F2A44 0%, #1F2A44 100%);
 }
 
 .workflow-canvas-node,
@@ -1183,7 +1165,7 @@
 
 .node-lane-pill {
   border: 1px solid var(--prem-gold-line-soft);
-  background: rgba(201, 168, 78, 0.08);
+  background: transparent;
 }
 
 .graph-arrow {
@@ -1217,6 +1199,28 @@
   box-shadow: 0 0 0 1px var(--prem-gold-line), 0 0 18px var(--prem-accent-soft);
 }
 
+/* The three-colour system is fixed, so the palette swatches are informational
+   rather than selectable and carry no hover affordance. */
+.theme-card-static,
+.theme-card-static:hover,
+.topbar-palette-badge,
+.topbar-palette-badge:hover {
+  cursor: default;
+  transform: none;
+  border-color: var(--prem-line);
+}
+
+.theme-swatch-hex {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: #C6A75E;
+  letter-spacing: 0.04em;
+}
+
+.topbar-overflow-info {
+  cursor: default;
+}
+
 .toggle-switch {
   transition: background-color var(--prem-dur-2) var(--prem-ease-std), box-shadow var(--prem-dur-2) var(--prem-ease-std);
 }
@@ -1227,7 +1231,7 @@
 }
 
 .shortcuts-table .shortcut-row:nth-child(odd) {
-  background: rgba(255, 255, 255, 0.02);
+  background: transparent;
 }
 
 /* ---- Help — guidance center --------------------------------------------- */
@@ -1300,7 +1304,7 @@
   position: absolute;
   inset: 0 0 auto 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent 0%, var(--prem-accent) 30%, rgba(201, 168, 78, 0.2) 60%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, var(--prem-accent) 30%, transparent 60%, transparent 100%);
   opacity: 0.5;
   pointer-events: none;
   z-index: 3;
@@ -1308,8 +1312,8 @@
 
 /* Selection tint echoes the champagne material without hurting contrast. */
 .app-shell:not(.route-home) ::selection {
-  background: rgba(201, 168, 78, 0.28);
-  color: #fffaf0;
+  background: transparent;
+  color: #E8DCC8;
 }
 
 /* Workspace subheadings read as measured captions, not body copy. */

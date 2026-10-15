@@ -1,7 +1,12 @@
 import { createContext, useContext } from 'react';
 import type { RouteId } from '../types/navigation';
 
-export type AppTheme = 'midnight-navy' | 'deep-obsidian' | 'cyber-steel';
+/**
+ * ARTI AI ships exactly one approved palette — Navy / Warm Beige / Soft Gold.
+ * The value is kept as a named token (rather than a free-form string) so any
+ * future surface that reads it stays inside the three-colour contract.
+ */
+export type AppTheme = 'arti-approved';
 
 export interface WorkspaceContextValue {
   currentRoute: RouteId;
@@ -17,8 +22,6 @@ export interface WorkspaceContextValue {
   isProfileMenuOpen: boolean;
   setIsProfileMenuOpen: (open: boolean) => void;
   theme: AppTheme;
-  setTheme: (theme: AppTheme) => void;
-  cycleTheme: () => void;
   isPrivateMode: boolean;
   togglePrivateMode: () => void;
   /**

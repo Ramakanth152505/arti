@@ -144,12 +144,12 @@ async function evaluate(cdp, expression) {
   check('Home identity elements (crown, spark, footer) are present',
     home.hasCrown && home.hasSpark && home.hasFooter);
   check('Home cinematic background is unchanged',
-    home.bgSrc === '/assets/arti_cinematic_bg.jpg', home.bgSrc);
+    home.bgSrc === '/assets/arti_cinematic_bg.png', home.bgSrc);
   check('Home carries no premium entrance animation', home.mountAnimation === 'none', home.mountAnimation);
   check('Home sidebar material is unchanged (no premium gradient)',
     home.sidebarBgImage === 'none', home.sidebarBgImage);
   check('Home surface carries no premium card border',
-    home.cardBorderTop !== 'rgb(201, 168, 78)', home.cardBorderTop);
+    home.cardBorderTop !== 'rgb(198, 167, 94)', home.cardBorderTop);
   check('Home renders with no console errors', errors.length === 0, errors.slice(0, 2).join(' '));
 
   // ---- Non-Home refinement + route integrity -----------------------------

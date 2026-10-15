@@ -14,7 +14,7 @@ export const UserProfile: React.FC = () => {
       aria-expanded={isProfileMenuOpen}
       title="User profile and session mode"
     >
-      <ShieldCheck size={16} color="#c9a84e" />
+      <ShieldCheck size={16} color="#C6A75E" />
       <div className="user-profile-details">
         <span className="user-profile-name">Ramakanth</span>
         <span className="user-profile-status">

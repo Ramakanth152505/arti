@@ -293,9 +293,9 @@ export const WebsitesWorkspace: React.FC = () => {
   <title>ARTI AI &middot; ${template}</title>
   <link rel="stylesheet" href="/styles.css" />
 </head>
-<body class="bg-[#050811] text-[#f8fafc] font-sans antialiased">
+<body class="bg-[#1F2A44] text-[#E8DCC8] font-sans antialiased">
   <header class="border-b border-white/10 px-8 py-4 flex justify-between">
-    <div class="font-serif text-[#c9a84e] font-bold">ARTI AI</div>
+    <div class="font-serif text-[#C6A75E] font-bold">ARTI AI</div>
   </header>
   <!-- Generated Components -->
 </body>

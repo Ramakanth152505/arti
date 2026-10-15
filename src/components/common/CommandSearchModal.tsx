@@ -27,7 +27,7 @@ export const CommandSearchModal: React.FC = () => {
 };
 
 const CommandSearchModalInner: React.FC = () => {
-  const { setIsSearchOpen, navigate, toggleSidebar, cycleTheme, togglePrivateMode } = useWorkspace();
+  const { setIsSearchOpen, navigate, toggleSidebar, togglePrivateMode } = useWorkspace();
   const { showToast } = useToast();
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -77,14 +77,11 @@ const CommandSearchModalInner: React.FC = () => {
         status: 'available',
       },
       {
-        id: 'act-cycle-theme',
-        title: 'Switch Display Theme',
-        subtitle: 'Toggle between Midnight Navy, Deep Obsidian, and Cyber Steel',
+        id: 'act-colour-system',
+        title: 'Colour System',
+        subtitle: 'One fixed three-colour palette — Navy, Warm Beige, Soft Gold',
         category: 'Action',
-        action: () => {
-          cycleTheme();
-          showToast('Display theme updated', { type: 'gold' });
-        },
+        route: 'settings',
         status: 'available',
       },
       {
@@ -132,7 +129,7 @@ const CommandSearchModalInner: React.FC = () => {
     ];
 
     return [...navItems, ...actions];
-  }, [cycleTheme, toggleSidebar, togglePrivateMode, showToast]);
+  }, [toggleSidebar, togglePrivateMode, showToast]);
 
   const filteredItems = useMemo(() => {
     if (!query.trim()) return allItems;

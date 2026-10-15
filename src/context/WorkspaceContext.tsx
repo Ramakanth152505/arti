@@ -21,13 +21,8 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
-  const [theme, setThemeState] = useState<AppTheme>(() => {
-    try {
-      return (localStorage.getItem('arti_theme') as AppTheme) || 'midnight-navy';
-    } catch {
-      return 'midnight-navy';
-    }
-  });
+  // The palette is fixed by design; no alternate theme can be selected.
+  const [theme] = useState<AppTheme>('arti-approved');
 
   const [isPrivateMode, setIsPrivateMode] = useState<boolean>(() => {
     try {
@@ -84,22 +79,6 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, []);
 
-  const setTheme = useCallback((newTheme: AppTheme) => {
-    setThemeState(newTheme);
-    try {
-      localStorage.setItem('arti_theme', newTheme);
-      document.documentElement.setAttribute('data-theme', newTheme);
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  const cycleTheme = useCallback(() => {
-    const themes: AppTheme[] = ['midnight-navy', 'deep-obsidian', 'cyber-steel'];
-    const nextIndex = (themes.indexOf(theme) + 1) % themes.length;
-    setTheme(themes[nextIndex]);
-  }, [theme, setTheme]);
-
   const togglePrivateMode = useCallback(() => {
     setIsPrivateMode((prev) => {
       const next = !prev;
@@ -145,8 +124,6 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         isProfileMenuOpen,
         setIsProfileMenuOpen,
         theme,
-        setTheme,
-        cycleTheme,
         isPrivateMode,
         togglePrivateMode,
         isFocusMode,

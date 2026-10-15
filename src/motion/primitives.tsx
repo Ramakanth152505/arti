@@ -254,12 +254,12 @@ export type IndicatorState =
 const INDICATOR_ACCENT: Record<IndicatorState, string> = {
   idle: 'var(--text-muted)',
   queued: 'var(--text-secondary)',
-  running: '#5ec8e6',
+  running: '#C6A75E',
   waiting: 'var(--gold-accent)',
-  complete: '#5fd39a',
-  failed: '#e2706a',
+  complete: '#C6A75E',
+  failed: '#C6A75E',
   cancelled: 'var(--text-muted)',
-  blocked: '#e0a35c',
+  blocked: '#C6A75E',
   planned: 'var(--text-secondary)',
 };
 

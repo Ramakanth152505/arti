@@ -7,14 +7,17 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "check:typography": "node scripts/check-typography.mjs",
-    "lint": "oxlint && node scripts/check-typography.mjs",
+    "lint": "oxlint && node scripts/check-typography.mjs && node scripts/check-colors.mjs",
     "test:responsive": "node scripts/overflow-scan.mjs",
     "test:games": "node scripts/verify-games.mjs",
     "test:images": "node scripts/verify-images.mjs",
     "test:videos": "node scripts/verify-videos.mjs",
     "test:redesign": "node scripts/verify-redesign.mjs",
     "test:music": "node scripts/verify-music.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check:colors": "node scripts/check-colors.mjs",
+    "test:palette": "node scripts/verify-palette.mjs",
+    "test:all": "node scripts/run-all.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.55.0",

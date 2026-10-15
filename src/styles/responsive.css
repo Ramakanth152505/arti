@@ -220,7 +220,7 @@ svg {
 .sidebar-mobile-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(2, 4, 8, 0.62);
+  background: #1F2A44;
   backdrop-filter: blur(6px);
   z-index: 110;
   opacity: 0;
@@ -240,14 +240,14 @@ svg {
   align-items: center;
   justify-content: center;
   border-radius: 6px;
-  color: #7e8b9b;
-  background: rgba(255, 255, 255, 0.03);
+  color: #E8DCC8;
+  background: transparent;
   border: 1px solid var(--border-subtle);
   flex-shrink: 0;
 }
 
 .sidebar-mobile-close-btn:hover {
-  color: #f1dfa0;
+  color: #C6A75E;
   border-color: var(--gold-border);
 }
 
@@ -258,14 +258,14 @@ svg {
   align-items: center;
   justify-content: center;
   border-radius: 7px;
-  color: #cbd5e1;
-  background: rgba(255, 255, 255, 0.03);
+  color: #E8DCC8;
+  background: transparent;
   border: 1px solid var(--border-subtle);
   flex-shrink: 0;
 }
 
 .topbar-mobile-menu-btn:hover {
-  color: #f1dfa0;
+  color: #C6A75E;
   border-color: var(--gold-border);
 }
 
@@ -282,7 +282,7 @@ svg {
     transform: translateX(-102%);
     transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 120;
-    box-shadow: 12px 0 40px rgba(0, 0, 0, 0.6);
+    box-shadow: 12px 0 40px #1F2A44;
     border-right: 1px solid var(--gold-border-subtle);
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
@@ -384,8 +384,8 @@ svg {
     align-items: center;
     justify-content: center;
     border-radius: 7px;
-    color: #8b97a8;
-    background: rgba(255, 255, 255, 0.03);
+    color: #E8DCC8;
+    background: transparent;
     border: 1px solid var(--border-subtle);
     flex-shrink: 0;
   }
@@ -447,8 +447,8 @@ svg {
   align-items: center;
   justify-content: center;
   border-radius: 7px;
-  color: #8b97a8;
-  background: rgba(255, 255, 255, 0.03);
+  color: #E8DCC8;
+  background: transparent;
   border: 1px solid var(--border-subtle);
   flex-shrink: 0;
 }
@@ -483,8 +483,8 @@ svg {
   align-items: center;
   justify-content: center;
   border-radius: 7px;
-  color: #8b97a8;
-  background: rgba(255, 255, 255, 0.03);
+  color: #E8DCC8;
+  background: transparent;
   border: 1px solid var(--border-subtle);
 }
 
@@ -499,10 +499,10 @@ svg {
   top: calc(100% + 8px);
   right: 0;
   width: min(260px, calc(100vw - 24px));
-  background: #090e1a;
+  background: #1F2A44;
   border: 1px solid var(--gold-border);
   border-radius: 9px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(201, 168, 78, 0.1);
+  box-shadow: 0 16px 40px #1F2A44, 0 0 20px #C6A75E;
   padding: 6px;
   z-index: 95;
   animation: popoverFade 0.15s ease-out;
@@ -525,8 +525,8 @@ svg {
 }
 
 .topbar-overflow-item:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #faecc0;
+  background: transparent;
+  color: #C6A75E;
 }
 
 .topbar-overflow-item .overflow-item-meta {
@@ -537,7 +537,7 @@ svg {
 
 .topbar-overflow-divider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.07);
+  background: transparent;
   margin: 4px 2px;
 }
 
@@ -749,7 +749,7 @@ svg {
 
   .file-tree-sidebar {
     border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid #E8DCC8;
     display: flex;
     gap: 10px;
     align-items: center;
@@ -859,7 +859,7 @@ svg {
     width: var(--mobile-drawer-w) !important;
     max-width: 88vw;
     z-index: 60;
-    box-shadow: 12px 0 30px rgba(0, 0, 0, 0.55);
+    box-shadow: 12px 0 30px #1F2A44;
   }
 
   .chats-sidebar.closed {
@@ -1219,7 +1219,7 @@ pre,
     width: 100%;
     max-height: 42vh;
     border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid #E8DCC8;
   }
 
   .project-chat-list {

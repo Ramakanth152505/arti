@@ -60,16 +60,16 @@ type StyleSeed = [string, string, string, string, string?];
 
 /** Deterministic, muted swatch pairs drawn from the ARTI palette family. */
 const SWATCHES: Array<[string, string]> = [
-  ['#2a3550', '#c9a84e'],
-  ['#1d2738', '#6d8cb5'],
-  ['#3a2f22', '#d9b45c'],
-  ['#243033', '#6fae9f'],
-  ['#33283a', '#a67c9e'],
-  ['#1f2a3d', '#7d8fa6'],
-  ['#402a2e', '#c07a6a'],
-  ['#26303f', '#9aa4b2'],
-  ['#3a3f52', '#dfbe68'],
-  ['#2b2b33', '#b58ea6'],
+  ['#1F2A44', '#C6A75E'],
+  ['#1F2A44', '#C6A75E'],
+  ['#C6A75E', '#C6A75E'],
+  ['#1F2A44', '#C6A75E'],
+  ['#1F2A44', '#E8DCC8'],
+  ['#1F2A44', '#E8DCC8'],
+  ['#1F2A44', '#C6A75E'],
+  ['#1F2A44', '#E8DCC8'],
+  ['#1F2A44', '#C6A75E'],
+  ['#1F2A44', '#E8DCC8'],
 ];
 
 function build(category: VideoStyleCategoryId, seeds: StyleSeed[]): VideoStyle[] {
